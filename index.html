@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Welcome to World Building!</title>
+
+  <!-- Preconnect and Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&family=Old+Standard+TT:wght@400;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg:#f7fbff;
+      --card:#ffffff;
+      --card-alpha: 0.92; /* translucency for the content box */
+      --text:#0f1724;
+      --muted:#6b7280;
+      --accent:#0b84ff;
+      --radius:12px;
+      --max-width:900px;
+    }
+    *{box-sizing:border-box}
+    /* Demo parchment texture URL — replace with your own if you like */
+    body{
+      margin:0;
+      font-family: "Old Standard TT", Georgia, "Times New Roman", serif;
+      color:var(--text);
+      -webkit-font-smoothing:antialiased;
+
+      /* Background image (parchment / medieval texture) */
+      background-image: url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1700&q=80');
+      background-position: center;
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-attachment: fixed; /* removed on small screens below for performance */
+      min-height: 100vh;
+      position: relative;
+    }
+
+    /* Dark overlay to keep text readable on top of the texture */
+    body::before{
+      content: "";
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.28); /* tweak alpha to taste (0.0 - 0.6) */
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .wrap{
+      max-width:var(--max-width);
+      margin:6vh auto;
+      padding:1.25rem;
+      position: relative; /* so it sits above the overlay */
+      z-index: 1;
+    }
+    .center{
+      text-align:center;
+    }
+
+    /* Blackletter heading (UnifrakturCook) */
+    .h-blackletter {
+      font-family: "UnifrakturCook", serif;
+      font-weight: 700;
+      font-style: normal;
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      letter-spacing: 0;
+      text-shadow: 0 0.8px 0 rgba(0,0,0,0.02);
+      color: #fff7e6; /* a parchment-friendly heading color */
+    }
+
+    /* Heading sizes are tuned for readability of decorative font */
+    h1{
+      margin:0 0 .5rem 0;
+      font-size:2.4rem;
+      line-height:1.05;
+    }
+
+    /* body text styling (Old Standard TT) */
+    .lead{
+      margin:0 0 1.5rem 0;
+      color:#f2ebdf; /* lightened so it reads over the texture */
+      font-size:1rem;
+      line-height:1.5;
+    }
+    .box{
+      background: rgba(255,255,255,var(--card-alpha)); /* translucent card to show texture */
+      border-radius:var(--radius);
+      padding:1rem 1.25rem;
+      box-shadow:0 6px 18px rgba(15,23,36,0.12);
+      border:1px solid rgba(11,132,255,0.06);
+      max-width:540px;
+      margin:0 auto;
+      font-family: "Old Standard TT", Georgia, "Times New Roman", serif;
+      color: var(--text);
+      backdrop-filter: blur(2px); /* subtle glass effect on supported browsers */
+    }
+    .box h2{
+      margin:0;
+      font-size:1.1rem;
+      color:var(--accent);
+      font-weight:700;
+    }
+    .box p{
+      margin:.5rem 0 0 0;
+      color:var(--muted);
+      font-size:.95rem;
+    }
+    .box-cta{
+      margin-top:1rem;
+    }
+    button{
+      background:var(--accent);
+      color:white;
+      border:none;
+      padding:.5rem 1rem;
+      border-radius:8px;
+      font-size:.95rem;
+      font-weight:500;
+      cursor:pointer;
+      transition:all 0.2s ease;
+      font-family: "Old Standard TT", Georgia, "Times New Roman", serif;
+    }
+    button:hover{
+      background:#0968d6;
+      box-shadow:0 4px 12px rgba(11,132,255,0.3);
+    }
+
+    /* Mobile adjustments */
+    @media(min-width:720px){
+      h1{font-size:3.2rem}
+    }
+    @media(max-width:720px){
+      body{ background-attachment: scroll; } /* avoid fixed on mobile */
+      .wrap{ margin:4vh 1rem; }
+      h1{ font-size:2rem; }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap center" role="main" aria-labelledby="hero-title">
+    <header>
+      <!-- UnifrakturCook heading -->
+      <h1 id="hero-title" class="h-blackletter">Welcome to World Building!</h1>
+      <!-- body text now uses Old Standard TT -->
+      <p class="lead">Create, manage, and explore the worlds you imagine.</p>
+    </header>
+
+    <section class="box" aria-labelledby="your-worlds">
+      <h2 id="your-worlds">Your Worlds</h2>
+      <p class="muted">No worlds yet — get started by creating your first world.</p>
+      <div class="box-cta">
+        <button>Create World</button>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
