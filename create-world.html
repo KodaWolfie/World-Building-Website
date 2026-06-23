@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Create a World — World Building</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&family=Old+Standard+TT:wght@400;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --accent:#0b84ff;
+      --card-alpha:0.94;
+      --radius:12px;
+      --max-width:900px;
+      --text:#0f1724;
+      --muted:#475569;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:"Old Standard TT", Georgia, 'Times New Roman', serif;
+      background: linear-gradient(180deg, rgba(7,10,12,0.22), rgba(7,10,12,0.16));
+      min-height:100vh;
+      color:var(--text);
+      -webkit-font-smoothing:antialiased;
+    }
+
+    /* Parchment background (keeps visual continuity with the site) */
+    .parchment { position: fixed; inset:0; z-index:0; pointer-events:none; }
+    .parchment .texture {
+      position:absolute; inset:0;
+      background-image:url('https://pixabay.com/images/download/x-2142182_1920.jpg');
+      background-size:cover; background-position:center;
+      filter: contrast(1.05) saturate(0.92) brightness(0.98);
+      opacity:0.98;
+    }
+    .parchment::before, .parchment::after{
+      content:""; position:absolute; top:6vh; bottom:6vh; width:12vw;
+      border-radius:40px / 8%; filter: blur(10px);
+    }
+    .parchment::before{ left:-4vw; background: linear-gradient(90deg, rgba(20,14,6,0.45), rgba(20,14,6,0.08) 40%, rgba(255,255,255,0)); transform: rotate(-2deg); }
+    .parchment::after{ right:-4vw; background: linear-gradient(270deg, rgba(20,14,6,0.45), rgba(20,14,6,0.08) 40%, rgba(255,255,255,0)); transform: rotate(2deg); }
+
+    .container{ max-width:var(--max-width); margin:5vh auto; padding:1.25rem; position:relative; z-index:1; }
+    header{ display:flex; align-items:center; justify-content:space-between; color:rgba(255,255,255,0.95); margin-bottom:1rem; }
+    .logo{ display:inline-grid; place-items:center; width:44px; height:44px; border-radius:8px; background:rgba(255,255,255,0.06); font-family:"UnifrakturCook", serif; color:#fff7e6; font-size:1.1rem; }
+    .card{ background: rgba(255,255,255,var(--card-alpha)); padding:1.25rem; border-radius:var(--radius); box-shadow:0 10px 30px rgba(2,6,23,0.28); border:1px solid rgba(11,132,255,0.06); }
+    h1{ margin:0 0 .5rem 0; font-family:"UnifrakturCook", serif; color:#221; font-size:1.9rem; }
+    .muted{ color:var(--muted); }
+
+    form{ display:grid; gap:.75rem; margin-top:.75rem; }
+    label{ font-weight:700; font-size:.95rem; display:block; margin-bottom:.25rem; }
+    input[type="text"], input[type="url"], textarea, select{
+      width:100%; padding:.6rem .75rem; border-radius:8px; border:1px solid rgba(15,23,36,0.08); font-size:.95rem; font-family:inherit;
+    }
+    textarea{ min-height:120px; resize:vertical; }
+    .row{ display:flex; gap:.75rem; }
+    .row > *{ flex:1; }
+
+    .actions{ display:flex; gap:.5rem; margin-top:.5rem; }
+    .btn{ background:var(--accent); color:#fff; padding:.6rem 1rem; border-radius:8px; border:none; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; justify-content:center; }
+    .btn.secondary{ background:transparent; color:var(--text); border:1px solid rgba(15,23,36,0.06); }
+
+    .hint{ font-size:.9rem; color:var(--muted); margin-top:.5rem; }
+
+    @media(max-width:720px){
+      .row{ flex-direction:column }
+      .parchment::before, .parchment::after{ display:none }
+    }
+  </style>
+</head>
+<body>
+  <div class="parchment" aria-hidden="true">
+    <div class="texture" role="presentation"></div>
+  </div>
+
+  <div class="container" role="main" aria-labelledby="create-title">
+    <header>
+      <div style="display:flex;gap:.75rem;align-items:center;">
+        <div class="logo" aria-hidden="true">W</div>
+        <div style="color:rgba(255,255,255,0.95); font-weight:700;">World Building</div>
+      </div>
+      <nav aria-label="Secondary navigation">
+        <a href="index.html" class="btn secondary">← Back</a>
+      </nav>
+    </header>
+
+    <section class="card" aria-labelledby="create-title">
+      <h1 id="create-title">Create a New World</h1>
+      <p class="muted">Give your world a name, a short description, and some basic metadata. You can expand details later.</p>
+
+      <!-- Note: no inline onsubmit attribute. Handler is attached in JS below. -->
+      <form id="createWorldForm" novalidate>
+        <div>
+          <label for="worldName">World Name</label>
+          <input id="worldName" name="worldName" type="text" placeholder="E.g., The Verdant Realms" required>
+        </div>
+
+        <div>
+          <label for="tagline">Short Tagline</label>
+          <input id="tagline" name="tagline" type="text" placeholder="A brief line about the world's tone or hook">
+        </div>
+
+        <div class="row" aria-label="World metadata">
+          <div>
+            <label for="genre">Genre</label>
+            <select id="genre" name="genre" aria-label="Genre">
+              <option value="fantasy">Fantasy</option>
+              <option value="sci-fi">Sci‑Fi</option>
+              <option value="historical">Historical</option>
+              <option value="modern">Modern</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div>
+            <label for="visibility">Visibility</label>
+            <select id="visibility" name="visibility" aria-label="Visibility">
+              <option value="private">Private</option>
+              <option value="public">Public</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label for="description">Short Description</label>
+          <textarea id="description" name="description" placeholder="Write a short summary of the world..."></textarea>
+        </div>
+
+        <div class="actions">
+          <button type="submit" class="btn">Create World</button>
+          <a href="index.html" class="btn secondary" role="button">Cancel</a>
+        </div>
+
+        <p id="status" class="hint" aria-live="polite"></p>
+      </form>
+    </section>
+  </div>
+
+  <script>
+    (function () {
+      // Defensive, self-contained handler to avoid "param missing" and similar vague errors.
+      const form = document.getElementById('createWorldForm');
+      const status = document.getElementById('status');
+
+      if (!form) {
+        console.error('create-world: #createWorldForm not found');
+        if (status) status.textContent = 'Internal error: form not found.';
+        return;
+      }
+
+      // Helper: safely get a field by id and report if missing
+      function getField(id) {
+        const el = document.getElementById(id);
+        if (!el) console.error('create-world: missing field', id);
+        return el;
+      }
+
+      function handleCreate(e) {
+        try {
+          // Prevent default submission when event passed
+          if (e && typeof e.preventDefault === 'function') e.preventDefault();
+
+          // Log event for debugging (useful if something calls the handler incorrectly)
+          console.debug('create-world: handleCreate called, event:', e);
+
+          // Grab and validate expected fields
+          const nameEl = getField('worldName');
+          const taglineEl = getField('tagline');
+          const genreEl = getField('genre');
+          const visEl = getField('visibility');
+          const descEl = getField('description');
+
+          const missing = [];
+          if (!nameEl) missing.push('worldName');
+          if (!taglineEl) missing.push('tagline');
+          if (!genreEl) missing.push('genre');
+          if (!visEl) missing.push('visibility');
+          if (!descEl) missing.push('description');
+
+          if (missing.length) {
+            const msg = 'Form fields missing: ' + missing.join(', ');
+            console.error(msg);
+            if (status) status.textContent = msg;
+            return false;
+          }
+
+          const name = (nameEl.value || '').trim();
+          if (!name) {
+            if (status) status.textContent = 'Please enter a world name.';
+            return false;
+          }
+
+          const world = {
+            id: 'w-' + Date.now(),
+            name,
+            tagline: (taglineEl.value || '').trim(),
+            genre: genreEl.value || '',
+            visibility: visEl.value || 'private',
+            description: (descEl.value || '').trim(),
+            createdAt: new Date().toISOString()
+          };
+
+          // Save to localStorage for this prototype
+          let list = [];
+          try {
+            list = JSON.parse(localStorage.getItem('wb_worlds') || '[]');
+            if (!Array.isArray(list)) list = [];
+          } catch (err) {
+            console.warn('create-world: localStorage parse error, resetting list', err);
+            list = [];
+          }
+          list.push(world);
+          localStorage.setItem('wb_worlds', JSON.stringify(list));
+
+          if (status) status.textContent = 'World created! Redirecting...';
+          console.info('create-world: saved', world);
+
+          // Redirect after a short delay; change target as app evolves.
+          setTimeout(() => {
+            window.location.href = 'index.html';
+          }, 900);
+
+          return false;
+        } catch (err) {
+          console.error('create-world: unexpected error', err);
+          if (status) status.textContent = 'Error creating world: ' + (err && err.message ? err.message : 'unknown');
+          return false;
+        }
+      }
+
+      // Attach handler using addEventListener (more robust than inline onsubmit)
+      form.addEventListener('submit', handleCreate);
+
+      // Optional: expose for debugging in the console
+      window.__wbCreateHandler = { handleCreate };
+    })();
+  </script>
+</body>
+</html>
