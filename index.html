@@ -152,20 +152,32 @@
 
     <section class="box" aria-labelledby="your-worlds">
       <h2 id="your-worlds">Your Worlds</h2>
-      <p class="muted">No worlds yet — get started by creating your first world.</p>
+      <p class="muted" id="description-text">No worlds yet — get started by creating your first world.</p>
       <div class="box-cta">
-        <a href="YourWorlds.html" style="text-decoration: none;">
+        <a id="worlds-link" href="CreateWorld.html" style="text-decoration: none;">
           <button id="worlds-btn">Create World</button>
         </a>
       </div>
     </section>
   </main>
 
+  <script src="supabase-config.js"></script>
   <script>
-    // TODO: Update button text based on whether user has created worlds
-    // if (userHasWorlds()) {
-    //   document.getElementById('worlds-btn').textContent = 'Your Worlds';
-    // }
+    // Check if user has worlds and update button text accordingly
+    async function updateButtonText() {
+      const worlds = await getUserWorlds();
+      const button = document.getElementById('worlds-btn');
+      const link = document.getElementById('worlds-link');
+      const description = document.getElementById('description-text');
+      
+      if (worlds.length > 0) {
+        button.textContent = 'Your Worlds';
+        link.href = 'YourWorlds.html';
+        description.textContent = 'You have ' + worlds.length + ' world(s). Explore and create more!';
+      }
+    }
+
+    window.addEventListener('load', updateButtonText);
   </script>
 </body>
 </html>

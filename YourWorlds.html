@@ -111,10 +111,12 @@
       border: 1px solid rgba(11,132,255,0.06);
       backdrop-filter: blur(2px);
       transition: all 0.2s ease;
+      cursor: pointer;
     }
 
     .world-card:hover {
       box-shadow: 0 8px 24px rgba(11,132,255,0.18);
+      transform: translateY(-2px);
     }
 
     .world-card h3 {
@@ -124,10 +126,21 @@
       font-size: 1.1rem;
     }
 
-    .world-card p {
-      margin: 0;
+    .world-card .detail {
+      margin: 0.5rem 0;
+      font-size: 0.9rem;
+    }
+
+    .world-card .label {
       color: var(--muted);
-      font-size: 0.95rem;
+      font-weight: 600;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+    }
+
+    .world-card .value {
+      color: var(--text);
+      margin-top: 0.2rem;
     }
 
     .no-worlds {
@@ -169,6 +182,13 @@
       box-shadow: 0 4px 12px rgba(11,132,255,0.3);
     }
 
+    .loading {
+      text-align: center;
+      color: #f2ebdf;
+      font-size: 1.1rem;
+      padding: 2rem;
+    }
+
     @media(max-width:720px){
       body{ background-attachment: scroll; }
       .wrap{ margin: 4vh 1rem; }
@@ -183,32 +203,77 @@
   <main class="wrap" role="main">
     <div class="header-container">
       <h1 class="h-blackletter">Your Worlds</h1>
-      <button class="add-world-btn" title="Create a new world">+</button>
+      <a href="CreateWorld.html" style="text-decoration: none;">
+        <button class="add-world-btn" title="Create a new world">+</button>
+      </a>
     </div>
 
     <!-- This section will show when user has no worlds -->
     <div class="no-worlds" id="no-worlds-section">
       <h2>No Worlds Yet</h2>
       <p>Get started by creating your first world.</p>
-      <button onclick="alert('Create World button clicked')">Create World</button>
+      <a href="CreateWorld.html" style="text-decoration: none;">
+        <button>Create World</button>
+      </a>
     </div>
 
     <!-- This section will show when user has worlds -->
     <div class="worlds-container" id="worlds-list" style="display: none;">
-      <!-- World cards will be populated here by JavaScript -->
+      <!-- World cards will be populated here -->
+    </div>
+
+    <!-- Loading indicator -->
+    <div class="loading" id="loading" style="display: none;">
+      Loading your worlds...
     </div>
   </main>
 
+  <script src="supabase-config.js"></script>
   <script>
-    // TODO: Replace this with actual logic to check if user has created worlds
-    // and populate the worlds list accordingly
-    
-    // Example: 
-    // if (userHasWorlds()) {
-    //   document.getElementById('no-worlds-section').style.display = 'none';
-    //   document.getElementById('worlds-list').style.display = 'grid';
-    //   loadUserWorlds();
-    // }
+    async function loadWorlds() {
+      document.getElementById('loading').style.display = 'block';
+
+      const worlds = await getUserWorlds();
+
+      document.getElementById('loading').style.display = 'none';
+
+      if (worlds.length === 0) {
+        // Show "No Worlds" section
+        document.getElementById('no-worlds-section').style.display = 'block';
+        document.getElementById('worlds-list').style.display = 'none';
+      } else {
+        // Show worlds list
+        document.getElementById('no-worlds-section').style.display = 'none';
+        document.getElementById('worlds-list').style.display = 'grid';
+
+        const worldsList = document.getElementById('worlds-list');
+        worldsList.innerHTML = ''; // Clear loading state
+
+        worlds.forEach(world => {
+          const card = document.createElement('div');
+          card.className = 'world-card';
+          card.onclick = () => {
+            setCurrentWorld(world.world_name, world.genre, world.theme);
+            window.location.href = 'WorldBuildingIdeas.html';
+          };
+          card.innerHTML = `
+            <h3>${world.world_name}</h3>
+            <div class="detail">
+              <div class="label">Genre</div>
+              <div class="value">${world.genre}</div>
+            </div>
+            <div class="detail">
+              <div class="label">Theme</div>
+              <div class="value">${world.theme}</div>
+            </div>
+          `;
+          worldsList.appendChild(card);
+        });
+      }
+    }
+
+    // Load worlds on page load
+    window.addEventListener('load', loadWorlds);
   </script>
 </body>
 </html>

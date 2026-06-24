@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>World Building Ideas</title>
+
+  <!-- Preconnect and Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&family=Old+Standard+TT:wght@400;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg:#f7fbff;
+      --card:#ffffff;
+      --card-alpha: 0.92;
+      --text:#0f1724;
+      --muted:#6b7280;
+      --accent:#0b84ff;
+      --radius:12px;
+      --max-width:900px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: "Old Standard TT", Georgia, "Times New Roman", serif;
+      color:var(--text);
+      -webkit-font-smoothing:antialiased;
+      background-image: url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1700&q=80');
+      background-position: center;
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      min-height: 100vh;
+      position: relative;
+    }
+
+    body::before{
+      content: "";
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.28);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .wrap{
+      max-width:var(--max-width);
+      margin:6vh auto;
+      padding:1.25rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .world-header {
+      background: rgba(255,255,255,0.92);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      box-shadow: 0 6px 18px rgba(15,23,36,0.12);
+      border: 1px solid rgba(11,132,255,0.06);
+      margin-bottom: 2rem;
+      backdrop-filter: blur(2px);
+    }
+
+    .world-header h1 {
+      margin: 0 0 0.5rem 0;
+      color: var(--accent);
+      font-size: 1.8rem;
+      font-family: "UnifrakturCook", serif;
+    }
+
+    .world-details {
+      display: flex;
+      gap: 2rem;
+      flex-wrap: wrap;
+      margin-top: 1rem;
+    }
+
+    .detail {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .detail-label {
+      color: var(--muted);
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .detail-value {
+      color: var(--text);
+      font-size: 1rem;
+      font-weight: 500;
+      margin-top: 0.25rem;
+    }
+
+    .ideas-section h2 {
+      color: #fff7e6;
+      font-family: "UnifrakturCook", serif;
+      font-size: 2rem;
+      margin: 0 0 1.5rem 0;
+      text-align: center;
+    }
+
+    .ideas-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .idea-card {
+      background: rgba(255,255,255,0.92);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      box-shadow: 0 6px 18px rgba(15,23,36,0.12);
+      border: 1px solid rgba(11,132,255,0.06);
+      backdrop-filter: blur(2px);
+      transition: all 0.2s ease;
+    }
+
+    .idea-card:hover {
+      box-shadow: 0 8px 24px rgba(11,132,255,0.18);
+      transform: translateY(-2px);
+    }
+
+    .idea-card h3 {
+      margin: 0 0 0.75rem 0;
+      color: var(--accent);
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+
+    .idea-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      margin-top: 2rem;
+    }
+
+    button {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: "Old Standard TT", Georgia, "Times New Roman", serif;
+    }
+
+    button:hover {
+      background: #0968d6;
+      box-shadow: 0 4px 12px rgba(11,132,255,0.3);
+    }
+
+    button.secondary {
+      background: var(--muted);
+    }
+
+    button.secondary:hover {
+      background: #5a6270;
+    }
+
+    @media(max-width:720px){
+      body{ background-attachment: scroll; }
+      .wrap{ margin: 4vh 1rem; }
+      .world-details {
+        flex-direction: column;
+        gap: 1rem;
+      }
+      .ideas-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap" role="main">
+    <div class="world-header">
+      <h1 id="world-name">Your World</h1>
+      <div class="world-details">
+        <div class="detail">
+          <span class="detail-label">Genre</span>
+          <span class="detail-value" id="genre-display">-</span>
+        </div>
+        <div class="detail">
+          <span class="detail-label">Theme</span>
+          <span class="detail-value" id="theme-display">-</span>
+        </div>
+      </div>
+    </div>
+
+    <section class="ideas-section">
+      <h2>World Building Ideas</h2>
+      <div class="ideas-grid" id="ideas-grid">
+        <!-- Ideas will be populated here -->
+      </div>
+    </section>
+
+    <div class="button-group">
+      <button class="secondary" onclick="window.location.href='YourWorlds.html'">View All Worlds</button>
+      <button onclick="window.location.href='index.html'">Back Home</button>
+    </div>
+  </main>
+
+  <script src="supabase-config.js"></script>
+  <script>
+    // Sample world building ideas
+    const buildingIdeas = [
+      {
+        title: "Geography & Landscape",
+        description: "Define the physical layout of your world. What mountains, rivers, forests, and deserts exist? How does geography influence civilization?"
+      },
+      {
+        title: "Political Systems",
+        description: "Establish governments, rulers, and power structures. Consider democracies, monarchies, or unique systems specific to your world."
+      },
+      {
+        title: "Magic System / Technology",
+        description: "If applicable, define how magic or advanced technology works. What are its limitations and costs?"
+      },
+      {
+        title: "History & Lore",
+        description: "Create a backstory for your world. What major events shaped it? What do people remember and celebrate?"
+      },
+      {
+        title: "Cultures & Societies",
+        description: "Develop different cultures, traditions, languages, and customs. How do groups interact?"
+      },
+      {
+        title: "Economy & Trade",
+        description: "Design economies, trade routes, and resources. What do different regions produce and need?"
+      },
+      {
+        title: "Religion & Philosophy",
+        description: "Explore belief systems, deities, spiritual practices, and moral philosophies of different groups."
+      },
+      {
+        title: "Conflicts & Tensions",
+        description: "Identify sources of conflict—between nations, ideologies, or resources. What drives the story?"
+      },
+      {
+        title: "Flora & Fauna",
+        description: "Create unique plants and animals. How do they adapt? Which are dangerous or useful?"
+      },
+      {
+        title: "Daily Life",
+        description: "Describe how ordinary people live. What do they eat, wear, and do for entertainment?"
+      }
+    ];
+
+    // Load world data and populate the page
+    function loadWorld() {
+      const world = getCurrentWorld();
+      
+      if (world) {
+        document.getElementById('world-name').textContent = world.name;
+        document.getElementById('genre-display').textContent = world.genre;
+        document.getElementById('theme-display').textContent = world.theme;
+      } else {
+        document.getElementById('world-name').textContent = "New World";
+      }
+
+      // Populate ideas
+      const ideasGrid = document.getElementById('ideas-grid');
+      buildingIdeas.forEach(idea => {
+        const card = document.createElement('div');
+        card.className = 'idea-card';
+        card.innerHTML = `
+          <h3>${idea.title}</h3>
+          <p>${idea.description}</p>
+        `;
+        ideasGrid.appendChild(card);
+      });
+    }
+
+    // Load on page load
+    window.addEventListener('load', loadWorld);
+  </script>
+</body>
+</html>
