@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Your Worlds</title>
+
+  <!-- Preconnect and Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&family=Old+Standard+TT:wght@400;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg:#f7fbff;
+      --card:#ffffff;
+      --card-alpha: 0.92;
+      --text:#0f1724;
+      --muted:#6b7280;
+      --accent:#0b84ff;
+      --radius:12px;
+      --max-width:900px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: "Old Standard TT", Georgia, "Times New Roman", serif;
+      color:var(--text);
+      -webkit-font-smoothing:antialiased;
+      background-image: url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1700&q=80');
+      background-position: center;
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      min-height: 100vh;
+      position: relative;
+    }
+
+    body::before{
+      content: "";
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.28);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .wrap{
+      max-width:var(--max-width);
+      margin:6vh auto;
+      padding:1.25rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .header-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+
+    .h-blackletter {
+      font-family: "UnifrakturCook", serif;
+      font-weight: 700;
+      font-style: normal;
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      letter-spacing: 0;
+      text-shadow: 0 0.8px 0 rgba(0,0,0,0.02);
+      color: #fff7e6;
+      margin: 0;
+      font-size: 2.4rem;
+      line-height: 1.05;
+    }
+
+    .add-world-btn {
+      background: var(--accent);
+      color: white;
+      border: none;
+      width: 50px;
+      height: 50px;
+      border-radius: 8px;
+      font-size: 1.8rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 500;
+    }
+
+    .add-world-btn:hover {
+      background: #0968d6;
+      box-shadow: 0 4px 12px rgba(11,132,255,0.3);
+    }
+
+    .worlds-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin-top: 2rem;
+    }
+
+    .world-card {
+      background: rgba(255,255,255,var(--card-alpha));
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      box-shadow: 0 6px 18px rgba(15,23,36,0.12);
+      border: 1px solid rgba(11,132,255,0.06);
+      backdrop-filter: blur(2px);
+      transition: all 0.2s ease;
+    }
+
+    .world-card:hover {
+      box-shadow: 0 8px 24px rgba(11,132,255,0.18);
+    }
+
+    .world-card h3 {
+      margin: 0 0 0.5rem 0;
+      color: var(--accent);
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+
+    .world-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .no-worlds {
+      background: rgba(255,255,255,var(--card-alpha));
+      border-radius: var(--radius);
+      padding: 2rem;
+      text-align: center;
+      box-shadow: 0 6px 18px rgba(15,23,36,0.12);
+      border: 1px solid rgba(11,132,255,0.06);
+      backdrop-filter: blur(2px);
+    }
+
+    .no-worlds h2 {
+      color: var(--accent);
+      font-size: 1.2rem;
+      margin: 0 0 1rem 0;
+    }
+
+    .no-worlds p {
+      color: var(--muted);
+      margin: 0 0 1.5rem 0;
+    }
+
+    button {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: "Old Standard TT", Georgia, "Times New Roman", serif;
+    }
+
+    button:hover {
+      background: #0968d6;
+      box-shadow: 0 4px 12px rgba(11,132,255,0.3);
+    }
+
+    @media(max-width:720px){
+      body{ background-attachment: scroll; }
+      .wrap{ margin: 4vh 1rem; }
+      .h-blackletter{ font-size: 2rem; }
+      .worlds-container {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap" role="main">
+    <div class="header-container">
+      <h1 class="h-blackletter">Your Worlds</h1>
+      <button class="add-world-btn" title="Create a new world">+</button>
+    </div>
+
+    <!-- This section will show when user has no worlds -->
+    <div class="no-worlds" id="no-worlds-section">
+      <h2>No Worlds Yet</h2>
+      <p>Get started by creating your first world.</p>
+      <button onclick="alert('Create World button clicked')">Create World</button>
+    </div>
+
+    <!-- This section will show when user has worlds -->
+    <div class="worlds-container" id="worlds-list" style="display: none;">
+      <!-- World cards will be populated here by JavaScript -->
+    </div>
+  </main>
+
+  <script>
+    // TODO: Replace this with actual logic to check if user has created worlds
+    // and populate the worlds list accordingly
+    
+    // Example: 
+    // if (userHasWorlds()) {
+    //   document.getElementById('no-worlds-section').style.display = 'none';
+    //   document.getElementById('worlds-list').style.display = 'grid';
+    //   loadUserWorlds();
+    // }
+  </script>
+</body>
+</html>
