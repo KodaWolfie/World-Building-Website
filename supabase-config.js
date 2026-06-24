@@ -2,8 +2,8 @@
 const SUPABASE_URL = 'https://ncxgjtcxymfkekmwqxta.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_g7u6v_H5QXdoOYPM4sL6hQ_r4lkZHVs';
 
-// Initialize Supabase
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+// Initialize Supabase using the window.supabase object from the CDN
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // Get user email (for now, using localStorage)
 function getUserEmail() {
@@ -26,7 +26,7 @@ async function saveWorld(worldName, genre, theme) {
   }
 
   try {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('worlds')
       .insert([
         {
@@ -44,6 +44,7 @@ async function saveWorld(worldName, genre, theme) {
     }
 
     console.log('World saved:', data);
+    alert('World created successfully!');
     return true;
   } catch (err) {
     console.error('Unexpected error:', err);
@@ -60,7 +61,7 @@ async function getUserWorlds() {
   }
 
   try {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('worlds')
       .select('*')
       .eq('user_email', userEmail)
