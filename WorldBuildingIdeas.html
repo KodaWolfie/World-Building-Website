@@ -123,6 +123,7 @@
       border: 1px solid rgba(11,132,255,0.06);
       backdrop-filter: blur(2px);
       transition: all 0.2s ease;
+      cursor: pointer;
     }
 
     .idea-card:hover {
@@ -135,6 +136,16 @@
       color: var(--accent);
       font-size: 1.1rem;
       font-weight: 700;
+    }
+
+    .idea-card h3 a {
+      color: var(--accent);
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+
+    .idea-card h3 a:hover {
+      color: #0968d6;
     }
 
     .idea-card p {
@@ -224,44 +235,64 @@
     // Sample world building ideas
     const buildingIdeas = [
       {
+        title: "World Overview/Plot Summary",
+        description: "Define the overall narrative and setting of your world. What is the main story or conflict? What time period does it take place in?",
+        link: null
+      },
+      {
+        title: "Kingdoms/Countries/Sovereignties",
+        description: "Explore the political divisions, borders, and major powers in your world. How do nations interact and compete?",
+        link: "Kingdoms.html"
+      },
+      {
         title: "Geography & Landscape",
-        description: "Define the physical layout of your world. What mountains, rivers, forests, and deserts exist? How does geography influence civilization?"
+        description: "Define the physical layout of your world. What mountains, rivers, forests, and deserts exist? How does geography influence civilization?",
+        link: null
       },
       {
         title: "Political Systems",
-        description: "Establish governments, rulers, and power structures. Consider democracies, monarchies, or unique systems specific to your world."
+        description: "Establish governments, rulers, and power structures. Consider democracies, monarchies, or unique systems specific to your world.",
+        link: null
       },
       {
         title: "Magic System / Technology",
-        description: "If applicable, define how magic or advanced technology works. What are its limitations and costs?"
+        description: "If applicable, define how magic or advanced technology works. What are its limitations and costs?",
+        link: null
       },
       {
         title: "History & Lore",
-        description: "Create a backstory for your world. What major events shaped it? What do people remember and celebrate?"
+        description: "Create a backstory for your world. What major events shaped it? What do people remember and celebrate?",
+        link: null
       },
       {
         title: "Cultures & Societies",
-        description: "Develop different cultures, traditions, languages, and customs. How do groups interact?"
+        description: "Develop different cultures, traditions, languages, and customs. How do groups interact?",
+        link: null
       },
       {
         title: "Economy & Trade",
-        description: "Design economies, trade routes, and resources. What do different regions produce and need?"
+        description: "Design economies, trade routes, and resources. What do different regions produce and need?",
+        link: null
       },
       {
         title: "Religion & Philosophy",
-        description: "Explore belief systems, deities, spiritual practices, and moral philosophies of different groups."
+        description: "Explore belief systems, deities, spiritual practices, and moral philosophies of different groups.",
+        link: null
       },
       {
         title: "Conflicts & Tensions",
-        description: "Identify sources of conflict—between nations, ideologies, or resources. What drives the story?"
+        description: "Identify sources of conflict—between nations, ideologies, or resources. What drives the story?",
+        link: null
       },
       {
         title: "Flora & Fauna",
-        description: "Create unique plants and animals. How do they adapt? Which are dangerous or useful?"
+        description: "Create unique plants and animals. How do they adapt? Which are dangerous or useful?",
+        link: null
       },
       {
         title: "Daily Life",
-        description: "Describe how ordinary people live. What do they eat, wear, and do for entertainment?"
+        description: "Describe how ordinary people live. What do they eat, wear, and do for entertainment?",
+        link: null
       }
     ];
 
@@ -282,10 +313,16 @@
       buildingIdeas.forEach(idea => {
         const card = document.createElement('div');
         card.className = 'idea-card';
-        card.innerHTML = `
-          <h3>${idea.title}</h3>
-          <p>${idea.description}</p>
-        `;
+        
+        let titleHTML;
+        if (idea.link) {
+          titleHTML = `<h3><a href="${idea.link}">${idea.title}</a></h3>`;
+          card.onclick = () => window.location.href = idea.link;
+        } else {
+          titleHTML = `<h3>${idea.title}</h3>`;
+        }
+        
+        card.innerHTML = titleHTML + `<p>${idea.description}</p>`;
         ideasGrid.appendChild(card);
       });
     }
