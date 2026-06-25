@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Kingdom Details</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&family=Old+Standard+TT:wght@400;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --card:#ffffff;
+      --card-alpha: 0.92;
+      --text:#0f1724;
+      --muted:#6b7280;
+      --accent:#0b84ff;
+      --radius:12px;
+      --max-width:900px;
+    }
+
+    *{box-sizing:border-box}
+
+    body{
+      margin:0;
+      font-family: "Old Standard TT", Georgia, "Times New Roman", serif;
+      color:var(--text);
+      -webkit-font-smoothing:antialiased;
+      background-image: url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1700&q=80');
+      background-position: center;
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      min-height: 100vh;
+      position: relative;
+    }
+
+    body::before{
+      content: "";
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.28);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .wrap{
+      max-width:var(--max-width);
+      margin:6vh auto;
+      padding:1.25rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .card {
+      background: rgba(255,255,255,var(--card-alpha));
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      box-shadow: 0 6px 18px rgba(15,23,36,0.12);
+      border: 1px solid rgba(11,132,255,0.06);
+      backdrop-filter: blur(2px);
+      margin-bottom: 1rem;
+    }
+
+    .title {
+      margin: 0;
+      color: var(--accent);
+      font-size: 2rem;
+      font-family: "UnifrakturCook", serif;
+    }
+
+    .meta {
+      color: var(--muted);
+      margin-top: 0.5rem;
+      margin-bottom: 1rem;
+      font-size: 1rem;
+    }
+
+    .description {
+      color: var(--text);
+      font-size: 1.05rem;
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    .button-row {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    button {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 0.6rem 1rem;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: "Old Standard TT", Georgia, "Times New Roman", serif;
+    }
+
+    button:hover {
+      background: #0968d6;
+      box-shadow: 0 4px 12px rgba(11,132,255,0.3);
+    }
+
+    .secondary {
+      background: var(--muted);
+    }
+
+    .secondary:hover {
+      background: #5a6270;
+      box-shadow: none;
+    }
+
+    @media(max-width:720px){
+      body{ background-attachment: scroll; }
+      .wrap{ margin: 4vh 1rem; }
+      .title{ font-size: 1.6rem; }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap" role="main">
+    <section class="card">
+      <h1 id="kingdom-name" class="title">Kingdom</h1>
+      <div id="kingdom-type" class="meta">Type: Unknown</div>
+      <p id="kingdom-description" class="description">No description available.</p>
+    </section>
+
+    <div class="button-row">
+      <button onclick="window.location.href='Kingdoms.html'">Back to Kingdoms</button>
+      <button class="secondary" onclick="window.location.href='WorldBuildingIdeas.html'">World Building Ideas</button>
+    </div>
+  </main>
+
+  <script>
+    function getQueryParam(name) {
+      const params = new URLSearchParams(window.location.search);
+      return params.get(name);
+    }
+
+    function loadKingdomDetails() {
+      const kingdomId = getQueryParam('id');
+      const storedKingdoms = localStorage.getItem('kingdoms');
+      const kingdoms = storedKingdoms ? JSON.parse(storedKingdoms) : [];
+
+      let kingdom = null;
+
+      if (kingdomId) {
+        kingdom = kingdoms.find(k => String(k.id) === String(kingdomId));
+      }
+
+      if (!kingdom) {
+        const selectedKingdom = localStorage.getItem('selectedKingdom');
+        kingdom = selectedKingdom ? JSON.parse(selectedKingdom) : null;
+      }
+
+      if (!kingdom) {
+        document.getElementById('kingdom-name').textContent = 'Kingdom Not Found';
+        document.getElementById('kingdom-type').textContent = 'Type: -';
+        document.getElementById('kingdom-description').textContent = 'This kingdom could not be found. Try returning to the kingdoms page.';
+        return;
+      }
+
+      document.title = `${kingdom.name} | Kingdom Details`;
+      document.getElementById('kingdom-name').textContent = kingdom.name;
+      document.getElementById('kingdom-type').textContent = `Type: ${kingdom.type || 'Unknown'}`;
+      document.getElementById('kingdom-description').textContent = kingdom.description || 'No description provided';
+    }
+
+    window.addEventListener('load', loadKingdomDetails);
+  </script>
+</body>
+</html>

@@ -177,6 +177,17 @@
       font-size: 0.95rem;
     }
 
+    .kingdom-link {
+      text-decoration: none;
+      color: inherit;
+      display: block;
+    }
+
+    .kingdom-link:focus-visible .kingdom-card {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
     .no-kingdoms {
       background: rgba(255,255,255,var(--card-alpha));
       border-radius: var(--radius);
@@ -371,6 +382,26 @@
   <script>
     let kingdoms = [];
 
+    // Create a URL-safe slug from a kingdom name
+    function slugify(text) {
+      return text
+        .toString()
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-');
+    }
+
+    // Save selected kingdom to localStorage and navigate to details page
+    function openKingdomPage(kingdomId) {
+      const selectedKingdom = kingdoms.find(k => String(k.id) === String(kingdomId));
+      if (!selectedKingdom) return;
+
+      localStorage.setItem('selectedKingdom', JSON.stringify(selectedKingdom));
+      window.location.href = `kingdom.html?id=${selectedKingdom.id}&name=${encodeURIComponent(slugify(selectedKingdom.name))}`;
+    }
+
     // Load world data and kingdoms
     function loadWorld() {
       const world = getCurrentWorld();
@@ -405,7 +436,16 @@
         kingdomsList.style.display = 'grid';
         kingdomsList.innerHTML = '';
 
-        kingdoms.forEach((kingdom, index) => {
+        kingdoms.forEach((kingdom) => {
+          const link = document.createElement('a');
+          link.className = 'kingdom-link';
+          link.href = `kingdom.html?id=${kingdom.id}&name=${encodeURIComponent(slugify(kingdom.name))}`;
+          link.setAttribute('aria-label', `Open ${kingdom.name}`);
+          link.addEventListener('click', (event) => {
+            event.preventDefault();
+            openKingdomPage(kingdom.id);
+          });
+
           const card = document.createElement('div');
           card.className = 'kingdom-card';
           card.innerHTML = `
@@ -413,7 +453,9 @@
             <p><strong>Type:</strong> ${kingdom.type}</p>
             <p>${kingdom.description}</p>
           `;
-          kingdomsList.appendChild(card);
+
+          link.appendChild(card);
+          kingdomsList.appendChild(link);
         });
       }
     }
