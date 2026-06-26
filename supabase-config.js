@@ -5,21 +5,33 @@ const SUPABASE_KEY = 'sb_publishable_g7u6v_H5QXdoOYPM4sL6hQ_r4lkZHVs';
 // Initialize Supabase using the window.supabase object from the CDN
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// ---------- Auth ----------
-async function signInWithEmail(email) {
-  const { error } = await supabaseClient.auth.signInWithOtp({
+// ---------- Auth (Email + Password) ----------
+async function signUpWithPassword(email, password) {
+  const { error } = await supabaseClient.auth.signUp({
     email,
-    options: {
-      emailRedirectTo: window.location.origin
-    }
+    password
   });
 
   if (error) {
-    alert('Login email failed: ' + error.message);
+    alert('Sign up failed: ' + error.message);
     return false;
   }
 
-  alert('Check your email for the login link.');
+  alert('Sign up successful. You can now log in.');
+  return true;
+}
+
+async function signInWithPassword(email, password) {
+  const { error } = await supabaseClient.auth.signInWithPassword({
+    email,
+    password
+  });
+
+  if (error) {
+    alert('Login failed: ' + error.message);
+    return false;
+  }
+
   return true;
 }
 
