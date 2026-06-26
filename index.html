@@ -17,7 +17,7 @@
     :root{
       --bg:#f7fbff;
       --card:#ffffff;
-      --card-alpha: 0.92; /* translucency for the content box */
+      --card-alpha: 0.92;
       --text:#0f1724;
       --muted:#6b7280;
       --accent:#0b84ff;
@@ -25,82 +25,61 @@
       --max-width:900px;
     }
     *{box-sizing:border-box}
-    /* Demo parchment texture URL — replace with your own if you like */
     body{
       margin:0;
       font-family: "Old Standard TT", Georgia, "Times New Roman", serif;
       color:var(--text);
       -webkit-font-smoothing:antialiased;
-
-      /* Background image (parchment / medieval texture) */
       background-image: url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1700&q=80');
       background-position: center;
       background-size: cover;
       background-repeat: no-repeat;
-      background-attachment: fixed; /* removed on small screens below for performance */
+      background-attachment: fixed;
       min-height: 100vh;
       position: relative;
     }
-
-    /* Dark overlay to keep text readable on top of the texture */
     body::before{
       content: "";
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.28); /* tweak alpha to taste (0.0 - 0.6) */
+      background: rgba(0,0,0,0.28);
       pointer-events: none;
       z-index: 0;
     }
-
     .wrap{
       max-width:var(--max-width);
       margin:6vh auto;
       padding:1.25rem;
-      position: relative; /* so it sits above the overlay */
+      position: relative;
       z-index: 1;
     }
-    .center{
-      text-align:center;
-    }
-
-    /* Blackletter heading (UnifrakturCook) */
+    .center{ text-align:center; }
     .h-blackletter {
       font-family: "UnifrakturCook", serif;
       font-weight: 700;
-      font-style: normal;
-      text-rendering: optimizeLegibility;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-      letter-spacing: 0;
-      text-shadow: 0 0.8px 0 rgba(0,0,0,0.02);
-      color: #fff7e6; /* a parchment-friendly heading color */
+      color: #fff7e6;
     }
-
-    /* Heading sizes are tuned for readability of decorative font */
     h1{
       margin:0 0 .5rem 0;
       font-size:2.4rem;
       line-height:1.05;
     }
-
-    /* body text styling (Old Standard TT) */
     .lead{
       margin:0 0 1.5rem 0;
-      color:#f2ebdf; /* lightened so it reads over the texture */
+      color:#f2ebdf;
       font-size:1rem;
       line-height:1.5;
     }
     .box{
-      background: rgba(255,255,255,var(--card-alpha)); /* translucent card to show texture */
+      background: rgba(255,255,255,var(--card-alpha));
       border-radius:var(--radius);
       padding:1rem 1.25rem;
       box-shadow:0 6px 18px rgba(15,23,36,0.12);
       border:1px solid rgba(11,132,255,0.06);
-      max-width:540px;
+      max-width:620px;
       margin:0 auto;
-      font-family: "Old Standard TT", Georgia, "Times New Roman", serif;
       color: var(--text);
-      backdrop-filter: blur(2px); /* subtle glass effect on supported browsers */
+      backdrop-filter: blur(2px);
     }
     .box h2{
       margin:0;
@@ -113,9 +92,7 @@
       color:var(--muted);
       font-size:.95rem;
     }
-    .box-cta{
-      margin-top:1rem;
-    }
+    .box-cta{ margin-top:1rem; }
     button{
       background:var(--accent);
       color:white;
@@ -133,47 +110,40 @@
       box-shadow:0 4px 12px rgba(11,132,255,0.3);
     }
 
-    .auth-row {
-      margin-top: 1rem;
-      display: flex;
-      gap: .5rem;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: center;
+    .auth-row{
+      margin-top:1rem;
+      display:flex;
+      gap:.5rem;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:center;
     }
-
-    .auth-row input {
-      padding: .5rem .75rem;
-      border: 1px solid #d1d5db;
-      border-radius: 8px;
+    .auth-row input{
+      padding:.5rem .75rem;
+      border:1px solid #d1d5db;
+      border-radius:8px;
+      min-width:220px;
       font-family: "Old Standard TT", Georgia, "Times New Roman", serif;
-      min-width: 240px;
+    }
+    #authStatus{
+      margin-top:.75rem;
+      color:var(--muted);
+      font-size:.95rem;
     }
 
-    #authStatus {
-      margin-top: .75rem;
-      color: var(--muted);
-      font-size: .95rem;
-    }
-
-    /* Mobile adjustments */
-    @media(min-width:720px){
-      h1{font-size:3.2rem}
-    }
+    @media(min-width:720px){ h1{font-size:3.2rem} }
     @media(max-width:720px){
-      body{ background-attachment: scroll; } /* avoid fixed on mobile */
+      body{ background-attachment: scroll; }
       .wrap{ margin:4vh 1rem; }
       h1{ font-size:2rem; }
-      .auth-row input { min-width: 100%; }
+      .auth-row input{ min-width:100%; }
     }
   </style>
 </head>
 <body>
   <main class="wrap center" role="main" aria-labelledby="hero-title">
     <header>
-      <!-- UnifrakturCook heading -->
       <h1 id="hero-title" class="h-blackletter">Welcome to World Building!</h1>
-      <!-- body text now uses Old Standard TT -->
       <p class="lead">Create, manage, and explore the worlds you imagine.</p>
     </header>
 
@@ -183,7 +153,9 @@
 
       <div class="auth-row">
         <input id="emailInput" type="email" placeholder="you@example.com" />
-        <button id="loginBtn" type="button">Send Login Link</button>
+        <input id="passwordInput" type="password" placeholder="password" />
+        <button id="signupBtn" type="button">Sign Up</button>
+        <button id="loginBtn" type="button">Log In</button>
         <button id="logoutBtn" type="button">Log Out</button>
       </div>
       <div id="authStatus">Checking login...</div>
@@ -204,7 +176,6 @@
         user ? `Logged in as ${user.email}` : 'Not logged in';
     }
 
-    // Check if user has worlds and update button text accordingly
     async function updateButtonText() {
       const worlds = await getUserWorlds();
       const button = document.getElementById('worlds-btn');
@@ -222,10 +193,28 @@
       }
     }
 
-    document.getElementById('loginBtn').addEventListener('click', async () => {
+    function getCredentials() {
       const email = document.getElementById('emailInput').value.trim();
-      if (!email) return alert('Please enter your email');
-      await signInWithEmail(email);
+      const password = document.getElementById('passwordInput').value;
+      if (!email) { alert('Please enter your email'); return null; }
+      if (!password || password.length < 6) { alert('Password must be at least 6 characters'); return null; }
+      return { email, password };
+    }
+
+    document.getElementById('signupBtn').addEventListener('click', async () => {
+      const creds = getCredentials();
+      if (!creds) return;
+      await signUpWithPassword(creds.email, creds.password);
+      await refreshAuthStatus();
+      await updateButtonText();
+    });
+
+    document.getElementById('loginBtn').addEventListener('click', async () => {
+      const creds = getCredentials();
+      if (!creds) return;
+      await signInWithPassword(creds.email, creds.password);
+      await refreshAuthStatus();
+      await updateButtonText();
     });
 
     document.getElementById('logoutBtn').addEventListener('click', async () => {
@@ -245,4 +234,5 @@
     });
   </script>
 </body>
+</html>
 </html>
