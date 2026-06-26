@@ -133,6 +133,29 @@
       box-shadow:0 4px 12px rgba(11,132,255,0.3);
     }
 
+    .auth-row {
+      margin-top: 1rem;
+      display: flex;
+      gap: .5rem;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .auth-row input {
+      padding: .5rem .75rem;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-family: "Old Standard TT", Georgia, "Times New Roman", serif;
+      min-width: 240px;
+    }
+
+    #authStatus {
+      margin-top: .75rem;
+      color: var(--muted);
+      font-size: .95rem;
+    }
+
     /* Mobile adjustments */
     @media(min-width:720px){
       h1{font-size:3.2rem}
@@ -141,6 +164,7 @@
       body{ background-attachment: scroll; } /* avoid fixed on mobile */
       .wrap{ margin:4vh 1rem; }
       h1{ font-size:2rem; }
+      .auth-row input { min-width: 100%; }
     }
   </style>
 </head>
@@ -156,6 +180,14 @@
     <section class="box" aria-labelledby="your-worlds">
       <h2 id="your-worlds">Your Worlds</h2>
       <p class="muted" id="description-text">No worlds yet — get started by creating your first world.</p>
+
+      <div class="auth-row">
+        <input id="emailInput" type="email" placeholder="you@example.com" />
+        <button id="loginBtn" type="button">Send Login Link</button>
+        <button id="logoutBtn" type="button">Log Out</button>
+      </div>
+      <div id="authStatus">Checking login...</div>
+
       <div class="box-cta">
         <a id="worlds-link" href="CreateWorld.html" style="text-decoration: none;">
           <button id="worlds-btn">Create World</button>
@@ -166,21 +198,51 @@
 
   <script src="supabase-config.js"></script>
   <script>
+    async function refreshAuthStatus() {
+      const user = await getCurrentUser();
+      document.getElementById('authStatus').textContent =
+        user ? `Logged in as ${user.email}` : 'Not logged in';
+    }
+
     // Check if user has worlds and update button text accordingly
     async function updateButtonText() {
       const worlds = await getUserWorlds();
       const button = document.getElementById('worlds-btn');
       const link = document.getElementById('worlds-link');
       const description = document.getElementById('description-text');
-      
+
       if (worlds.length > 0) {
         button.textContent = 'Your Worlds';
         link.href = 'YourWorlds.html';
         description.textContent = 'You have ' + worlds.length + ' world(s). Explore and create more!';
+      } else {
+        button.textContent = 'Create World';
+        link.href = 'CreateWorld.html';
+        description.textContent = 'No worlds yet — get started by creating your first world.';
       }
     }
 
-    window.addEventListener('load', updateButtonText);
+    document.getElementById('loginBtn').addEventListener('click', async () => {
+      const email = document.getElementById('emailInput').value.trim();
+      if (!email) return alert('Please enter your email');
+      await signInWithEmail(email);
+    });
+
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+      await signOut();
+      await refreshAuthStatus();
+      await updateButtonText();
+    });
+
+    supabaseClient.auth.onAuthStateChange(async () => {
+      await refreshAuthStatus();
+      await updateButtonText();
+    });
+
+    window.addEventListener('load', async () => {
+      await refreshAuthStatus();
+      await updateButtonText();
+    });
   </script>
 </body>
 </html>
