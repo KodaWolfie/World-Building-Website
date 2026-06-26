@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Country Page</title>
+  <style>
+    :root{
+      --text:#111827;
+      --muted:#6b7280;
+      --border:#d1d5db;
+      --accent:#2563eb;
+      --bg:#ffffff;
+    }
+
+    *{ box-sizing:border-box; }
+
+    body{
+      margin:0;
+      font-family: Arial, Helvetica, sans-serif;
+      color:var(--text);
+      background: var(--bg); /* minimal background */
+    }
+
+    .page{
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    .topbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      margin-bottom:12px;
+    }
+
+    .topbar h1{
+      margin:0;
+      font-size:1.6rem;
+    }
+
+    .topbar a{
+      color:var(--accent);
+      text-decoration:none;
+      font-weight:600;
+    }
+
+    .hint{
+      color:var(--muted);
+      margin:0 0 14px 0;
+      font-size:.95rem;
+    }
+
+    .accordion{
+      border:1px solid var(--border);
+      border-radius:10px;
+      overflow:hidden;
+    }
+
+    details{
+      border-bottom:1px solid var(--border);
+      background:#fff;
+    }
+    details:last-child{ border-bottom:none; }
+
+    summary{
+      list-style:none;
+      cursor:pointer;
+      padding:14px 16px;
+      font-weight:700;
+      font-size:1rem;
+      user-select:none;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
+    summary::-webkit-details-marker{ display:none; }
+
+    summary::after{
+      content:"+";
+      color:var(--muted);
+      font-size:1.1rem;
+      line-height:1;
+    }
+    details[open] summary::after{
+      content:"−";
+      color:var(--accent);
+    }
+
+    .section-body{
+      padding: 0 16px 16px 16px;
+    }
+
+    textarea{
+      width:100%;
+      min-height:220px; /* lots of writing room */
+      resize:vertical;
+      border:1px solid var(--border);
+      border-radius:8px;
+      padding:10px;
+      font: inherit;
+      line-height:1.45;
+      background:#fff;
+    }
+
+    .actions{
+      display:flex;
+      gap:10px;
+      margin-top:14px;
+      flex-wrap:wrap;
+    }
+
+    button{
+      border:1px solid var(--border);
+      background:#fff;
+      color:var(--text);
+      padding:10px 14px;
+      border-radius:8px;
+      cursor:pointer;
+      font-weight:600;
+    }
+    .primary{
+      background:var(--accent);
+      color:#fff;
+      border-color:var(--accent);
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <div class="topbar">
+      <h1 id="countryTitle">Country Name</h1>
+      <a href="Kingdoms.html">← Back to Kingdoms</a>
+    </div>
+    <p class="hint">Expand each header and write as much as you want. Content auto-saves in your browser.</p>
+
+    <section class="accordion" id="countryAccordion"></section>
+
+    <div class="actions">
+      <button class="primary" id="saveBtn">Save</button>
+      <button id="expandAllBtn">Expand All</button>
+      <button id="collapseAllBtn">Collapse All</button>
+      <button id="clearBtn">Clear All</button>
+    </div>
+  </main>
+
+  <script>
+    // 19 headers
+    const SECTION_TITLES = [
+      "1. Georgraphy + Ecosystems",
+      "2. Natural Resources and Climate",
+      "3. Flora and Fauna",
+      "4. Race/Species (of society) + Daily Life",
+      "5. Food and Cuisine",
+      "6. Fashion and Attire",
+      "7. Culture(s) and Religion(s)",
+      "8. Language, Writing System, Communications",
+      "9. Art, Literature, Entertainment",
+      "10. Education and Knowledge",
+      "11. Calendar, Times, and Seasons",
+      "12. Transportation, Technology, Innovations",
+      "13. Economics + Trade",
+      "14. Foreign Relations and Politics",
+      "15. Symbols and Iconography",
+      "16. Government/Power",
+      "17. Military and Threats (Climate/Societal)",
+      "18. Social Hierarchy and Class Structure",
+      "19. Laws, Crimes, Punishment",
+      "20. History and War(s)",
+      "21. Relation to Magic System"
+    ];
+
+    const countryName = localStorage.getItem("selectedCountryName") || "Country Name";
+    document.getElementById("countryTitle").textContent = countryName;
+
+    const storageKey = `countryNotes:${countryName}`;
+    const accordion = document.getElementById("countryAccordion");
+
+    function renderSections(saved = {}) {
+      accordion.innerHTML = "";
+      SECTION_TITLES.forEach((title, i) => {
+        const id = `section_${i}`;
+        const details = document.createElement("details");
+        details.innerHTML = `
+          <summary>${title}</summary>
+          <div class="section-body">
+            <textarea id="${id}" placeholder="Write here...">${saved[id] || ""}</textarea>
+          </div>
+        `;
+        accordion.appendChild(details);
+      });
+    }
+
+    function collectData() {
+      const data = {};
+      SECTION_TITLES.forEach((_, i) => {
+        const id = `section_${i}`;
+        data[id] = document.getElementById(id)?.value || "";
+      });
+      return data;
+    }
+
+    function saveData() {
+      localStorage.setItem(storageKey, JSON.stringify(collectData()));
+      alert("Saved!");
+    }
+
+    function loadData() {
+      try {
+        return JSON.parse(localStorage.getItem(storageKey) || "{}");
+      } catch {
+        return {};
+      }
+    }
+
+    document.getElementById("saveBtn").addEventListener("click", saveData);
+    document.getElementById("expandAllBtn").addEventListener("click", () => {
+      document.querySelectorAll("details").forEach(d => d.open = true);
+    });
+    document.getElementById("collapseAllBtn").addEventListener("click", () => {
+      document.querySelectorAll("details").forEach(d => d.open = false);
+    });
+    document.getElementById("clearBtn").addEventListener("click", () => {
+      if (!confirm("Clear all sections for this country?")) return;
+      localStorage.removeItem(storageKey);
+      renderSections({});
+    });
+
+    // Auto-save while typing
+    document.addEventListener("input", (e) => {
+      if (e.target.tagName === "TEXTAREA") {
+        localStorage.setItem(storageKey, JSON.stringify(collectData()));
+      }
+    });
+
+    renderSections(loadData());
+  </script>
+</body>
+</html>
