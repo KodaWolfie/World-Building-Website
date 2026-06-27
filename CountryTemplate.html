@@ -143,6 +143,81 @@
       <button id="expandAllBtn">Expand All</button>
       <button id="collapseAllBtn">Collapse All</button>
       <button id="clearBtn">Clear All</button>
+      <script>
+  const imageInput = document.getElementById("imageInput");
+  const imageGallery = document.getElementById("imageGallery");
+  const imagesKey = `countryImages:${countryName}`;
+
+  function loadImages() {
+    try {
+      return JSON.parse(localStorage.getItem(imagesKey) || "[]");
+    } catch {
+      return [];
+    }
+  }
+
+  function saveImages(images) {
+    localStorage.setItem(imagesKey, JSON.stringify(images));
+  }
+
+  function renderImages() {
+    const images = loadImages();
+    imageGallery.innerHTML = "";
+    images.forEach((src, index) => {
+      const wrap = document.createElement("div");
+      wrap.style.border = "1px solid #d1d5db";
+      wrap.style.borderRadius = "8px";
+      wrap.style.padding = "8px";
+      wrap.style.background = "#fff";
+
+      const img = document.createElement("img");
+      img.src = src;
+      img.alt = `Country reference ${index + 1}`;
+      img.style.width = "100%";
+      img.style.height = "150px";
+      img.style.objectFit = "cover";
+      img.style.borderRadius = "6px";
+
+      const del = document.createElement("button");
+      del.textContent = "Delete";
+      del.style.marginTop = "8px";
+      del.addEventListener("click", () => {
+        const updated = loadImages().filter((_, i) => i !== index);
+        saveImages(updated);
+        renderImages();
+      });
+
+      wrap.appendChild(img);
+      wrap.appendChild(del);
+      imageGallery.appendChild(wrap);
+    });
+  }
+
+  imageInput.addEventListener("change", async (e) => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+
+    const current = loadImages();
+
+    for (const file of files) {
+      if (!file.type.startsWith("image/")) continue;
+
+      const reader = new FileReader();
+      const dataUrl = await new Promise((resolve) => {
+        reader.onload = () => resolve(reader.result);
+        reader.readAsDataURL(file);
+      });
+
+      current.push(dataUrl);
+    }
+
+    saveImages(current);
+    renderImages();
+    imageInput.value = "";
+  });
+
+  renderImages();
+</script>
     </div>
   </main>
 
