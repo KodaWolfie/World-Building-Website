@@ -111,3 +111,8 @@ function getCurrentWorld() {
   const world = localStorage.getItem('currentWorld');
   return world ? JSON.parse(world) : null;
 }
+
+//---- Photos Countries Clients Stuff ------
+const supabaseUrl = "YOUR_SUPABASE_URL";
+const supabaseKey = "YOUR_SUPABASE_ANON_KEY";
+window.supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
