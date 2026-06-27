@@ -143,17 +143,9 @@
       <button id="expandAllBtn">Expand All</button>
       <button id="collapseAllBtn">Collapse All</button>
       <button id="clearBtn">Clear All</button>
-      <section style="margin-top:20px;">
-  <h2 style="margin:0 0 10px 0;">Image Gallery</h2>
-  <input id="imageInput" type="file" accept="image/*" multiple />
-  <div id="uploadStatus" style="margin-top:8px;color:#6b7280;"></div>
-  <div id="imageGallery" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-top:12px;"></div>
-</section>
     </div>
   </main>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="supabase-config.js"></script>
   <script>
     // 19 headers
     const SECTION_TITLES = [
@@ -244,123 +236,6 @@
     });
 
     renderSections(loadData());
-    <script>
-  const imageInput = document.getElementById("imageInput");
-  const imageGallery = document.getElementById("imageGallery");
-  const uploadStatus = document.getElementById("uploadStatus");
-
-  // Use kingdom/country identity already on page
-  const countryIdFromUrl = new URLSearchParams(window.location.search).get("id") || "unknown";
-  const safeCountryName = (countryName || "country").replace(/[^a-z0-9-_]/gi, "_");
-  const folderPath = `${safeCountryName}_${countryIdFromUrl}`;
-
-  function setStatus(msg, isError = false) {
-    uploadStatus.textContent = msg;
-    uploadStatus.style.color = isError ? "#b91c1c" : "#6b7280";
-  }
-
-  async function uploadImage(file) {
-    const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
-    const filename = `${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
-    const path = `${folderPath}/${filename}`;
-
-    const { error } = await window.supabase.storage
-      .from("country-images")
-      .upload(path, file, { upsert: false });
-
-    if (error) throw error;
-    return path;
-  }
-
-  function getPublicUrl(path) {
-    const { data } = window.supabase.storage.from("country-images").getPublicUrl(path);
-    return data.publicUrl;
-  }
-
-  async function listImages() {
-    const { data, error } = await window.supabase.storage
-      .from("country-images")
-      .list(folderPath, { limit: 100, sortBy: { column: "name", order: "desc" } });
-
-    if (error) throw error;
-    return data || [];
-  }
-
-  async function deleteImage(path) {
-    const { error } = await window.supabase.storage.from("country-images").remove([path]);
-    if (error) throw error;
-  }
-
-  async function renderImages() {
-    imageGallery.innerHTML = "";
-    try {
-      const files = await listImages();
-
-      if (!files.length) {
-        imageGallery.innerHTML = `<p style="color:#6b7280;margin:0;">No images yet.</p>`;
-        return;
-      }
-
-      files.forEach((file) => {
-        const fullPath = `${folderPath}/${file.name}`;
-        const url = getPublicUrl(fullPath);
-
-        const card = document.createElement("div");
-        card.style.border = "1px solid #d1d5db";
-        card.style.borderRadius = "8px";
-        card.style.padding = "8px";
-        card.style.background = "#fff";
-
-        const img = document.createElement("img");
-        img.src = url;
-        img.alt = file.name;
-        img.style.width = "100%";
-        img.style.height = "150px";
-        img.style.objectFit = "cover";
-        img.style.borderRadius = "6px";
-
-        const del = document.createElement("button");
-        del.textContent = "Delete";
-        del.style.marginTop = "8px";
-        del.addEventListener("click", async () => {
-          try {
-            await deleteImage(fullPath);
-            await renderImages();
-          } catch (err) {
-            setStatus(`Delete failed: ${err.message}`, true);
-          }
-        });
-
-        card.appendChild(img);
-        card.appendChild(del);
-        imageGallery.appendChild(card);
-      });
-    } catch (err) {
-      setStatus(`Could not load images: ${err.message}`, true);
-    }
-  }
-
-  imageInput.addEventListener("change", async (e) => {
-    const files = Array.from(e.target.files || []);
-    if (!files.length) return;
-
-    try {
-      setStatus("Uploading...");
-      for (const file of files) {
-        if (!file.type.startsWith("image/")) continue;
-        await uploadImage(file);
-      }
-      setStatus("Upload complete.");
-      imageInput.value = "";
-      await renderImages();
-    } catch (err) {
-      setStatus(`Upload failed: ${err.message}`, true);
-    }
-  });
-
-  // call this once after page setup
-  renderImages();
-</script>
   </script>
 </body>
 </html>
