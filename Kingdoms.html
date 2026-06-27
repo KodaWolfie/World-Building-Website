@@ -399,7 +399,7 @@
       if (!selectedKingdom) return;
 
       localStorage.setItem('selectedKingdom', JSON.stringify(selectedKingdom));
-      window.location.href = `countries/CountryTemplate.html?id=${selectedKingdom.id}&name=${encodeURIComponent(slugify(selectedKingdom.name))}`;
+      window.location.href = `CountryTemplate.html?id=${selectedKingdom.id}&name=${encodeURIComponent(slugify(selectedKingdom.name))}`;
     }
 
     // Load world data and kingdoms
