@@ -9,268 +9,169 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&family=Old+Standard+TT:wght@400;700&display=swap" rel="stylesheet">
 
+  <!-- Shared theme -->
+  <link rel="stylesheet" href="theme.css?v=13">
+
   <style>
-    :root{
-      --bg:#f7fbff;
-      --card:#ffffff;
-      --card-alpha: 0.92;
-      --text:#0f1724;
-      --muted:#6b7280;
-      --accent:#0b84ff;
-      --radius:12px;
-      --max-width:900px;
-    }
-    *{box-sizing:border-box}
-    body{
+    /* Layout-only styles; colors come from theme.css */
+    .page-title{
       margin:0;
-      font-family: "Old Standard TT", Georgia, "Times New Roman", serif;
       color:var(--text);
-      background-image: url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1700&q=80');
-      background-position: center;
-      background-size: cover;
-      background-repeat: no-repeat;
-      background-attachment: fixed;
-      min-height: 100vh;
-      position: relative;
+      font-family:"UnifrakturCook", serif;
+      font-size:clamp(1.8rem,3vw,2.4rem);
+      line-height:1.1;
     }
 
-    body::before{
-      content: "";
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.28);
-      pointer-events: none;
-      z-index: 0;
+    .header-container{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:1rem;
+      gap:.75rem;
+      flex-wrap:wrap;
     }
 
-    .wrap{
-      max-width:var(--max-width);
-      margin:6vh auto;
-      padding:1.25rem;
-      position: relative;
-      z-index: 1;
+    .characters-container{
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(250px,1fr));
+      gap:1rem;
+      margin-top:1rem;
     }
 
-    .top-links{
-      margin-bottom: 1rem;
-    }
-    .top-links a{
-      color:#fff7e6;
+    .character-link{
       text-decoration:none;
+      color:inherit;
+      display:block;
+    }
+
+    .character-link:focus-visible .card{
+      outline:2px solid var(--primary);
+      outline-offset:2px;
+    }
+
+    .character-name{
+      margin:0 0 .5rem 0;
+      color:var(--text);
+      font-weight:700;
+      font-size:1.1rem;
+    }
+
+    .character-text{
+      margin:.25rem 0;
+      color:var(--muted);
+      font-size:.95rem;
+    }
+
+    .empty-state{
+      padding:22px;
+      text-align:center;
+    }
+
+    .empty-state h2{
+      margin-top:0;
+      color:var(--text);
+    }
+
+    .empty-state p{
+      color:var(--muted);
+      margin:0 0 1rem 0;
+    }
+
+    /* Modal */
+    .modal{
+      display:none;
+      position:fixed;
+      z-index:1000;
+      inset:0;
+      background-color:rgba(0,0,0,0.5);
+      padding:16px;
+    }
+
+    .modal-content{
+      background:var(--surface-strong);
+      border:1px solid var(--border);
+      border-radius:14px;
+      width:min(520px,100%);
+      margin:5vh auto 0 auto;
+      padding:1.25rem;
+      box-shadow:var(--shadow);
+    }
+
+    .modal-header{
+      font-size:1.4rem;
+      color:var(--text);
+      font-weight:700;
+      margin-bottom:1rem;
+      font-family:"UnifrakturCook", serif;
+    }
+
+    .form-group{ margin-bottom:1rem; }
+
+    .form-group label{
+      display:block;
+      margin-bottom:.45rem;
+      color:var(--text);
       font-weight:700;
     }
 
-    .header-container {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 2rem;
-    }
-
-    .h-blackletter {
-      font-family: "UnifrakturCook", serif;
-      font-weight: 700;
-      color: #fff7e6;
-      margin: 0;
-      font-size: 2.4rem;
-      line-height: 1.05;
-    }
-
-    .add-character-btn {
-      background: var(--accent);
-      color: white;
-      border: none;
-      width: 50px;
-      height: 50px;
-      border-radius: 8px;
-      font-size: 1.8rem;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 500;
-    }
-
-    .add-character-btn:hover {
-      background: #0968d6;
-      box-shadow: 0 4px 12px rgba(11,132,255,0.3);
-    }
-
-    .characters-container {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-      gap: 1.5rem;
-      margin-top: 2rem;
-    }
-
-    .character-card {
-      background: rgba(255,255,255,var(--card-alpha));
-      border-radius: var(--radius);
-      padding: 1.5rem;
-      box-shadow: 0 6px 18px rgba(15,23,36,0.12);
-      border: 1px solid rgba(11,132,255,0.06);
-      backdrop-filter: blur(2px);
-      transition: all 0.2s ease;
-    }
-
-    .character-card:hover {
-      box-shadow: 0 8px 24px rgba(11,132,255,0.18);
-    }
-
-    .character-card h3 {
-      margin: 0 0 0.5rem 0;
-      color: var(--accent);
-      font-weight: 700;
-      font-size: 1.1rem;
-    }
-
-    .character-card p {
-      margin: 0.25rem 0;
-      color: var(--muted);
-      font-size: 0.95rem;
-    }
-
-    .character-link {
-      text-decoration: none;
-      color: inherit;
-      display: block;
-    }
-
-    .no-characters {
-      background: rgba(255,255,255,var(--card-alpha));
-      border-radius: var(--radius);
-      padding: 2rem;
-      text-align: center;
-      box-shadow: 0 6px 18px rgba(15,23,36,0.12);
-      border: 1px solid rgba(11,132,255,0.06);
-      backdrop-filter: blur(2px);
-    }
-
-    .no-characters h2 {
-      color: var(--accent);
-      font-size: 1.2rem;
-      margin: 0 0 1rem 0;
-    }
-
-    .no-characters p {
-      color: var(--muted);
-      margin: 0 0 1.5rem 0;
-    }
-
-    button {
-      background: var(--accent);
-      color: white;
-      border: none;
-      padding: 0.5rem 1rem;
-      border-radius: 8px;
-      font-size: 0.95rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      font-family: "Old Standard TT", Georgia, "Times New Roman", serif;
-    }
-
-    button:hover {
-      background: #0968d6;
-      box-shadow: 0 4px 12px rgba(11,132,255,0.3);
-    }
-
-    .modal {
-      display: none;
-      position: fixed;
-      z-index: 1000;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0,0,0,0.4);
-    }
-
-    .modal-content {
-      background-color: var(--card);
-      margin: 5% auto;
-      padding: 2rem;
-      border-radius: var(--radius);
-      width: 90%;
-      max-width: 500px;
-      box-shadow: 0 8px 24px rgba(15,23,36,0.2);
-    }
-
-    .modal-header {
-      font-size: 1.5rem;
-      color: var(--accent);
-      font-weight: 700;
-      margin-bottom: 1rem;
-      font-family: "UnifrakturCook", serif;
-    }
-
-    .form-group {
-      margin-bottom: 1rem;
-    }
-
-    .form-group label {
-      display: block;
-      margin-bottom: 0.5rem;
-      color: var(--text);
-      font-weight: 600;
-    }
-
     .form-group input,
-    .form-group textarea {
-      width: 100%;
-      padding: 0.75rem;
-      border: 1px solid rgba(11,132,255,0.2);
-      border-radius: 8px;
-      font-family: "Old Standard TT", Georgia, "Times New Roman", serif;
-      font-size: 0.95rem;
-      box-sizing: border-box;
+    .form-group textarea{
+      width:100%;
+      padding:.75rem;
+      border:1px solid var(--border);
+      border-radius:10px;
+      font-family:"Old Standard TT", Georgia, "Times New Roman", serif;
+      font-size:.95rem;
+      box-sizing:border-box;
+      background:rgba(10,26,110,0.85);
+      color:var(--text);
     }
 
-    .form-group textarea {
-      resize: vertical;
-      min-height: 80px;
+    .form-group input::placeholder,
+    .form-group textarea::placeholder{
+      color:rgba(255,230,109,.75);
     }
 
-    .modal-buttons {
-      display: flex;
-      gap: 1rem;
-      justify-content: flex-end;
-      margin-top: 1.5rem;
+    .form-group textarea{
+      resize:vertical;
+      min-height:90px;
     }
 
-    .close-btn { background: var(--muted); }
-    .close-btn:hover { background: #5a6270; }
+    .modal-buttons{
+      display:flex;
+      gap:.75rem;
+      justify-content:flex-end;
+      margin-top:1.25rem;
+      flex-wrap:wrap;
+    }
 
-    @media(max-width:720px){
-      body{ background-attachment: scroll; }
-      .wrap{ margin: 4vh 1rem; }
-      .h-blackletter{ font-size: 2rem; }
-      .characters-container { grid-template-columns: 1fr; }
+    @media (max-width:720px){
+      .characters-container{ grid-template-columns:1fr; }
+      .modal-content{ margin-top:3vh; }
     }
   </style>
 </head>
 <body>
-  <main class="wrap" role="main">
-    <div class="top-links">
-      <a href="WorldBuildingIdeas.html">← Return to World Ideas</a>
+  <main class="container" role="main">
+    <div style="margin-bottom:12px;">
+      <a class="link-back" href="WorldBuildingIdeas.html">← Return to World Ideas</a>
     </div>
 
-    <div class="header-container">
-      <h1 class="h-blackletter">Characters</h1>
-      <button class="add-character-btn" title="Create a new character" onclick="openCharacterModal()">+</button>
-    </div>
+    <section class="section-row header-container">
+      <h1 class="page-title">Characters</h1>
+      <button class="btn btn-primary" title="Create a new character" onclick="openCharacterModal()">+ New</button>
+    </section>
 
-    <div class="no-characters" id="no-characters-section">
+    <section class="glass empty-state" id="no-characters-section">
       <h2>No Characters Yet</h2>
       <p>Get started by creating your first character.</p>
-      <button onclick="openCharacterModal()">Create Character</button>
-    </div>
+      <button class="btn btn-primary" onclick="openCharacterModal()">Create Character</button>
+    </section>
 
-    <div class="characters-container" id="characters-list" style="display:none;"></div>
+    <section class="characters-container" id="characters-list" style="display:none;"></section>
   </main>
 
-  <div id="characterModal" class="modal">
+  <div id="characterModal" class="modal" aria-hidden="true">
     <div class="modal-content">
       <div class="modal-header">Create a New Character</div>
 
@@ -290,8 +191,8 @@
       </div>
 
       <div class="modal-buttons">
-        <button class="close-btn" onclick="closeCharacterModal()">Cancel</button>
-        <button onclick="saveCharacter()">Create Character</button>
+        <button class="btn btn-muted" onclick="closeCharacterModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveCharacter()">Create Character</button>
       </div>
     </div>
   </div>
@@ -301,8 +202,8 @@
 
     function slugify(text) {
       return text.toString().toLowerCase().trim()
-        .replace(/[^a-z0-9\\s-]/g, '')
-        .replace(/\\s+/g, '-')
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
         .replace(/-+/g, '-');
     }
 
@@ -327,37 +228,40 @@
       if (characters.length === 0) {
         noCharactersSection.style.display = 'block';
         charactersList.style.display = 'none';
-      } else {
-        noCharactersSection.style.display = 'none';
-        charactersList.style.display = 'grid';
         charactersList.innerHTML = '';
-
-        characters.forEach((character) => {
-          const link = document.createElement('a');
-          link.className = 'character-link';
-          link.href = `character.html?id=${character.id}&name=${encodeURIComponent(slugify(character.name))}`;
-          link.setAttribute('aria-label', `Open ${character.name}`);
-          link.addEventListener('click', (event) => {
-            event.preventDefault();
-            openCharacterPage(character.id);
-          });
-
-          const card = document.createElement('div');
-          card.className = 'character-card';
-          card.innerHTML = `
-            <h3>${character.name}</h3>
-            <p><strong>Role:</strong> ${character.role || 'Unknown'}</p>
-            <p>${character.description || 'No description provided'}</p>
-          `;
-
-          link.appendChild(card);
-          charactersList.appendChild(link);
-        });
+        return;
       }
+
+      noCharactersSection.style.display = 'none';
+      charactersList.style.display = 'grid';
+      charactersList.innerHTML = '';
+
+      characters.forEach((character) => {
+        const link = document.createElement('a');
+        link.className = 'character-link';
+        link.href = `character.html?id=${character.id}&name=${encodeURIComponent(slugify(character.name))}`;
+        link.setAttribute('aria-label', `Open ${character.name}`);
+        link.addEventListener('click', (event) => {
+          event.preventDefault();
+          openCharacterPage(character.id);
+        });
+
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <h3 class="character-name">${character.name}</h3>
+          <p class="character-text"><strong>Role:</strong> ${character.role || 'Unknown'}</p>
+          <p class="character-text">${character.description || 'No description provided'}</p>
+        `;
+
+        link.appendChild(card);
+        charactersList.appendChild(link);
+      });
     }
 
     function openCharacterModal() {
       document.getElementById('characterModal').style.display = 'block';
+      document.getElementById('characterModal').setAttribute('aria-hidden', 'false');
       document.getElementById('character-name').value = '';
       document.getElementById('character-role').value = '';
       document.getElementById('character-description').value = '';
@@ -365,6 +269,7 @@
 
     function closeCharacterModal() {
       document.getElementById('characterModal').style.display = 'none';
+      document.getElementById('characterModal').setAttribute('aria-hidden', 'true');
     }
 
     function saveCharacter() {
@@ -393,10 +298,10 @@
 
     window.onclick = function(event) {
       const modal = document.getElementById('characterModal');
-      if (event.target == modal) {
-        modal.style.display = 'none';
+      if (event.target === modal) {
+        closeCharacterModal();
       }
-    }
+    };
 
     window.addEventListener('load', loadCharacters);
   </script>
