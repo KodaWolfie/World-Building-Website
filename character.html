@@ -20,7 +20,7 @@
       background:var(--bg);
     }
     .wrap{
-      max-width:900px;
+      max-width:980px;
       margin:32px auto;
       padding:0 16px;
     }
@@ -30,6 +30,7 @@
       align-items:center;
       margin-bottom:12px;
       gap:12px;
+      flex-wrap:wrap;
     }
     .topbar a{
       color:var(--accent);
@@ -44,22 +45,81 @@
       background:#fff;
     }
     h1{margin:0 0 6px 0}
+    h2{margin:0 0 10px 0}
     .muted{color:var(--muted);margin:0}
+
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+      gap:10px;
+      margin-top:10px;
+    }
+    .field label{
+      display:block;
+      font-size:.86rem;
+      color:var(--muted);
+      margin-bottom:4px;
+      font-weight:600;
+      text-transform:uppercase;
+      letter-spacing:.3px;
+    }
+    .field input{
+      width:100%;
+      border:1px solid var(--border);
+      border-radius:8px;
+      padding:9px 10px;
+      font:inherit;
+    }
+
+    .accordion{
+      border:1px solid var(--border);
+      border-radius:10px;
+      overflow:hidden;
+      margin-top:8px;
+    }
+    details{
+      border-bottom:1px solid var(--border);
+      background:#fff;
+    }
+    details:last-child{border-bottom:none;}
+    summary{
+      list-style:none;
+      cursor:pointer;
+      padding:12px 14px;
+      font-weight:700;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
+    summary::-webkit-details-marker{display:none;}
+    summary::after{
+      content:"+";
+      color:var(--muted);
+      font-size:1.1rem;
+    }
+    details[open] summary::after{
+      content:"−";
+      color:var(--accent);
+    }
+    .section-body{
+      padding:0 14px 14px 14px;
+    }
     textarea{
       width:100%;
-      min-height:220px;
+      min-height:160px;
       resize:vertical;
       border:1px solid var(--border);
       border-radius:8px;
       padding:10px;
       font:inherit;
-      margin-top:10px;
       line-height:1.45;
+      margin-top:8px;
     }
+
     .actions{
       display:flex;
       gap:10px;
-      margin-top:10px;
+      margin-top:12px;
       flex-wrap:wrap;
     }
     button{
@@ -91,17 +151,55 @@
     </section>
 
     <section class="card">
-      <h2 style="margin:0;">Character Notes</h2>
-      <p class="muted">These notes auto-save in your browser for this character.</p>
-      <textarea id="character-notes" placeholder="Write character backstory, goals, secrets, relationships, arc, etc..."></textarea>
+      <h2>Quick Profile (Short Answers)</h2>
+      <p class="muted">Always visible, quick-reference facts.</p>
+
+      <div class="grid">
+        <div class="field"><label>Age</label><input id="q_age" type="text" placeholder="e.g., 27"></div>
+        <div class="field"><label>Pronouns</label><input id="q_pronouns" type="text" placeholder="e.g., she/her"></div>
+        <div class="field"><label>Occupation</label><input id="q_occupation" type="text"></div>
+        <div class="field"><label>Species / Race</label><input id="q_species" type="text"></div>
+        <div class="field"><label>Homeland</label><input id="q_homeland" type="text"></div>
+        <div class="field"><label>Affiliation</label><input id="q_affiliation" type="text"></div>
+        <div class="field"><label>Core Goal</label><input id="q_goal" type="text"></div>
+        <div class="field"><label>Greatest Fear</label><input id="q_fear" type="text"></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Important Questions (Collapsible)</h2>
+      <p class="muted">Use these for deep character development.</p>
+
+      <div class="accordion" id="deepAccordion"></div>
+
       <div class="actions">
-        <button class="primary" id="saveBtn">Save Notes</button>
-        <button id="clearBtn">Clear Notes</button>
+        <button class="primary" id="saveBtn">Save All</button>
+        <button id="expandAllBtn">Expand All</button>
+        <button id="collapseAllBtn">Collapse All</button>
+        <button id="clearBtn">Clear All</button>
       </div>
     </section>
   </main>
 
   <script>
+    const DEEP_TITLES = [
+      "1) Backstory: What key events shaped this character?",
+      "2) Internal Conflict: What do they want vs what do they need?",
+      "3) External Conflict: What opposes them in the world?",
+      "4) Relationships: Who matters most and why?",
+      "5) Moral Boundaries: What line will they not cross?",
+      "6) Secrets: What are they hiding?",
+      "7) Character Arc: How will they change by the end?",
+      "8) Voice & Mannerisms: How do they speak and behave?",
+      "9) Strengths & Weaknesses: What helps and hurts them?",
+      "10) Symbolism: Any objects/colors/themes tied to them?"
+    ];
+
+    const QUICK_IDS = [
+      "q_age","q_pronouns","q_occupation","q_species",
+      "q_homeland","q_affiliation","q_goal","q_fear"
+    ];
+
     function getQueryParam(name) {
       const params = new URLSearchParams(window.location.search);
       return params.get(name);
@@ -113,11 +211,7 @@
       const characters = storedCharacters ? JSON.parse(storedCharacters) : [];
 
       let character = null;
-
-      if (characterId) {
-        character = characters.find(c => String(c.id) === String(characterId));
-      }
-
+      if (characterId) character = characters.find(c => String(c.id) === String(characterId));
       if (!character) {
         const selectedCharacter = localStorage.getItem('selectedCharacter');
         character = selectedCharacter ? JSON.parse(selectedCharacter) : null;
@@ -126,7 +220,8 @@
       if (!character) {
         document.getElementById('character-name').textContent = 'Character Not Found';
         document.getElementById('character-role').textContent = 'Role: -';
-        document.getElementById('character-description').textContent = 'This character could not be found. Return to Characters page.';
+        document.getElementById('character-description').textContent =
+          'This character could not be found. Return to Characters page.';
         return null;
       }
 
@@ -134,50 +229,94 @@
       document.getElementById('character-name').textContent = character.name;
       document.getElementById('character-role').textContent = `Role: ${character.role || 'Unknown'}`;
       document.getElementById('character-description').textContent = character.description || 'No description provided';
-
       return character;
     }
 
-    function notesKey(character) {
-      return `characterNotes:${character.id}:${character.name}`;
+    function makeStorageKey(character) {
+      return `characterProfile:${character.id}:${character.name}`;
     }
 
-    function loadNotes(character) {
-      const key = notesKey(character);
+    function renderDeepSections(savedDeep = {}) {
+      const accordion = document.getElementById("deepAccordion");
+      accordion.innerHTML = "";
+
+      DEEP_TITLES.forEach((title, i) => {
+        const id = `deep_${i}`;
+        const details = document.createElement("details");
+        details.innerHTML = `
+          <summary>${title}</summary>
+          <div class="section-body">
+            <textarea id="${id}" placeholder="Write here...">${savedDeep[id] || ""}</textarea>
+          </div>
+        `;
+        accordion.appendChild(details);
+      });
+    }
+
+    function collectAllData() {
+      const quick = {};
+      QUICK_IDS.forEach(id => {
+        quick[id] = document.getElementById(id)?.value || "";
+      });
+
+      const deep = {};
+      DEEP_TITLES.forEach((_, i) => {
+        const id = `deep_${i}`;
+        deep[id] = document.getElementById(id)?.value || "";
+      });
+
+      return { quick, deep };
+    }
+
+    function applyAllData(saved) {
+      QUICK_IDS.forEach(id => {
+        if (document.getElementById(id)) {
+          document.getElementById(id).value = saved?.quick?.[id] || "";
+        }
+      });
+      renderDeepSections(saved?.deep || {});
+    }
+
+    function loadSavedProfile(key) {
       try {
-        return localStorage.getItem(key) || '';
+        return JSON.parse(localStorage.getItem(key) || "{}");
       } catch {
-        return '';
+        return {};
       }
     }
 
-    function saveNotes(character) {
-      const key = notesKey(character);
-      const value = document.getElementById('character-notes').value;
-      localStorage.setItem(key, value);
-      alert('Notes saved!');
+    function saveProfile(key) {
+      localStorage.setItem(key, JSON.stringify(collectAllData()));
+      alert("Saved!");
     }
 
-    function clearNotes(character) {
-      const key = notesKey(character);
-      if (!confirm('Clear notes for this character?')) return;
-      localStorage.removeItem(key);
-      document.getElementById('character-notes').value = '';
-    }
-
-    window.addEventListener('load', () => {
+    window.addEventListener("load", () => {
       const character = loadCharacter();
       if (!character) return;
 
-      const notesEl = document.getElementById('character-notes');
-      notesEl.value = loadNotes(character);
+      const storageKey = makeStorageKey(character);
+      const saved = loadSavedProfile(storageKey);
+      applyAllData(saved);
 
-      document.getElementById('saveBtn').addEventListener('click', () => saveNotes(character));
-      document.getElementById('clearBtn').addEventListener('click', () => clearNotes(character));
+      // buttons
+      document.getElementById("saveBtn").addEventListener("click", () => saveProfile(storageKey));
+      document.getElementById("expandAllBtn").addEventListener("click", () => {
+        document.querySelectorAll("#deepAccordion details").forEach(d => d.open = true);
+      });
+      document.getElementById("collapseAllBtn").addEventListener("click", () => {
+        document.querySelectorAll("#deepAccordion details").forEach(d => d.open = false);
+      });
+      document.getElementById("clearBtn").addEventListener("click", () => {
+        if (!confirm("Clear all quick + important answers for this character?")) return;
+        localStorage.removeItem(storageKey);
+        applyAllData({});
+      });
 
-      notesEl.addEventListener('input', () => {
-        const key = notesKey(character);
-        localStorage.setItem(key, notesEl.value);
+      // auto-save on input
+      document.addEventListener("input", (e) => {
+        if (e.target.matches("input, textarea")) {
+          localStorage.setItem(storageKey, JSON.stringify(collectAllData()));
+        }
       });
     });
   </script>
