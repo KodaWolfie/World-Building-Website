@@ -4,28 +4,21 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Country Page</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&family=Old+Standard+TT:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- Shared theme -->
+  <link rel="stylesheet" href="theme.css?v=13">
+
   <style>
-    :root{
-      --text:#111827;
-      --muted:#6b7280;
-      --border:#d1d5db;
-      --accent:#2563eb;
-      --bg:#ffffff;
-    }
-
-    *{ box-sizing:border-box; }
-
-    body{
+    .page-title{
       margin:0;
-      font-family: Arial, Helvetica, sans-serif;
       color:var(--text);
-      background: var(--bg); /* minimal background */
-    }
-
-    .page{
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 16px;
+      font-family:"UnifrakturCook", serif;
+      font-size:clamp(1.6rem,3vw,2.2rem);
+      line-height:1.1;
     }
 
     .topbar{
@@ -34,17 +27,7 @@
       align-items:center;
       gap:12px;
       margin-bottom:12px;
-    }
-
-    .topbar h1{
-      margin:0;
-      font-size:1.6rem;
-    }
-
-    .topbar a{
-      color:var(--accent);
-      text-decoration:none;
-      font-weight:600;
+      flex-wrap:wrap;
     }
 
     .hint{
@@ -55,13 +38,15 @@
 
     .accordion{
       border:1px solid var(--border);
-      border-radius:10px;
+      border-radius:12px;
       overflow:hidden;
+      background:var(--surface);
+      box-shadow:var(--shadow);
     }
 
     details{
       border-bottom:1px solid var(--border);
-      background:#fff;
+      background:rgba(10,26,110,0.35);
     }
     details:last-child{ border-bottom:none; }
 
@@ -75,6 +60,7 @@
       display:flex;
       justify-content:space-between;
       align-items:center;
+      color:var(--text);
     }
     summary::-webkit-details-marker{ display:none; }
 
@@ -86,23 +72,28 @@
     }
     details[open] summary::after{
       content:"−";
-      color:var(--accent);
+      color:var(--primary);
     }
 
     .section-body{
-      padding: 0 16px 16px 16px;
+      padding:0 16px 16px 16px;
     }
 
     textarea{
       width:100%;
-      min-height:220px; /* lots of writing room */
+      min-height:220px;
       resize:vertical;
       border:1px solid var(--border);
-      border-radius:8px;
+      border-radius:10px;
       padding:10px;
-      font: inherit;
+      font:inherit;
       line-height:1.45;
-      background:#fff;
+      background:rgba(10,26,110,0.85);
+      color:var(--text);
+    }
+
+    textarea::placeholder{
+      color:rgba(255,230,109,.75);
     }
 
     .actions{
@@ -112,44 +103,34 @@
       flex-wrap:wrap;
     }
 
-    button{
-      border:1px solid var(--border);
-      background:#fff;
-      color:var(--text);
-      padding:10px 14px;
-      border-radius:8px;
-      cursor:pointer;
-      font-weight:600;
-    }
-    .primary{
-      background:var(--accent);
-      color:#fff;
-      border-color:var(--accent);
+    @media(max-width:720px){
+      .actions .btn{ flex:1; min-width:140px; }
     }
   </style>
 </head>
 <body>
-  <main class="page">
+  <main class="container">
     <div class="topbar">
-      <h1 id="countryTitle">Country Name</h1>
-      <a href="Kingdoms.html">← Back to Kingdoms</a>
+      <h1 id="countryTitle" class="page-title">Country Name</h1>
+      <a class="link-back" href="Kingdoms.html">← Back to Kingdoms</a>
     </div>
-    <p class="hint">Expand each header and write as much as you want. Content auto-saves in your browser.</p>
 
-    <section class="accordion" id="countryAccordion"></section>
+    <section class="glass" style="padding:14px;">
+      <p class="hint">Expand each header and write as much as you want. Content auto-saves in your browser.</p>
+      <section class="accordion" id="countryAccordion"></section>
 
-    <div class="actions">
-      <button class="primary" id="saveBtn">Save</button>
-      <button id="expandAllBtn">Expand All</button>
-      <button id="collapseAllBtn">Collapse All</button>
-      <button id="clearBtn">Clear All</button>
-    </div>
+      <div class="actions">
+        <button class="btn btn-primary" id="saveBtn">Save</button>
+        <button class="btn btn-muted" id="expandAllBtn">Expand All</button>
+        <button class="btn btn-muted" id="collapseAllBtn">Collapse All</button>
+        <button class="btn btn-muted" id="clearBtn">Clear All</button>
+      </div>
+    </section>
   </main>
 
   <script>
-    // 19 headers
     const SECTION_TITLES = [
-      "1. Georgraphy + Ecosystems",
+      "1. Geography + Ecosystems",
       "2. Natural Resources and Climate",
       "3. Flora and Fauna",
       "4. Race/Species (of society) + Daily Life",
@@ -228,7 +209,6 @@
       renderSections({});
     });
 
-    // Auto-save while typing
     document.addEventListener("input", (e) => {
       if (e.target.tagName === "TEXTAREA") {
         localStorage.setItem(storageKey, JSON.stringify(collectData()));
