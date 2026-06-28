@@ -161,13 +161,12 @@
         <div class="field"><label>Species / Race</label><input id="q_species" type="text"></div>
         <div class="field"><label>Homeland</label><input id="q_homeland" type="text"></div>
         <div class="field"><label>Affiliation</label><input id="q_affiliation" type="text"></div>
-        <div class="field"><label>Core Goal</label><input id="q_goal" type="text"></div>
-        <div class="field"><label>Greatest Fear</label><input id="q_fear" type="text"></div>
+        <div class="field"><label>Name Meaning</label><input id="q_meaning" type="text"></div>
       </div>
     </section>
 
     <section class="card">
-      <h2>Important Questions (Collapsible)</h2>
+      <h2>Important Questions</h2>
       <p class="muted">Use these for deep character development.</p>
 
       <div class="accordion" id="deepAccordion"></div>
@@ -183,21 +182,32 @@
 
   <script>
     const DEEP_TITLES = [
-      "1) Backstory: What key events shaped this character?",
-      "2) Internal Conflict: What do they want vs what do they need?",
-      "3) External Conflict: What opposes them in the world?",
-      "4) Relationships: Who matters most and why?",
-      "5) Moral Boundaries: What line will they not cross?",
-      "6) Secrets: What are they hiding?",
-      "7) Character Arc: How will they change by the end?",
-      "8) Voice & Mannerisms: How do they speak and behave?",
-      "9) Strengths & Weaknesses: What helps and hurts them?",
-      "10) Symbolism: Any objects/colors/themes tied to them?"
+      "1) What do they look like? (including quirks)",
+      "2) Do they have any powers or skills?",
+      "3) What are their hobbies or interests?",
+      "4) What are their closest relationships?",
+      "5) What is their past?",
+      "6) What is their wound and how do they act with it?",
+      "7) What is their misbelief and how do they act because of it?",
+      "8) What is their biggest fear and how do they act around it?",
+      "9) What is their fatal flaw?",
+      "10) What is their biggest secret?"
+      "11) What is their internal conflict?"
+      "12) Who are they in the beginning of the story?"
+      "13) How do they feel about themselves?"
+      "14) How does this show in their behavior?"
+      "15) What are their morals and beliefs? Are these different at the end?"
+      "16) Who are they at the end of the story?"
+      "17) What is their goal / ambition?"
+      "18) Why do they have this goal / ambition?"
+      "19) What is the biggest obstacle or external conflict stopping them?"
+      "20) Is what this character wants, what they need?"
+      "21) Why is this character in the role that they’re in?"
     ];
 
     const QUICK_IDS = [
       "q_age","q_pronouns","q_occupation","q_species",
-      "q_homeland","q_affiliation","q_goal","q_fear"
+      "q_homeland","q_affiliation","q_meaning"
     ];
 
     function getQueryParam(name) {
