@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Antagonists</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&family=Old+Standard+TT:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="theme.css?v=13">
+
+  <style>
+    .page-title{
+      margin:0;
+      color:var(--text);
+      font-family:"UnifrakturCook", serif;
+      font-size:clamp(1.8rem,3vw,2.4rem);
+      line-height:1.1;
+    }
+    .header-row{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:.75rem;
+      flex-wrap:wrap;
+      margin-bottom:1rem;
+    }
+    .antagonists-container{
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(250px,1fr));
+      gap:1rem;
+      margin-top:1rem;
+    }
+    .antagonist-link{
+      text-decoration:none;
+      color:inherit;
+      display:block;
+    }
+    .antagonist-name{
+      margin:0 0 .5rem 0;
+      color:var(--text);
+      font-weight:700;
+      font-size:1.1rem;
+    }
+    .antagonist-text{
+      margin:.25rem 0;
+      color:var(--muted);
+      font-size:.95rem;
+    }
+    .empty-state{
+      padding:22px;
+      text-align:center;
+    }
+    .empty-state h2{ margin-top:0; color:var(--text); }
+    .empty-state p{ color:var(--muted); }
+
+    .modal{
+      display:none;
+      position:fixed;
+      z-index:1000;
+      inset:0;
+      background-color:rgba(0,0,0,.5);
+      padding:16px;
+    }
+    .modal-content{
+      background:var(--surface-strong);
+      border:1px solid var(--border);
+      border-radius:14px;
+      width:min(520px,100%);
+      margin:5vh auto 0 auto;
+      padding:1.25rem;
+      box-shadow:var(--shadow);
+    }
+    .modal-header{
+      font-size:1.4rem;
+      color:var(--text);
+      font-weight:700;
+      margin-bottom:1rem;
+      font-family:"UnifrakturCook", serif;
+    }
+    .form-group{ margin-bottom:1rem; }
+    .form-group label{
+      display:block;
+      margin-bottom:.45rem;
+      color:var(--text);
+      font-weight:700;
+    }
+    .form-group input,
+    .form-group textarea{
+      width:100%;
+      padding:.75rem;
+      border:1px solid var(--border);
+      border-radius:10px;
+      font-family:"Old Standard TT", Georgia, "Times New Roman", serif;
+      font-size:.95rem;
+      background:rgba(10,26,110,0.85);
+      color:var(--text);
+      box-sizing:border-box;
+    }
+    .form-group textarea{ resize:vertical; min-height:90px; }
+    .modal-buttons{
+      display:flex;
+      gap:.75rem;
+      justify-content:flex-end;
+      margin-top:1.25rem;
+      flex-wrap:wrap;
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <div style="margin-bottom:12px;">
+      <a class="link-back" href="WorldBuildingIdeas.html">← Return to World Ideas</a>
+    </div>
+
+    <section class="header-row">
+      <h1 class="page-title">Antagonists</h1>
+      <button class="btn btn-primary" onclick="openAntagonistModal()">+ New</button>
+    </section>
+
+    <section class="glass empty-state" id="no-antagonists-section">
+      <h2>No Antagonists Yet</h2>
+      <p>Get started by creating your first antagonist.</p>
+      <button class="btn btn-primary" onclick="openAntagonistModal()">Create Antagonist</button>
+    </section>
+
+    <section class="antagonists-container" id="antagonists-list" style="display:none;"></section>
+  </main>
+
+  <div id="antagonistModal" class="modal" aria-hidden="true">
+    <div class="modal-content">
+      <div class="modal-header">Create a New Antagonist</div>
+
+      <div class="form-group">
+        <label for="antagonist-name">Name</label>
+        <input type="text" id="antagonist-name" placeholder="Enter antagonist name">
+      </div>
+
+      <div class="form-group">
+        <label for="antagonist-role">Role (e.g., Tyrant, Rival, Corrupt Leader)</label>
+        <input type="text" id="antagonist-role" placeholder="Enter antagonist role">
+      </div>
+
+      <div class="form-group">
+        <label for="antagonist-description">Description</label>
+        <textarea id="antagonist-description" placeholder="Describe your antagonist..."></textarea>
+      </div>
+
+      <div class="modal-buttons">
+        <button class="btn btn-muted" onclick="closeAntagonistModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveAntagonist()">Create Antagonist</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let antagonists = [];
+
+    function slugify(text) {
+      return text.toString().toLowerCase().trim()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-');
+    }
+
+    function openAntagonistPage(antagonistId) {
+      const selected = antagonists.find(a => String(a.id) === String(antagonistId));
+      if (!selected) return;
+      localStorage.setItem('selectedAntagonist', JSON.stringify(selected));
+      window.location.href = `antagonist.html?id=${selected.id}&name=${encodeURIComponent(slugify(selected.name))}`;
+    }
+
+    function loadAntagonists() {
+      const stored = localStorage.getItem('antagonists');
+      antagonists = stored ? JSON.parse(stored) : [];
+      displayAntagonists();
+    }
+
+    function displayAntagonists() {
+      const noSection = document.getElementById('no-antagonists-section');
+      const list = document.getElementById('antagonists-list');
+
+      if (antagonists.length === 0) {
+        noSection.style.display = 'block';
+        list.style.display = 'none';
+        list.innerHTML = '';
+        return;
+      }
+
+      noSection.style.display = 'none';
+      list.style.display = 'grid';
+      list.innerHTML = '';
+
+      antagonists.forEach((antagonist) => {
+        const link = document.createElement('a');
+        link.className = 'antagonist-link';
+        link.href = `antagonist.html?id=${antagonist.id}&name=${encodeURIComponent(slugify(antagonist.name))}`;
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+          openAntagonistPage(antagonist.id);
+        });
+
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <h3 class="antagonist-name">${antagonist.name}</h3>
+          <p class="antagonist-text"><strong>Role:</strong> ${antagonist.role || 'Unknown'}</p>
+          <p class="antagonist-text">${antagonist.description || 'No description provided'}</p>
+        `;
+
+        link.appendChild(card);
+        list.appendChild(link);
+      });
+    }
+
+    function openAntagonistModal() {
+      document.getElementById('antagonistModal').style.display = 'block';
+      document.getElementById('antagonistModal').setAttribute('aria-hidden', 'false');
+      document.getElementById('antagonist-name').value = '';
+      document.getElementById('antagonist-role').value = '';
+      document.getElementById('antagonist-description').value = '';
+    }
+
+    function closeAntagonistModal() {
+      document.getElementById('antagonistModal').style.display = 'none';
+      document.getElementById('antagonistModal').setAttribute('aria-hidden', 'true');
+    }
+
+    function saveAntagonist() {
+      const name = document.getElementById('antagonist-name').value.trim();
+      const role = document.getElementById('antagonist-role').value.trim();
+      const description = document.getElementById('antagonist-description').value.trim();
+
+      if (!name) {
+        alert('Please enter an antagonist name');
+        return;
+      }
+
+      const newAntagonist = {
+        id: Date.now(),
+        name,
+        role: role || 'Unknown',
+        description: description || 'No description provided'
+      };
+
+      antagonists.push(newAntagonist);
+      localStorage.setItem('antagonists', JSON.stringify(antagonists));
+
+      closeAntagonistModal();
+      displayAntagonists();
+    }
+
+    window.onclick = function(event) {
+      const modal = document.getElementById('antagonistModal');
+      if (event.target === modal) closeAntagonistModal();
+    };
+
+    window.addEventListener('load', loadAntagonists);
+  </script>
+</body>
+</html>
