@@ -30,8 +30,8 @@ body{
   color: var(--text);
   min-height: 100vh;
   background:
-    linear-gradient(rgba(2,8,40,0.78), rgba(2,8,40,0.78)),
-    url("https://i.pinimg.com/736x/db/66/6d/db666d21893ab17b9028010a85c5879f.jpg") center / cover no-repeat fixed;
+    linear-gradient(rgba(2,8,40,0.72), rgba(2,8,40,0.72)),
+    url("https://i.pinimg.com/1200x/96/f1/98/96f198a2758f2defbbf129508dbdff00.jpg") center / cover no-repeat fixed;
 }
 
 .container{
