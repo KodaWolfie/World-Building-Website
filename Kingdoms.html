@@ -5,177 +5,75 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Kingdoms/Countries/Sovereignties</title>
 
-  <!-- Preconnect and Google Fonts -->
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&family=Old+Standard+TT:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- Shared theme -->
   <link rel="stylesheet" href="theme.css">
-  
-  <!-- Supabase Library -->
+
+  <!-- Supabase lib -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
-    :root{
-      --bg:#f7fbff;
-      --card:#ffffff;
-      --card-alpha: 0.92;
-      --text:#0f1724;
-      --muted:#6b7280;
-      --accent:#0b84ff;
-      --radius:12px;
-      --max-width:900px;
-    }
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family: "Old Standard TT", Georgia, "Times New Roman", serif;
-      color:var(--text);
-      -webkit-font-smoothing:antialiased;
-      background-image: url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1700&q=80');
-      background-position: center;
-      background-size: cover;
-      background-repeat: no-repeat;
-      background-attachment: fixed;
-      min-height: 100vh;
-      position: relative;
-    }
-
-    body::before{
-      content: "";
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.28);
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    .wrap{
-      max-width:var(--max-width);
-      margin:6vh auto;
-      padding:1.25rem;
-      position: relative;
-      z-index: 1;
-    }
-
-    .world-header {
-      background: rgba(255,255,255,0.92);
-      border-radius: var(--radius);
-      padding: 1.5rem;
-      box-shadow: 0 6px 18px rgba(15,23,36,0.12);
-      border: 1px solid rgba(11,132,255,0.06);
-      margin-bottom: 2rem;
-      backdrop-filter: blur(2px);
-    }
-
-    .world-header h1 {
-      margin: 0 0 0.5rem 0;
-      color: var(--accent);
-      font-size: 1.8rem;
-      font-family: "UnifrakturCook", serif;
-    }
-
-    .world-details {
-      display: flex;
-      gap: 2rem;
-      flex-wrap: wrap;
-      margin-top: 1rem;
-    }
-
-    .detail {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .detail-label {
-      color: var(--muted);
-      font-size: 0.85rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .detail-value {
+    /* Page-only layout helpers (kept minimal so theme.css controls appearance) */
+    .page-title {
+      margin: 0;
       color: var(--text);
-      font-size: 1rem;
-      font-weight: 500;
-      margin-top: 0.25rem;
+      font-family: "UnifrakturCook", serif;
+      font-size: clamp(1.6rem, 3vw, 2.4rem);
+      line-height: 1.1;
     }
 
-    .header-container {
+    .meta-grid {
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .meta-label {
+      color: var(--muted);
+      font-size: .8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .4px;
+    }
+
+    .meta-value {
+      color: var(--text);
+      font-weight: 700;
+      margin-top: 4px;
+    }
+
+    .section-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 2rem;
+      gap: 12px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
     }
 
-    .h-blackletter {
-      font-family: "UnifrakturCook", serif;
-      font-weight: 700;
-      font-style: normal;
-      text-rendering: optimizeLegibility;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-      letter-spacing: 0;
-      text-shadow: 0 0.8px 0 rgba(0,0,0,0.02);
-      color: #fff7e6;
-      margin: 0;
-      font-size: 2.4rem;
-      line-height: 1.05;
+    .empty-state {
+      padding: 22px;
+      text-align: center;
     }
 
-    .add-kingdom-btn {
-      background: var(--accent);
-      color: white;
-      border: none;
-      width: 50px;
-      height: 50px;
-      border-radius: 8px;
-      font-size: 1.8rem;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 500;
+    .empty-state h2 {
+      margin-top: 0;
+      color: var(--text);
     }
 
-    .add-kingdom-btn:hover {
-      background: #0968d6;
-      box-shadow: 0 4px 12px rgba(11,132,255,0.3);
-    }
-
-    .kingdoms-container {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-      gap: 1.5rem;
-      margin-top: 2rem;
-    }
-
-    .kingdom-card {
-      background: rgba(255,255,255,var(--card-alpha));
-      border-radius: var(--radius);
-      padding: 1.5rem;
-      box-shadow: 0 6px 18px rgba(15,23,36,0.12);
-      border: 1px solid rgba(11,132,255,0.06);
-      backdrop-filter: blur(2px);
-      transition: all 0.2s ease;
-    }
-
-    .kingdom-card:hover {
-      box-shadow: 0 8px 24px rgba(11,132,255,0.18);
-    }
-
-    .kingdom-card h3 {
-      margin: 0 0 0.5rem 0;
-      color: var(--accent);
-      font-weight: 700;
-      font-size: 1.1rem;
-    }
-
-    .kingdom-card p {
-      margin: 0;
+    .empty-state p {
       color: var(--muted);
-      font-size: 0.95rem;
+    }
+
+    #kingdoms-list {
+      display: none;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 14px;
+      margin-top: 12px;
     }
 
     .kingdom-link {
@@ -184,179 +82,131 @@
       display: block;
     }
 
-    .kingdom-link:focus-visible .kingdom-card {
-      outline: 2px solid var(--accent);
+    .kingdom-link:focus-visible .card {
+      outline: 2px solid var(--primary);
       outline-offset: 2px;
     }
 
-    .no-kingdoms {
-      background: rgba(255,255,255,var(--card-alpha));
-      border-radius: var(--radius);
-      padding: 2rem;
-      text-align: center;
-      box-shadow: 0 6px 18px rgba(15,23,36,0.12);
-      border: 1px solid rgba(11,132,255,0.06);
-      backdrop-filter: blur(2px);
+    .kingdom-name {
+      margin: 0 0 .5rem 0;
+      color: var(--text);
+      font-weight: 700;
+      font-size: 1.1rem;
     }
 
-    .no-kingdoms h2 {
-      color: var(--accent);
-      font-size: 1.2rem;
-      margin: 0 0 1rem 0;
-    }
-
-    .no-kingdoms p {
+    .kingdom-text {
+      margin: .25rem 0;
       color: var(--muted);
-      margin: 0 0 1.5rem 0;
+      font-size: .95rem;
     }
 
-    button {
-      background: var(--accent);
-      color: white;
-      border: none;
-      padding: 0.5rem 1rem;
-      border-radius: 8px;
-      font-size: 0.95rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      font-family: "Old Standard TT", Georgia, "Times New Roman", serif;
-    }
-
-    button:hover {
-      background: #0968d6;
-      box-shadow: 0 4px 12px rgba(11,132,255,0.3);
-    }
-
+    /* Modal */
     .modal {
       display: none;
       position: fixed;
       z-index: 1000;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0,0,0,0.4);
+      inset: 0;
+      background-color: rgba(0,0,0,0.5);
+      padding: 16px;
     }
 
     .modal-content {
-      background-color: var(--card);
-      margin: 5% auto;
-      padding: 2rem;
-      border: 1px solid rgba(11,132,255,0.06);
-      border-radius: var(--radius);
-      width: 90%;
-      max-width: 500px;
-      box-shadow: 0 8px 24px rgba(15,23,36,0.2);
+      background: var(--surface-strong);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      width: min(520px, 100%);
+      margin: 5vh auto 0 auto;
+      padding: 1.25rem;
+      box-shadow: var(--shadow);
     }
 
     .modal-header {
-      font-size: 1.5rem;
-      color: var(--accent);
+      font-size: 1.4rem;
+      color: var(--text);
       font-weight: 700;
       margin-bottom: 1rem;
       font-family: "UnifrakturCook", serif;
     }
 
-    .form-group {
-      margin-bottom: 1rem;
-    }
+    .form-group { margin-bottom: 1rem; }
 
     .form-group label {
       display: block;
-      margin-bottom: 0.5rem;
+      margin-bottom: .45rem;
       color: var(--text);
-      font-weight: 600;
+      font-weight: 700;
     }
 
     .form-group input,
     .form-group textarea {
       width: 100%;
-      padding: 0.75rem;
-      border: 1px solid rgba(11,132,255,0.2);
-      border-radius: 8px;
+      padding: .75rem;
+      border: 1px solid var(--border);
+      border-radius: 10px;
       font-family: "Old Standard TT", Georgia, "Times New Roman", serif;
-      font-size: 0.95rem;
-      box-sizing: border-box;
+      font-size: .95rem;
+      background: rgba(255,255,255,.95);
+      color: #111827;
     }
 
     .form-group textarea {
       resize: vertical;
-      min-height: 80px;
+      min-height: 90px;
     }
 
     .modal-buttons {
       display: flex;
-      gap: 1rem;
+      gap: .75rem;
       justify-content: flex-end;
-      margin-top: 1.5rem;
+      margin-top: 1.25rem;
+      flex-wrap: wrap;
     }
 
-    .modal-buttons button {
-      padding: 0.75rem 1.5rem;
-    }
-
-    .close-btn {
-      background: var(--muted);
-    }
-
-    .close-btn:hover {
-      background: #5a6270;
-    }
-
-    @media(max-width:720px){
-      body{ background-attachment: scroll; }
-      .wrap{ margin: 4vh 1rem; }
-      .h-blackletter{ font-size: 2rem; }
-      .kingdoms-container {
-        grid-template-columns: 1fr;
-      }
-      .world-details {
-        flex-direction: column;
-        gap: 1rem;
-      }
+    @media (max-width: 720px) {
+      .meta-grid { gap: 14px; }
+      .modal-content { margin-top: 3vh; }
     }
   </style>
 </head>
 <body>
   <main class="container" role="main">
-  <div style="margin-bottom:12px;">
-    <a class="link-back" href="WorldBuildingIdeas.html">← Return to World Ideas</a>
-  </div>
-
-  <section class="glass" style="padding:18px; margin-bottom:16px;">
-    <h1 id="world-name" style="margin:0 0 8px 0; font-size:1.8rem;">Your World</h1>
-    <div style="display:flex; gap:24px; flex-wrap:wrap;">
-      <div>
-        <div style="color:var(--muted); font-size:.8rem; font-weight:700; text-transform:uppercase;">Genre</div>
-        <div id="genre-display">-</div>
-      </div>
-      <div>
-        <div style="color:var(--muted); font-size:.8rem; font-weight:700; text-transform:uppercase;">Theme</div>
-        <div id="theme-display">-</div>
-      </div>
+    <div style="margin-bottom:12px;">
+      <a class="link-back" href="WorldBuildingIdeas.html">← Return to World Ideas</a>
     </div>
-  </section>
 
-  <section style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-    <h1 style="margin:0; color:#e2e8f0;">Kingdoms / Countries / Sovereignties</h1>
-    <button class="btn btn-primary" title="Create a new kingdom" onclick="openKingdomModal()">+ New</button>
-  </section>
+    <section class="glass" style="padding:18px; margin-bottom:16px;">
+      <h1 id="world-name" class="page-title">Your World</h1>
+      <div class="meta-grid" style="margin-top:10px;">
+        <div>
+          <div class="meta-label">Genre</div>
+          <div class="meta-value" id="genre-display">-</div>
+        </div>
+        <div>
+          <div class="meta-label">Theme</div>
+          <div class="meta-value" id="theme-display">-</div>
+        </div>
+      </div>
+    </section>
 
-  <section class="glass" id="no-kingdoms-section" style="padding:22px; text-align:center;">
-    <h2 style="margin-top:0;">No Kingdoms Yet</h2>
-    <p style="color:var(--muted);">Get started by creating your first kingdom.</p>
-    <button class="btn btn-primary" onclick="openKingdomModal()">Create Kingdom</button>
-  </section>
+    <section class="section-row">
+      <h1 class="page-title" style="font-size:clamp(1.4rem,2.6vw,2rem);">Kingdoms / Countries / Sovereignties</h1>
+      <button class="btn btn-primary" title="Create a new kingdom" onclick="openKingdomModal()">+ New</button>
+    </section>
 
-  <section id="kingdoms-list" style="display:none; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:14px;"></section>
-</main>
+    <section class="glass empty-state" id="no-kingdoms-section">
+      <h2>No Kingdoms Yet</h2>
+      <p>Get started by creating your first kingdom.</p>
+      <button class="btn btn-primary" onclick="openKingdomModal()">Create Kingdom</button>
+    </section>
+
+    <section id="kingdoms-list"></section>
+  </main>
 
   <!-- Create Kingdom Modal -->
-  <div id="kingdomModal" class="modal">
+  <div id="kingdomModal" class="modal" aria-hidden="true">
     <div class="modal-content">
       <div class="modal-header">Create a New Kingdom</div>
-      
+
       <div class="form-group">
         <label for="kingdom-name">Kingdom Name</label>
         <input type="text" id="kingdom-name" placeholder="Enter kingdom name">
@@ -373,8 +223,8 @@
       </div>
 
       <div class="modal-buttons">
-        <button class="close-btn" onclick="closeKingdomModal()">Cancel</button>
-        <button onclick="saveKingdom()">Create Kingdom</button>
+        <button class="btn btn-muted" onclick="closeKingdomModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveKingdom()">Create Kingdom</button>
       </div>
     </div>
   </div>
@@ -383,7 +233,6 @@
   <script>
     let kingdoms = [];
 
-    // Create a URL-safe slug from a kingdom name
     function slugify(text) {
       return text
         .toString()
@@ -394,37 +243,33 @@
         .replace(/-+/g, '-');
     }
 
-    // Save selected kingdom to localStorage and navigate to details page
     function openKingdomPage(kingdomId) {
       const selectedKingdom = kingdoms.find(k => String(k.id) === String(kingdomId));
       if (!selectedKingdom) return;
 
       localStorage.setItem('selectedKingdom', JSON.stringify(selectedKingdom));
+      localStorage.setItem('selectedCountryName', selectedKingdom.name); // compatibility for CountryTemplate
       window.location.href = `CountryTemplate.html?id=${selectedKingdom.id}&name=${encodeURIComponent(slugify(selectedKingdom.name))}`;
     }
 
-    // Load world data and kingdoms
     function loadWorld() {
-      const world = getCurrentWorld();
-      
+      const world = (typeof getCurrentWorld === 'function') ? getCurrentWorld() : null;
+
       if (world) {
-        document.getElementById('world-name').textContent = world.name;
-        document.getElementById('genre-display').textContent = world.genre;
-        document.getElementById('theme-display').textContent = world.theme;
+        document.getElementById('world-name').textContent = world.name || 'Your World';
+        document.getElementById('genre-display').textContent = world.genre || '-';
+        document.getElementById('theme-display').textContent = world.theme || '-';
       }
 
       loadKingdoms();
     }
 
-    // Load kingdoms from localStorage
     function loadKingdoms() {
       const storedKingdoms = localStorage.getItem('kingdoms');
       kingdoms = storedKingdoms ? JSON.parse(storedKingdoms) : [];
-      
       displayKingdoms();
     }
 
-    // Display kingdoms or no-kingdoms message
     function displayKingdoms() {
       const noKingdomsSection = document.getElementById('no-kingdoms-section');
       const kingdomsList = document.getElementById('kingdoms-list');
@@ -432,54 +277,50 @@
       if (kingdoms.length === 0) {
         noKingdomsSection.style.display = 'block';
         kingdomsList.style.display = 'none';
-      } else {
-        noKingdomsSection.style.display = 'none';
-        kingdomsList.style.display = 'grid';
         kingdomsList.innerHTML = '';
-
-        kingdoms.forEach((kingdom) => {
-          const link = document.createElement('a');
-          link.className = 'kingdom-link';
-          link.href = `CountryTemplate.html?id=${kingdom.id}&name=${encodeURIComponent(slugify(kingdom.name))}`;
-          link.setAttribute('aria-label', `Open ${kingdom.name}`);
-          link.addEventListener('click', (event) => {
-            event.preventDefault();
-            openKingdomPage(kingdom.id);
-          });
-
-          const card = document.createElement('div');
-          card.className = 'card';
-          card.style.background = "var(--surface-strong)";
-          card.style.border = "1px solid var(--border)";
-          card.style.borderRadius = "14px";
-          card.style.padding = "14px";
-          card.innerHTML = `
-            <h3>${kingdom.name}</h3>
-            <p><strong>Type:</strong> ${kingdom.type}</p>
-            <p>${kingdom.description}</p>
-          `;
-
-          link.appendChild(card);
-          kingdomsList.appendChild(link);
-        });
+        return;
       }
+
+      noKingdomsSection.style.display = 'none';
+      kingdomsList.style.display = 'grid';
+      kingdomsList.innerHTML = '';
+
+      kingdoms.forEach((kingdom) => {
+        const link = document.createElement('a');
+        link.className = 'kingdom-link';
+        link.href = `CountryTemplate.html?id=${kingdom.id}&name=${encodeURIComponent(slugify(kingdom.name))}`;
+        link.setAttribute('aria-label', `Open ${kingdom.name}`);
+        link.addEventListener('click', (event) => {
+          event.preventDefault();
+          openKingdomPage(kingdom.id);
+        });
+
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <h3 class="kingdom-name">${kingdom.name}</h3>
+          <p class="kingdom-text"><strong>Type:</strong> ${kingdom.type || 'Unknown'}</p>
+          <p class="kingdom-text">${kingdom.description || 'No description provided'}</p>
+        `;
+
+        link.appendChild(card);
+        kingdomsList.appendChild(link);
+      });
     }
 
-    // Open create kingdom modal
     function openKingdomModal() {
       document.getElementById('kingdomModal').style.display = 'block';
-      // Clear form
+      document.getElementById('kingdomModal').setAttribute('aria-hidden', 'false');
       document.getElementById('kingdom-name').value = '';
       document.getElementById('kingdom-type').value = '';
       document.getElementById('kingdom-description').value = '';
     }
 
-    // Close create kingdom modal
     function closeKingdomModal() {
       document.getElementById('kingdomModal').style.display = 'none';
+      document.getElementById('kingdomModal').setAttribute('aria-hidden', 'true');
     }
 
-    // Save kingdom to localStorage
     function saveKingdom() {
       const name = document.getElementById('kingdom-name').value.trim();
       const type = document.getElementById('kingdom-type').value.trim();
@@ -492,7 +333,7 @@
 
       const newKingdom = {
         id: Date.now(),
-        name: name,
+        name,
         type: type || 'Unknown',
         description: description || 'No description provided'
       };
@@ -504,15 +345,13 @@
       displayKingdoms();
     }
 
-    // Close modal when clicking outside
     window.onclick = function(event) {
       const modal = document.getElementById('kingdomModal');
-      if (event.target == modal) {
-        modal.style.display = 'none';
+      if (event.target === modal) {
+        closeKingdomModal();
       }
-    }
+    };
 
-    // Load on page load
     window.addEventListener('load', loadWorld);
   </script>
 </body>
