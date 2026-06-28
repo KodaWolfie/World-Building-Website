@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Global History / Lore</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&family=Old+Standard+TT:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="theme.css?v=14">
+
+  <style>
+    .topbar{
+      display:flex; justify-content:space-between; align-items:center;
+      gap:12px; margin-bottom:12px; flex-wrap:wrap;
+    }
+    .page-title{
+      margin:0; color:var(--text); font-family:"UnifrakturCook", serif;
+      font-size:clamp(1.8rem,3vw,2.4rem); line-height:1.1;
+    }
+    .world-name{ color:var(--muted); font-size:.95rem; margin:.2rem 0 0; font-weight:700; }
+
+    .section-title{
+      margin:0 0 .35rem 0; color:var(--text);
+      font-family:"UnifrakturCook", serif; font-size:1.35rem;
+    }
+    .section-sub{ margin:0; color:var(--muted); font-size:.95rem; }
+
+    /* Timeline */
+    .timeline-wrap{ margin-top:12px; }
+    .timeline-controls{
+      display:flex; gap:.6rem; flex-wrap:wrap; margin-top:12px;
+    }
+
+    .timeline{
+      position:relative; margin-top:1rem; padding-left:22px;
+    }
+    .timeline::before{
+      content:""; position:absolute; left:8px; top:0; bottom:0;
+      width:3px; background:linear-gradient(var(--primary), transparent);
+      border-radius:99px;
+      opacity:.8;
+    }
+
+    .event{
+      position:relative; margin-bottom:12px;
+      background:var(--surface-strong);
+      border:1px solid var(--border);
+      border-radius:12px; padding:12px;
+      box-shadow:var(--shadow);
+    }
+    .event::before{
+      content:""; position:absolute; left:-19px; top:16px;
+      width:10px; height:10px; border-radius:50%;
+      background:var(--primary); box-shadow:0 0 0 4px rgba(255,230,109,.2);
+    }
+
+    .event-grid{
+      display:grid; gap:.6rem;
+      grid-template-columns: 170px 1fr;
+    }
+    .event input, .event textarea{
+      width:100%; border:1px solid var(--border); border-radius:10px;
+      padding:.65rem .75rem; font:inherit;
+      background:rgba(10,26,110,.85); color:var(--text);
+    }
+    .event textarea{ min-height:90px; resize:vertical; grid-column:1 / -1; }
+    .event input::placeholder, .event textarea::placeholder{ color:rgba(255,230,109,.75); }
+
+    .event-actions{
+      display:flex; justify-content:flex-end; margin-top:.5rem;
+    }
+
+    /* Prompt cards (different design from accordion) */
+    .prompts{ margin-top:1.2rem; display:grid; gap:.9rem; }
+    .prompt-card{
+      background:linear-gradient(180deg, rgba(12,34,130,.72), rgba(8,24,100,.65));
+      border:1px solid var(--border);
+      border-radius:14px; padding:.95rem;
+    }
+    .prompt-card h3{
+      margin:0 0 .45rem 0; color:var(--text); font-size:1.02rem;
+      font-weight:700;
+    }
+    .prompt-card textarea{
+      width:100%; min-height:140px; resize:vertical;
+      border:1px solid var(--border); border-radius:10px;
+      padding:.7rem; font:inherit; line-height:1.45;
+      background:rgba(6,18,80,.88); color:var(--text);
+    }
+    .prompt-card textarea::placeholder{ color:rgba(255,230,109,.75); }
+
+    .footer-actions{ display:flex; gap:.6rem; flex-wrap:wrap; margin-top:1rem; }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <div class="topbar">
+      <div>
+        <h1 class="page-title">Global History / Lore</h1>
+        <p class="world-name" id="worldNameDisplay">World: New World</p>
+      </div>
+      <a class="link-back" href="WorldBuildingIdeas.html">← Back to World Ideas</a>
+    </div>
+
+    <section class="glass" style="padding:14px;">
+      <h2 class="section-title">World Timeline</h2>
+      <p class="section-sub">Add major events in order: ancient eras, wars, revolutions, prophecies, and more.</p>
+
+      <div class="timeline-controls">
+        <button class="btn btn-primary" id="addEventBtn">+ Add Timeline Event</button>
+      </div>
+
+      <div class="timeline-wrap">
+        <div id="timeline" class="timeline"></div>
+      </div>
+    </section>
+
+    <section class="glass" style="padding:14px; margin-top:14px;">
+      <h2 class="section-title">Lore Builder</h2>
+      <p class="section-sub">Use these focused prompts to fill in your world’s history and myth.</p>
+
+      <div id="prompts" class="prompts"></div>
+
+      <div class="footer-actions">
+        <button class="btn btn-primary" id="saveAllBtn">Save All</button>
+        <button class="btn btn-muted" id="clearAllBtn">Clear All</button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const PROMPTS = [
+      "Origin Myth: How do people believe the world began?",
+      "First Civilization: Who rose first and why did they matter?",
+      "Age of Expansion: What spread across the world (empire, religion, trade)?",
+      "Great Collapse: What major fall changed history forever?",
+      "Legendary War: Which conflict still shapes politics today?",
+      "Magic in History: Was there a magical golden age or catastrophe?",
+      "Religious Turning Point: What split faiths or united them?",
+      "Modern Era: What tensions are building right now?",
+      "Unsolved Mystery: What historical question remains unanswered?"
+    ];
+
+    function getCurrentWorldSafe() {
+      try { return JSON.parse(localStorage.getItem('currentWorld') || 'null'); }
+      catch { return null; }
+    }
+
+    const world = getCurrentWorldSafe();
+    const worldName = world?.name || "New World";
+    document.getElementById("worldNameDisplay").textContent = `World: ${worldName}`;
+
+    const KEY = `globalLoreV2:${worldName}`;
+
+    function loadData() {
+      try {
+        return JSON.parse(localStorage.getItem(KEY) || "{}");
+      } catch {
+        return {};
+      }
+    }
+
+    function saveData(data) {
+      localStorage.setItem(KEY, JSON.stringify(data));
+    }
+
+    function defaultData() {
+      return { timeline: [], prompts: {} };
+    }
+
+    function ensureDataShape(data) {
+      return {
+        timeline: Array.isArray(data.timeline) ? data.timeline : [],
+        prompts: data.prompts && typeof data.prompts === 'object' ? data.prompts : {}
+      };
+    }
+
+    let state = ensureDataShape({ ...defaultData(), ...loadData() });
+
+    function renderTimeline() {
+      const wrap = document.getElementById('timeline');
+      wrap.innerHTML = '';
+
+      if (state.timeline.length === 0) {
+        const empty = document.createElement('div');
+        empty.className = 'card';
+        empty.innerHTML = `<p style="margin:0; color:var(--muted);">No events yet. Click <strong>+ Add Timeline Event</strong> to begin.</p>`;
+        wrap.appendChild(empty);
+        return;
+      }
+
+      state.timeline.forEach((ev, index) => {
+        const item = document.createElement('div');
+        item.className = 'event';
+        item.innerHTML = `
+          <div class="event-grid">
+            <input type="text" value="${ev.date || ''}" placeholder="Date / Era (e.g., 4E 233, The First Age)" data-field="date" data-index="${index}">
+            <input type="text" value="${ev.title || ''}" placeholder="Event title" data-field="title" data-index="${index}">
+            <textarea placeholder="What happened, why it mattered, and consequences..." data-field="details" data-index="${index}">${ev.details || ''}</textarea>
+          </div>
+          <div class="event-actions">
+            <button class="btn btn-muted" data-action="delete" data-index="${index}">Delete</button>
+          </div>
+        `;
+        wrap.appendChild(item);
+      });
+    }
+
+    function renderPrompts() {
+      const wrap = document.getElementById('prompts');
+      wrap.innerHTML = '';
+
+      PROMPTS.forEach((q, i) => {
+        const card = document.createElement('div');
+        card.className = 'prompt-card';
+        card.innerHTML = `
+          <h3>${i + 1}. ${q}</h3>
+          <textarea id="prompt_${i}" placeholder="Write your lore here...">${state.prompts[`prompt_${i}`] || ''}</textarea>
+        `;
+        wrap.appendChild(card);
+      });
+    }
+
+    function collectPromptData() {
+      const out = {};
+      PROMPTS.forEach((_, i) => {
+        const id = `prompt_${i}`;
+        out[id] = document.getElementById(id)?.value || '';
+      });
+      return out;
+    }
+
+    document.getElementById('addEventBtn').addEventListener('click', () => {
+      state.timeline.push({ date: '', title: '', details: '' });
+      saveData(state);
+      renderTimeline();
+    });
+
+    document.getElementById('timeline').addEventListener('input', (e) => {
+      const index = Number(e.target.dataset.index);
+      const field = e.target.dataset.field;
+      if (Number.isNaN(index) || !field) return;
+
+      state.timeline[index][field] = e.target.value;
+      saveData(state);
+    });
+
+    document.getElementById('timeline').addEventListener('click', (e) => {
+      const btn = e.target.closest('button[data-action="delete"]');
+      if (!btn) return;
+      const index = Number(btn.dataset.index);
+      if (Number.isNaN(index)) return;
+
+      state.timeline.splice(index, 1);
+      saveData(state);
+      renderTimeline();
+    });
+
+    document.getElementById('prompts').addEventListener('input', () => {
+      state.prompts = collectPromptData();
+      saveData(state);
+    });
+
+    document.getElementById('saveAllBtn').addEventListener('click', () => {
+      state.prompts = collectPromptData();
+      saveData(state);
+      alert('Saved!');
+    });
+
+    document.getElementById('clearAllBtn').addEventListener('click', () => {
+      if (!confirm('Clear timeline and all lore answers for this world?')) return;
+      state = defaultData();
+      saveData(state);
+      renderTimeline();
+      renderPrompts();
+    });
+
+    renderTimeline();
+    renderPrompts();
+  </script>
+</body>
+</html>
