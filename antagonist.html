@@ -167,11 +167,11 @@
       <div class="grid">
         <div class="field"><label>Age</label><input id="q_age" type="text" placeholder="e.g., 48"></div>
         <div class="field"><label>Pronouns</label><input id="q_pronouns" type="text" placeholder="e.g., he/him"></div>
-        <div class="field"><label>Title</label><input id="q_title" type="text" placeholder="e.g., High Inquisitor"></div>
-        <div class="field"><label>Faction</label><input id="q_faction" type="text"></div>
-        <div class="field"><label>Base of Power</label><input id="q_base" type="text"></div>
-        <div class="field"><label>Public Reputation</label><input id="q_reputation" type="text"></div>
-        <div class="field"><label>Core Desire</label><input id="q_desire" type="text"></div>
+        <div class="field"><label>Occupation</label><input id="q_occupation" type="text" placeholder="e.g., High Inquisitor"></div>
+        <div class="field"><label>Species/Race</label><input id="q_race" type="text"></div>
+        <div class="field"><label>Homeland</label><input id="q_homeland" type="text"></div>
+        <div class="field"><label></label>Affiliation<input id="q_affiliation" type="text"></div>
+        <div class="field"><label></label>Name Meaning<input id="q_meaning" type="text"></div>
       </div>
     </section>
 
@@ -222,8 +222,8 @@
     ];
 
     const QUICK_IDS = [
-      "q_age","q_pronouns","q_title","q_faction",
-      "q_base","q_reputation","q_desire"
+      "q_age","q_pronouns","q_occupation","q_race",
+      "q_homeland","q_affiliation","q_meaning"
     ];
 
     function getQueryParam(name) {
