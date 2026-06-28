@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Antagonist Details</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&family=Old+Standard+TT:wght@400;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="theme.css?v=13">
+
+  <style>
+    .topbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:12px;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    .page-title{
+      margin:0;
+      color:var(--text);
+      font-family:"UnifrakturCook", serif;
+      font-size:clamp(1.6rem,3vw,2.2rem);
+      line-height:1.1;
+    }
+
+    .muted{ color:var(--muted); margin:0; }
+
+    .section-title{
+      margin:0 0 .35rem 0;
+      color:var(--text);
+      font-family:"UnifrakturCook", serif;
+      font-size:1.25rem;
+    }
+
+    .section-subtext{
+      margin:0;
+      color:var(--muted);
+      font-size:.95rem;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+      gap:10px;
+      margin-top:12px;
+    }
+
+    .field label{
+      display:block;
+      font-size:.83rem;
+      color:var(--muted);
+      margin-bottom:4px;
+      font-weight:700;
+      text-transform:uppercase;
+      letter-spacing:.35px;
+    }
+
+    .field input{
+      width:100%;
+      border:1px solid var(--border);
+      border-radius:10px;
+      padding:10px;
+      font:inherit;
+      background:rgba(10,26,110,0.85);
+      color:var(--text);
+    }
+
+    .field input::placeholder{
+      color:rgba(255,230,109,.75);
+    }
+
+    .accordion{
+      border:1px solid var(--border);
+      border-radius:12px;
+      overflow:hidden;
+      margin-top:10px;
+      background:var(--surface);
+    }
+
+    details{
+      border-bottom:1px solid var(--border);
+      background:rgba(10,26,110,0.35);
+    }
+
+    details:last-child{ border-bottom:none; }
+
+    summary{
+      list-style:none;
+      cursor:pointer;
+      padding:12px 14px;
+      font-weight:700;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      color:var(--text);
+    }
+
+    summary::-webkit-details-marker{ display:none; }
+
+    summary::after{
+      content:"+";
+      color:var(--muted);
+      font-size:1.1rem;
+    }
+
+    details[open] summary::after{
+      content:"−";
+      color:var(--primary);
+    }
+
+    .section-body{
+      padding:0 14px 14px 14px;
+    }
+
+    textarea{
+      width:100%;
+      min-height:160px;
+      resize:vertical;
+      border:1px solid var(--border);
+      border-radius:10px;
+      padding:10px;
+      font:inherit;
+      line-height:1.45;
+      margin-top:8px;
+      background:rgba(10,26,110,0.85);
+      color:var(--text);
+    }
+
+    textarea::placeholder{
+      color:rgba(255,230,109,.75);
+    }
+
+    .actions{
+      display:flex;
+      gap:10px;
+      margin-top:12px;
+      flex-wrap:wrap;
+    }
+
+    @media(max-width:720px){
+      .actions .btn{ flex:1; min-width:140px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <div class="topbar">
+      <h1 id="antagonist-name" class="page-title">Antagonist</h1>
+      <a class="link-back" href="Antagonist.html">← Back to Antagonists</a>
+    </div>
+
+    <section class="card" style="margin-bottom:14px;">
+      <p id="antagonist-role" class="muted">Role: Unknown</p>
+      <p id="antagonist-description" style="margin:.4rem 0 0 0; color:var(--text);">No description available.</p>
+    </section>
+
+    <section class="card" style="margin-bottom:14px;">
+      <h2 class="section-title">Quick Profile (Short Answers)</h2>
+      <p class="section-subtext">Always visible, quick-reference facts.</p>
+
+      <div class="grid">
+        <div class="field"><label>Age</label><input id="q_age" type="text" placeholder="e.g., 48"></div>
+        <div class="field"><label>Pronouns</label><input id="q_pronouns" type="text" placeholder="e.g., he/him"></div>
+        <div class="field"><label>Title</label><input id="q_title" type="text" placeholder="e.g., High Inquisitor"></div>
+        <div class="field"><label>Faction</label><input id="q_faction" type="text"></div>
+        <div class="field"><label>Base of Power</label><input id="q_base" type="text"></div>
+        <div class="field"><label>Public Reputation</label><input id="q_reputation" type="text"></div>
+        <div class="field"><label>Core Desire</label><input id="q_desire" type="text"></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2 class="section-title">Important Questions</h2>
+      <p class="section-subtext">Use these for deep antagonist development.</p>
+
+      <div class="accordion" id="deepAccordion"></div>
+
+      <div class="actions">
+        <button class="btn btn-primary" id="saveBtn">Save All</button>
+        <button class="btn btn-muted" id="expandAllBtn">Expand All</button>
+        <button class="btn btn-muted" id="collapseAllBtn">Collapse All</button>
+        <button class="btn btn-muted" id="clearBtn">Clear All</button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const DEEP_TITLES = [
+      "1) What do they look like? (including quirks)",
+      "2) What makes them dangerous?",
+      "3) What are they excellent at?",
+      "4) What are they bad at / blind to?",
+      "5) What do they want most?",
+      "6) Why do they want it?",
+      "7) What methods will they use to get it?",
+      "8) What line will they not cross (if any)?",
+      "9) What is their biggest fear?",
+      "10) What is their greatest weakness?",
+      "11) What is their wound / origin pain?",
+      "12) What is their misbelief about the world?",
+      "13) What is their fatal flaw?",
+      "14) What is their biggest secret?",
+      "15) Who do they care about (if anyone)?",
+      "16) How do they justify their actions morally?",
+      "17) What is their relationship to the protagonist?",
+      "18) What does the world think of them?",
+      "19) How do they gain and keep power?",
+      "20) What would make them change course?",
+      "21) What happens if they win?",
+      "22) What happens if they lose?",
+      "23) How are they introduced in the story?",
+      "24) How do they escalate the conflict?",
+      "25) What symbol/theme do they represent?",
+      "26) Are they what they seem on the surface?",
+      "27) Who are they at the end of the story?"
+    ];
+
+    const QUICK_IDS = [
+      "q_age","q_pronouns","q_title","q_faction",
+      "q_base","q_reputation","q_desire"
+    ];
+
+    function getQueryParam(name) {
+      const params = new URLSearchParams(window.location.search);
+      return params.get(name);
+    }
+
+    function loadAntagonist() {
+      const antagonistId = getQueryParam('id');
+      const stored = localStorage.getItem('antagonists');
+      const antagonists = stored ? JSON.parse(stored) : [];
+
+      let antagonist = null;
+      if (antagonistId) antagonist = antagonists.find(a => String(a.id) === String(antagonistId));
+      if (!antagonist) {
+        const selected = localStorage.getItem('selectedAntagonist');
+        antagonist = selected ? JSON.parse(selected) : null;
+      }
+
+      if (!antagonist) {
+        document.getElementById('antagonist-name').textContent = 'Antagonist Not Found';
+        document.getElementById('antagonist-role').textContent = 'Role: -';
+        document.getElementById('antagonist-description').textContent =
+          'This antagonist could not be found. Return to Antagonists page.';
+        return null;
+      }
+
+      document.title = `${antagonist.name} | Antagonist Details`;
+      document.getElementById('antagonist-name').textContent = antagonist.name;
+      document.getElementById('antagonist-role').textContent = `Role: ${antagonist.role || 'Unknown'}`;
+      document.getElementById('antagonist-description').textContent = antagonist.description || 'No description provided';
+      return antagonist;
+    }
+
+    function makeStorageKey(antagonist) {
+      return `antagonistProfile:${antagonist.id}:${antagonist.name}`;
+    }
+
+    function renderDeepSections(savedDeep = {}) {
+      const accordion = document.getElementById("deepAccordion");
+      accordion.innerHTML = "";
+
+      DEEP_TITLES.forEach((title, i) => {
+        const id = `deep_${i}`;
+        const details = document.createElement("details");
+        details.innerHTML = `
+          <summary>${title}</summary>
+          <div class="section-body">
+            <textarea id="${id}" placeholder="Write here...">${savedDeep[id] || ""}</textarea>
+          </div>
+        `;
+        accordion.appendChild(details);
+      });
+    }
+
+    function collectAllData() {
+      const quick = {};
+      QUICK_IDS.forEach(id => {
+        quick[id] = document.getElementById(id)?.value || "";
+      });
+
+      const deep = {};
+      DEEP_TITLES.forEach((_, i) => {
+        const id = `deep_${i}`;
+        deep[id] = document.getElementById(id)?.value || "";
+      });
+
+      return { quick, deep };
+    }
+
+    function applyAllData(saved) {
+      QUICK_IDS.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = saved?.quick?.[id] || "";
+      });
+      renderDeepSections(saved?.deep || {});
+    }
+
+    function loadSavedProfile(key) {
+      try {
+        return JSON.parse(localStorage.getItem(key) || "{}");
+      } catch {
+        return {};
+      }
+    }
+
+    function saveProfile(key) {
+      localStorage.setItem(key, JSON.stringify(collectAllData()));
+      alert("Saved!");
+    }
+
+    window.addEventListener("load", () => {
+      const antagonist = loadAntagonist();
+      if (!antagonist) return;
+
+      const storageKey = makeStorageKey(antagonist);
+      const saved = loadSavedProfile(storageKey);
+      applyAllData(saved);
+
+      document.getElementById("saveBtn").addEventListener("click", () => saveProfile(storageKey));
+      document.getElementById("expandAllBtn").addEventListener("click", () => {
+        document.querySelectorAll("#deepAccordion details").forEach(d => d.open = true);
+      });
+      document.getElementById("collapseAllBtn").addEventListener("click", () => {
+        document.querySelectorAll("#deepAccordion details").forEach(d => d.open = false);
+      });
+      document.getElementById("clearBtn").addEventListener("click", () => {
+        if (!confirm("Clear all quick + important answers for this antagonist?")) return;
+        localStorage.removeItem(storageKey);
+        applyAllData({});
+      });
+
+      document.addEventListener("input", (e) => {
+        if (e.target.matches("input, textarea")) {
+          localStorage.setItem(storageKey, JSON.stringify(collectAllData()));
+        }
+      });
+    });
+  </script>
+</body>
+</html>
