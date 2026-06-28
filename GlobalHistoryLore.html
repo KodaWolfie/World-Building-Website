@@ -28,49 +28,80 @@
     .section-sub{ margin:0; color:var(--muted); font-size:.95rem; }
 
     /* Timeline */
-    .timeline-wrap{ margin-top:12px; }
-    .timeline-controls{
-      display:flex; gap:.6rem; flex-wrap:wrap; margin-top:12px;
+    <script>
+  // ...keep your existing constants + state setup above...
+
+  function moveEvent(fromIndex, toIndex) {
+    if (toIndex < 0 || toIndex >= state.timeline.length) return;
+    const [item] = state.timeline.splice(fromIndex, 1);
+    state.timeline.splice(toIndex, 0, item);
+    saveData(state);
+    renderTimeline();
+  }
+
+  function renderTimeline() {
+    const wrap = document.getElementById('timeline');
+    wrap.innerHTML = '';
+
+    if (state.timeline.length === 0) {
+      const empty = document.createElement('div');
+      empty.className = 'card';
+      empty.innerHTML = `<p style="margin:0; color:var(--muted);">No events yet. Click <strong>+ Add Timeline Event</strong> to begin.</p>`;
+      wrap.appendChild(empty);
+      return;
     }
 
-    .timeline{
-      position:relative; margin-top:1rem; padding-left:22px;
-    }
-    .timeline::before{
-      content:""; position:absolute; left:8px; top:0; bottom:0;
-      width:3px; background:linear-gradient(var(--primary), transparent);
-      border-radius:99px;
-      opacity:.8;
+    state.timeline.forEach((ev, index) => {
+      const isFirst = index === 0;
+      const isLast = index === state.timeline.length - 1;
+
+      const item = document.createElement('div');
+      item.className = 'event';
+      item.innerHTML = `
+        <div class="event-grid">
+          <input type="text" value="${ev.date || ''}" placeholder="Date / Era (e.g., 4E 233, The First Age)" data-field="date" data-index="${index}">
+          <input type="text" value="${ev.title || ''}" placeholder="Event title" data-field="title" data-index="${index}">
+          <textarea placeholder="What happened, why it mattered, and consequences..." data-field="details" data-index="${index}">${ev.details || ''}</textarea>
+        </div>
+        <div class="event-actions" style="display:flex; gap:.5rem; justify-content:flex-end; flex-wrap:wrap;">
+          <button class="btn btn-muted" data-action="up" data-index="${index}" ${isFirst ? 'disabled' : ''}>↑ Move Up</button>
+          <button class="btn btn-muted" data-action="down" data-index="${index}" ${isLast ? 'disabled' : ''}>↓ Move Down</button>
+          <button class="btn btn-muted" data-action="delete" data-index="${index}">Delete</button>
+        </div>
+      `;
+      wrap.appendChild(item);
+    });
+  }
+
+  document.getElementById('timeline').addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-action]');
+    if (!btn) return;
+
+    const index = Number(btn.dataset.index);
+    if (Number.isNaN(index)) return;
+
+    const action = btn.dataset.action;
+
+    if (action === 'delete') {
+      state.timeline.splice(index, 1);
+      saveData(state);
+      renderTimeline();
+      return;
     }
 
-    .event{
-      position:relative; margin-bottom:12px;
-      background:var(--surface-strong);
-      border:1px solid var(--border);
-      border-radius:12px; padding:12px;
-      box-shadow:var(--shadow);
-    }
-    .event::before{
-      content:""; position:absolute; left:-19px; top:16px;
-      width:10px; height:10px; border-radius:50%;
-      background:var(--primary); box-shadow:0 0 0 4px rgba(255,230,109,.2);
+    if (action === 'up') {
+      moveEvent(index, index - 1);
+      return;
     }
 
-    .event-grid{
-      display:grid; gap:.6rem;
-      grid-template-columns: 170px 1fr;
+    if (action === 'down') {
+      moveEvent(index, index + 1);
+      return;
     }
-    .event input, .event textarea{
-      width:100%; border:1px solid var(--border); border-radius:10px;
-      padding:.65rem .75rem; font:inherit;
-      background:rgba(10,26,110,.85); color:var(--text);
-    }
-    .event textarea{ min-height:90px; resize:vertical; grid-column:1 / -1; }
-    .event input::placeholder, .event textarea::placeholder{ color:rgba(255,230,109,.75); }
+  });
 
-    .event-actions{
-      display:flex; justify-content:flex-end; margin-top:.5rem;
-    }
+  // ...keep your existing input listeners + add/save/clear + initial render...
+</script>
 
     /* Prompt cards (different design from accordion) */
     .prompts{ margin-top:1.2rem; display:grid; gap:.9rem; }
