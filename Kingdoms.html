@@ -440,7 +440,7 @@
         kingdoms.forEach((kingdom) => {
           const link = document.createElement('a');
           link.className = 'kingdom-link';
-          link.href = `countries/CountryTemplate.html?id=${kingdom.id}&name=${encodeURIComponent(slugify(kingdom.name))}`;
+          link.href = `CountryTemplate.html?id=${kingdom.id}&name=${encodeURIComponent(slugify(kingdom.name))}`;
           link.setAttribute('aria-label', `Open ${kingdom.name}`);
           link.addEventListener('click', (event) => {
             event.preventDefault();
