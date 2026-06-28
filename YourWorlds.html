@@ -5,228 +5,130 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Your Worlds</title>
 
-  <!-- Preconnect and Google Fonts -->
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&family=Old+Standard+TT:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- Shared theme -->
+  <link rel="stylesheet" href="theme.css?v=13">
 
   <!-- Supabase Library -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
-    :root{
-      --bg:#f7fbff;
-      --card:#ffffff;
-      --card-alpha: 0.92;
-      --text:#0f1724;
-      --muted:#6b7280;
-      --accent:#0b84ff;
-      --radius:12px;
-      --max-width:900px;
+    /* Layout-only styles (theme colors come from theme.css) */
+    .header-container{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:1rem;
+      gap:.75rem;
+      flex-wrap:wrap;
     }
-    *{box-sizing:border-box}
-    body{
+
+    .page-title{
       margin:0;
-      font-family: "Old Standard TT", Georgia, "Times New Roman", serif;
       color:var(--text);
-      -webkit-font-smoothing:antialiased;
-      background-image: url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1700&q=80');
-      background-position: center;
-      background-size: cover;
-      background-repeat: no-repeat;
-      background-attachment: fixed;
-      min-height: 100vh;
-      position: relative;
+      font-family:"UnifrakturCook", serif;
+      font-weight:700;
+      font-size:clamp(1.8rem,3vw,2.4rem);
+      line-height:1.1;
     }
 
-    body::before{
-      content: "";
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.28);
-      pointer-events: none;
-      z-index: 0;
+    .worlds-container{
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(250px,1fr));
+      gap:1rem;
+      margin-top:1rem;
     }
 
-    .wrap{
-      max-width:var(--max-width);
-      margin:6vh auto;
-      padding:1.25rem;
-      position: relative;
-      z-index: 1;
+    .world-card{
+      cursor:pointer;
+      transition:transform .15s ease;
     }
 
-    .header-container {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 2rem;
+    .world-card:hover{
+      transform:translateY(-2px);
     }
 
-    .h-blackletter {
-      font-family: "UnifrakturCook", serif;
-      font-weight: 700;
-      font-style: normal;
-      text-rendering: optimizeLegibility;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-      letter-spacing: 0;
-      text-shadow: 0 0.8px 0 rgba(0,0,0,0.02);
-      color: #fff7e6;
-      margin: 0;
-      font-size: 2.4rem;
-      line-height: 1.05;
+    .world-name{
+      margin:0 0 .5rem 0;
+      color:var(--text);
+      font-weight:700;
+      font-size:1.1rem;
     }
 
-    .add-world-btn {
-      background: var(--accent);
-      color: white;
-      border: none;
-      width: 50px;
-      height: 50px;
-      border-radius: 8px;
-      font-size: 1.8rem;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 500;
+    .detail{
+      margin:.5rem 0;
+      font-size:.9rem;
     }
 
-    .add-world-btn:hover {
-      background: #0968d6;
-      box-shadow: 0 4px 12px rgba(11,132,255,0.3);
+    .label{
+      color:var(--muted);
+      font-weight:700;
+      font-size:.8rem;
+      text-transform:uppercase;
+      letter-spacing:.4px;
     }
 
-    .worlds-container {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-      gap: 1.5rem;
-      margin-top: 2rem;
+    .value{
+      color:var(--text);
+      margin-top:.2rem;
+      font-weight:700;
     }
 
-    .world-card {
-      background: rgba(255,255,255,var(--card-alpha));
-      border-radius: var(--radius);
-      padding: 1.5rem;
-      box-shadow: 0 6px 18px rgba(15,23,36,0.12);
-      border: 1px solid rgba(11,132,255,0.06);
-      backdrop-filter: blur(2px);
-      transition: all 0.2s ease;
-      cursor: pointer;
+    .empty-state{
+      padding:22px;
+      text-align:center;
     }
 
-    .world-card:hover {
-      box-shadow: 0 8px 24px rgba(11,132,255,0.18);
-      transform: translateY(-2px);
+    .empty-state h2{
+      color:var(--text);
+      font-size:1.2rem;
+      margin:0 0 1rem 0;
     }
 
-    .world-card h3 {
-      margin: 0 0 0.5rem 0;
-      color: var(--accent);
-      font-weight: 700;
-      font-size: 1.1rem;
+    .empty-state p{
+      color:var(--muted);
+      margin:0 0 1rem 0;
     }
 
-    .world-card .detail {
-      margin: 0.5rem 0;
-      font-size: 0.9rem;
-    }
-
-    .world-card .label {
-      color: var(--muted);
-      font-weight: 600;
-      font-size: 0.8rem;
-      text-transform: uppercase;
-    }
-
-    .world-card .value {
-      color: var(--text);
-      margin-top: 0.2rem;
-    }
-
-    .no-worlds {
-      background: rgba(255,255,255,var(--card-alpha));
-      border-radius: var(--radius);
-      padding: 2rem;
-      text-align: center;
-      box-shadow: 0 6px 18px rgba(15,23,36,0.12);
-      border: 1px solid rgba(11,132,255,0.06);
-      backdrop-filter: blur(2px);
-    }
-
-    .no-worlds h2 {
-      color: var(--accent);
-      font-size: 1.2rem;
-      margin: 0 0 1rem 0;
-    }
-
-    .no-worlds p {
-      color: var(--muted);
-      margin: 0 0 1.5rem 0;
-    }
-
-    button {
-      background: var(--accent);
-      color: white;
-      border: none;
-      padding: 0.5rem 1rem;
-      border-radius: 8px;
-      font-size: 0.95rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      font-family: "Old Standard TT", Georgia, "Times New Roman", serif;
-    }
-
-    button:hover {
-      background: #0968d6;
-      box-shadow: 0 4px 12px rgba(11,132,255,0.3);
-    }
-
-    .loading {
-      text-align: center;
-      color: #f2ebdf;
-      font-size: 1.1rem;
-      padding: 2rem;
+    .loading{
+      text-align:center;
+      color:var(--text);
+      font-size:1rem;
+      padding:1rem;
     }
 
     @media(max-width:720px){
-      body{ background-attachment: scroll; }
-      .wrap{ margin: 4vh 1rem; }
-      .h-blackletter{ font-size: 2rem; }
-      .worlds-container {
-        grid-template-columns: 1fr;
-      }
+      .worlds-container{ grid-template-columns:1fr; }
     }
   </style>
 </head>
 <body>
-  <main class="wrap" role="main">
+  <main class="container" role="main">
     <div class="header-container">
-      <h1 class="h-blackletter">Your Worlds</h1>
-      <a href="CreateWorld.html" style="text-decoration: none;">
-        <button class="add-world-btn" title="Create a new world">+</button>
+      <h1 class="page-title">Your Worlds</h1>
+      <a href="CreateWorld.html" style="text-decoration:none;">
+        <button class="btn btn-primary" title="Create a new world">+ New</button>
       </a>
     </div>
 
-    <!-- This section will show when user has no worlds -->
-    <div class="no-worlds" id="no-worlds-section">
+    <!-- Shows when user has no worlds -->
+    <section class="glass empty-state" id="no-worlds-section">
       <h2>No Worlds Yet</h2>
       <p>Get started by creating your first world.</p>
-      <a href="CreateWorld.html" style="text-decoration: none;">
-        <button>Create World</button>
+      <a href="CreateWorld.html" style="text-decoration:none;">
+        <button class="btn btn-primary">Create World</button>
       </a>
-    </div>
+    </section>
 
-    <!-- This section will show when user has worlds -->
-    <div class="worlds-container" id="worlds-list" style="display: none;">
-      <!-- World cards will be populated here -->
-    </div>
+    <!-- Shows when user has worlds -->
+    <section class="worlds-container" id="worlds-list" style="display:none;"></section>
 
-    <!-- Loading indicator -->
-    <div class="loading" id="loading" style="display: none;">
+    <!-- Loading -->
+    <div class="loading" id="loading" style="display:none;">
       Loading your worlds...
     </div>
   </main>
@@ -240,42 +142,41 @@
 
       document.getElementById('loading').style.display = 'none';
 
-      if (worlds.length === 0) {
-        // Show "No Worlds" section
+      if (!worlds || worlds.length === 0) {
         document.getElementById('no-worlds-section').style.display = 'block';
         document.getElementById('worlds-list').style.display = 'none';
       } else {
-        // Show worlds list
         document.getElementById('no-worlds-section').style.display = 'none';
         document.getElementById('worlds-list').style.display = 'grid';
 
         const worldsList = document.getElementById('worlds-list');
-        worldsList.innerHTML = ''; // Clear loading state
+        worldsList.innerHTML = '';
 
         worlds.forEach(world => {
           const card = document.createElement('div');
-          card.className = 'world-card';
+          card.className = 'card world-card';
           card.onclick = () => {
             setCurrentWorld(world.world_name, world.genre, world.theme);
             window.location.href = 'WorldBuildingIdeas.html';
           };
+
           card.innerHTML = `
-            <h3>${world.world_name}</h3>
+            <h3 class="world-name">${world.world_name}</h3>
             <div class="detail">
               <div class="label">Genre</div>
-              <div class="value">${world.genre}</div>
+              <div class="value">${world.genre || '-'}</div>
             </div>
             <div class="detail">
               <div class="label">Theme</div>
-              <div class="value">${world.theme}</div>
+              <div class="value">${world.theme || '-'}</div>
             </div>
           `;
+
           worldsList.appendChild(card);
         });
       }
     }
 
-    // Load worlds on page load
     window.addEventListener('load', loadWorlds);
   </script>
 </body>
