@@ -27,12 +27,11 @@ html,body{
 
 body{
   font-family: "Old Standard TT", Georgia, "Times New Roman", serif;
-  color:var(--text);
-  min-height:100vh;
+  color: var(--text);
+  min-height: 100vh;
   background:
-    radial-gradient(1200px 700px at 10% -10%, #0a1f8f 0%, transparent 55%),
-    radial-gradient(1000px 600px at 100% 0%, #1234b8 0%, transparent 45%),
-    linear-gradient(165deg,var(--bg-1),var(--bg-2) 50%, var(--bg-3));
+    linear-gradient(rgba(2,8,40,0.78), rgba(2,8,40,0.78)),
+    url("https://i.pinimg.com/736x/db/66/6d/db666d21893ab17b9028010a85c5879f.jpg") center / cover no-repeat fixed;
 }
 
 .container{
