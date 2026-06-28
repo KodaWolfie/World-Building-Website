@@ -5,202 +5,116 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Create World Survey</title>
 
-  <!-- Preconnect and Google Fonts -->
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&family=Old+Standard+TT:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- Shared theme -->
+  <link rel="stylesheet" href="theme.css?v=13">
 
   <!-- Supabase Library -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
-    :root{
-      --bg:#f7fbff;
-      --card:#ffffff;
-      --card-alpha: 0.92;
-      --text:#0f1724;
-      --muted:#6b7280;
-      --accent:#0b84ff;
-      --radius:12px;
-      --max-width:900px;
-    }
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family: "Old Standard TT", Georgia, "Times New Roman", serif;
-      color:var(--text);
-      -webkit-font-smoothing:antialiased;
-      background-image: url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1700&q=80');
-      background-position: center;
-      background-size: cover;
-      background-repeat: no-repeat;
-      background-attachment: fixed;
-      min-height: 100vh;
-      position: relative;
-    }
+    /* Layout-only styles */
+    .center{ text-align:center; }
 
-    body::before{
-      content: "";
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.28);
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    .wrap{
-      max-width:var(--max-width);
-      margin:6vh auto;
-      padding:1.25rem;
-      position: relative;
-      z-index: 1;
-    }
-
-    .center{
-      text-align:center;
-    }
-
-    .h-blackletter {
-      font-family: "UnifrakturCook", serif;
-      font-weight: 700;
-      font-style: normal;
-      text-rendering: optimizeLegibility;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-      letter-spacing: 0;
-      text-shadow: 0 0.8px 0 rgba(0,0,0,0.02);
-      color: #fff7e6;
-    }
-
-    h1{
+    .page-title{
       margin:0 0 .5rem 0;
-      font-size:2.4rem;
+      color:var(--text);
+      font-family:"UnifrakturCook", serif;
+      font-size:clamp(2rem,4vw,2.6rem);
       line-height:1.05;
     }
 
     .lead{
-      margin:0 0 1.5rem 0;
-      color:#f2ebdf;
+      margin:0 0 1.25rem 0;
+      color:var(--muted);
       font-size:1rem;
       line-height:1.5;
     }
 
-    .box{
-      background: rgba(255,255,255,var(--card-alpha));
-      border-radius:var(--radius);
-      padding:1rem 1.25rem;
-      box-shadow:0 6px 18px rgba(15,23,36,0.12);
-      border:1px solid rgba(11,132,255,0.06);
-      max-width:540px;
+    .survey-card{
+      max-width:560px;
       margin:0 auto;
-      font-family: "Old Standard TT", Georgia, "Times New Roman", serif;
-      color: var(--text);
-      backdrop-filter: blur(2px);
+      padding:1rem 1.25rem;
+      text-align:left;
     }
 
-    .box h2{
+    .survey-title{
       margin:0 0 1rem 0;
-      font-size:1.1rem;
-      color:var(--accent);
+      font-size:1.2rem;
+      color:var(--text);
+      font-family:"UnifrakturCook", serif;
+    }
+
+    .form-group{
+      margin-bottom:1.1rem;
+    }
+
+    label{
+      display:block;
+      margin-bottom:.45rem;
+      color:var(--text);
       font-weight:700;
-      text-align: left;
-    }
-
-    .form-group {
-      margin-bottom: 1.5rem;
-      text-align: left;
-    }
-
-    label {
-      display: block;
-      margin-bottom: 0.5rem;
-      color: var(--text);
-      font-weight: 600;
-      font-size: 0.95rem;
-    }
-
-    input, select {
-      width: 100%;
-      padding: 0.75rem;
-      border: 1px solid rgba(11,132,255,0.2);
-      border-radius: 6px;
-      font-family: "Old Standard TT", Georgia, "Times New Roman", serif;
-      font-size: 0.95rem;
-      color: var(--text);
-      background: rgba(255,255,255,0.95);
-    }
-
-    input:focus, select:focus {
-      outline: none;
-      border-color: var(--accent);
-      box-shadow: 0 0 0 2px rgba(11,132,255,0.1);
-    }
-
-    button{
-      background:var(--accent);
-      color:white;
-      border:none;
-      padding:.75rem 1.5rem;
-      border-radius:8px;
       font-size:.95rem;
-      font-weight:500;
-      cursor:pointer;
-      transition:all 0.2s ease;
-      font-family: "Old Standard TT", Georgia, "Times New Roman", serif;
-      width: 100%;
     }
 
-    button:hover{
-      background:#0968d6;
-      box-shadow:0 4px 12px rgba(11,132,255,0.3);
+    input, select{
+      width:100%;
+      padding:.75rem;
+      border:1px solid var(--border);
+      border-radius:10px;
+      font-family:"Old Standard TT", Georgia, "Times New Roman", serif;
+      font-size:.95rem;
+      color:var(--text);
+      background:rgba(10,26,110,0.85);
     }
 
-    button:disabled {
-      background: #ccc;
-      cursor: not-allowed;
+    input::placeholder{ color:rgba(255,230,109,.75); }
+
+    input:focus, select:focus{
+      outline:none;
+      border-color:var(--primary);
+      box-shadow:0 0 0 2px rgba(255,230,109,.2);
     }
 
-    .button-group {
-      display: flex;
-      gap: 1rem;
-      margin-top: 1.5rem;
+    .button-group{
+      display:flex;
+      gap:.75rem;
+      margin-top:1.25rem;
+      flex-wrap:wrap;
     }
 
-    .button-group button {
-      flex: 1;
+    .button-group button{
+      flex:1;
+      min-width:140px;
     }
 
-    .button-group button.secondary {
-      background: var(--muted);
-    }
-
-    .button-group button.secondary:hover {
-      background: #5a6270;
-    }
-
-    @media(max-width:720px){
-      body{ background-attachment: scroll; }
-      .wrap{ margin: 4vh 1rem; }
-      h1{ font-size: 2rem; }
+    button:disabled{
+      opacity:.65;
+      cursor:not-allowed;
     }
   </style>
 </head>
 <body>
-  <main class="wrap center" role="main">
-    <header>
-      <h1 class="h-blackletter">Create Your World</h1>
+  <main class="container center" role="main">
+    <header style="margin-bottom:12px;">
+      <h1 class="page-title">Create Your World</h1>
       <p class="lead">Tell us about your world to get started</p>
     </header>
 
-    <section class="box">
-      <h2>World Survey</h2>
+    <section class="glass survey-card">
+      <h2 class="survey-title">World Survey</h2>
+
       <form id="world-form">
         <div class="form-group">
           <label for="world-name">World Name *</label>
-          <input 
-            type="text" 
-            id="world-name" 
-            name="world-name" 
+          <input
+            type="text"
+            id="world-name"
+            name="world-name"
             placeholder="e.g., The Shattered Realms"
             required
           >
@@ -223,18 +137,18 @@
 
         <div class="form-group">
           <label for="theme">Theme *</label>
-          <input 
-            type="text" 
-            id="theme" 
-            name="theme" 
+          <input
+            type="text"
+            id="theme"
+            name="theme"
             placeholder="e.g., Magic, Technology, Survival"
             required
           >
         </div>
 
         <div class="button-group">
-          <button type="button" class="secondary" onclick="window.history.back()">Cancel</button>
-          <button type="submit">Continue →</button>
+          <button type="button" class="btn btn-muted" onclick="window.history.back()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Continue →</button>
         </div>
       </form>
     </section>
@@ -245,18 +159,14 @@
     document.getElementById('world-form').addEventListener('submit', async function(e) {
       e.preventDefault();
 
-      const worldName = document.getElementById('world-name').value;
+      const worldName = document.getElementById('world-name').value.trim();
       const genre = document.getElementById('genre').value;
-      const theme = document.getElementById('theme').value;
+      const theme = document.getElementById('theme').value.trim();
 
-      // Store current world data
       setCurrentWorld(worldName, genre, theme);
 
-      // Save to Supabase
       const saved = await saveWorld(worldName, genre, theme);
-
       if (saved) {
-        // Redirect to world building ideas page
         window.location.href = 'WorldBuildingIdeas.html';
       }
     });
