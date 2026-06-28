@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Character Details</title>
+  <style>
+    :root{
+      --text:#111827;
+      --muted:#6b7280;
+      --accent:#2563eb;
+      --bg:#ffffff;
+      --border:#d1d5db;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: Arial, Helvetica, sans-serif;
+      color:var(--text);
+      background:var(--bg);
+    }
+    .wrap{
+      max-width:900px;
+      margin:32px auto;
+      padding:0 16px;
+    }
+    .topbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:12px;
+      gap:12px;
+    }
+    .topbar a{
+      color:var(--accent);
+      text-decoration:none;
+      font-weight:600;
+    }
+    .card{
+      border:1px solid var(--border);
+      border-radius:10px;
+      padding:16px;
+      margin-bottom:14px;
+      background:#fff;
+    }
+    h1{margin:0 0 6px 0}
+    .muted{color:var(--muted);margin:0}
+    textarea{
+      width:100%;
+      min-height:220px;
+      resize:vertical;
+      border:1px solid var(--border);
+      border-radius:8px;
+      padding:10px;
+      font:inherit;
+      margin-top:10px;
+      line-height:1.45;
+    }
+    .actions{
+      display:flex;
+      gap:10px;
+      margin-top:10px;
+      flex-wrap:wrap;
+    }
+    button{
+      border:1px solid var(--border);
+      background:#fff;
+      color:var(--text);
+      padding:10px 14px;
+      border-radius:8px;
+      cursor:pointer;
+      font-weight:600;
+    }
+    .primary{
+      background:var(--accent);
+      color:#fff;
+      border-color:var(--accent);
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="topbar">
+      <h1 id="character-name">Character</h1>
+      <a href="Characters.html">← Back to Characters</a>
+    </div>
+
+    <section class="card">
+      <p id="character-role" class="muted">Role: Unknown</p>
+      <p id="character-description">No description available.</p>
+    </section>
+
+    <section class="card">
+      <h2 style="margin:0;">Character Notes</h2>
+      <p class="muted">These notes auto-save in your browser for this character.</p>
+      <textarea id="character-notes" placeholder="Write character backstory, goals, secrets, relationships, arc, etc..."></textarea>
+      <div class="actions">
+        <button class="primary" id="saveBtn">Save Notes</button>
+        <button id="clearBtn">Clear Notes</button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    function getQueryParam(name) {
+      const params = new URLSearchParams(window.location.search);
+      return params.get(name);
+    }
+
+    function loadCharacter() {
+      const characterId = getQueryParam('id');
+      const storedCharacters = localStorage.getItem('characters');
+      const characters = storedCharacters ? JSON.parse(storedCharacters) : [];
+
+      let character = null;
+
+      if (characterId) {
+        character = characters.find(c => String(c.id) === String(characterId));
+      }
+
+      if (!character) {
+        const selectedCharacter = localStorage.getItem('selectedCharacter');
+        character = selectedCharacter ? JSON.parse(selectedCharacter) : null;
+      }
+
+      if (!character) {
+        document.getElementById('character-name').textContent = 'Character Not Found';
+        document.getElementById('character-role').textContent = 'Role: -';
+        document.getElementById('character-description').textContent = 'This character could not be found. Return to Characters page.';
+        return null;
+      }
+
+      document.title = `${character.name} | Character Details`;
+      document.getElementById('character-name').textContent = character.name;
+      document.getElementById('character-role').textContent = `Role: ${character.role || 'Unknown'}`;
+      document.getElementById('character-description').textContent = character.description || 'No description provided';
+
+      return character;
+    }
+
+    function notesKey(character) {
+      return `characterNotes:${character.id}:${character.name}`;
+    }
+
+    function loadNotes(character) {
+      const key = notesKey(character);
+      try {
+        return localStorage.getItem(key) || '';
+      } catch {
+        return '';
+      }
+    }
+
+    function saveNotes(character) {
+      const key = notesKey(character);
+      const value = document.getElementById('character-notes').value;
+      localStorage.setItem(key, value);
+      alert('Notes saved!');
+    }
+
+    function clearNotes(character) {
+      const key = notesKey(character);
+      if (!confirm('Clear notes for this character?')) return;
+      localStorage.removeItem(key);
+      document.getElementById('character-notes').value = '';
+    }
+
+    window.addEventListener('load', () => {
+      const character = loadCharacter();
+      if (!character) return;
+
+      const notesEl = document.getElementById('character-notes');
+      notesEl.value = loadNotes(character);
+
+      document.getElementById('saveBtn').addEventListener('click', () => saveNotes(character));
+      document.getElementById('clearBtn').addEventListener('click', () => clearNotes(character));
+
+      notesEl.addEventListener('input', () => {
+        const key = notesKey(character);
+        localStorage.setItem(key, notesEl.value);
+      });
+    });
+  </script>
+</body>
+</html>
