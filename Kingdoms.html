@@ -9,7 +9,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&family=Old+Standard+TT:wght@400;700&display=swap" rel="stylesheet">
-
+  <link rel="stylesheet" href="theme.css">
+  
   <!-- Supabase Library -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -318,41 +319,38 @@
   </style>
 </head>
 <body>
-  <main class="wrap" role="main">
-    <a href="WorldBuildingIdeas.html" style="display:inline-block;margin-bottom:1rem;color:#fff7e6;font-weight:700;text-decoration:none;">
-  ← Return to World Ideas
-</a>
-    <div class="world-header">
-      <h1 id="world-name">Your World</h1>
-      <div class="world-details">
-        <div class="detail">
-          <span class="detail-label">Genre</span>
-          <span class="detail-value" id="genre-display">-</span>
-        </div>
-        <div class="detail">
-          <span class="detail-label">Theme</span>
-          <span class="detail-value" id="theme-display">-</span>
-        </div>
+  <main class="container" role="main">
+  <div style="margin-bottom:12px;">
+    <a class="link-back" href="WorldBuildingIdeas.html">← Return to World Ideas</a>
+  </div>
+
+  <section class="glass" style="padding:18px; margin-bottom:16px;">
+    <h1 id="world-name" style="margin:0 0 8px 0; font-size:1.8rem;">Your World</h1>
+    <div style="display:flex; gap:24px; flex-wrap:wrap;">
+      <div>
+        <div style="color:var(--muted); font-size:.8rem; font-weight:700; text-transform:uppercase;">Genre</div>
+        <div id="genre-display">-</div>
+      </div>
+      <div>
+        <div style="color:var(--muted); font-size:.8rem; font-weight:700; text-transform:uppercase;">Theme</div>
+        <div id="theme-display">-</div>
       </div>
     </div>
+  </section>
 
-    <div class="header-container">
-      <h1 class="h-blackletter">Kingdoms/Countries/Sovereignties</h1>
-      <button class="add-kingdom-btn" title="Create a new kingdom" onclick="openKingdomModal()">+</button>
-    </div>
+  <section style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+    <h1 style="margin:0; color:#e2e8f0;">Kingdoms / Countries / Sovereignties</h1>
+    <button class="btn btn-primary" title="Create a new kingdom" onclick="openKingdomModal()">+ New</button>
+  </section>
 
-    <!-- This section will show when user has no kingdoms -->
-    <div class="no-kingdoms" id="no-kingdoms-section">
-      <h2>No Kingdoms Yet</h2>
-      <p>Get started by creating your first kingdom.</p>
-      <button onclick="openKingdomModal()">Create Kingdom</button>
-    </div>
+  <section class="glass" id="no-kingdoms-section" style="padding:22px; text-align:center;">
+    <h2 style="margin-top:0;">No Kingdoms Yet</h2>
+    <p style="color:var(--muted);">Get started by creating your first kingdom.</p>
+    <button class="btn btn-primary" onclick="openKingdomModal()">Create Kingdom</button>
+  </section>
 
-    <!-- This section will show when user has kingdoms -->
-    <div class="kingdoms-container" id="kingdoms-list" style="display: none;">
-      <!-- Kingdom cards will be populated here by JavaScript -->
-    </div>
-  </main>
+  <section id="kingdoms-list" style="display:none; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:14px;"></section>
+</main>
 
   <!-- Create Kingdom Modal -->
   <div id="kingdomModal" class="modal">
@@ -450,7 +448,11 @@
           });
 
           const card = document.createElement('div');
-          card.className = 'kingdom-card';
+          card.className = 'card';
+          card.style.background = "var(--surface-strong)";
+          card.style.border = "1px solid var(--border)";
+          card.style.borderRadius = "14px";
+          card.style.padding = "14px";
           card.innerHTML = `
             <h3>${kingdom.name}</h3>
             <p><strong>Type:</strong> ${kingdom.type}</p>
