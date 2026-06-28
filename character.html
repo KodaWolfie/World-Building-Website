@@ -4,26 +4,15 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Character Details</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&family=Old+Standard+TT:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- Shared theme -->
+  <link rel="stylesheet" href="theme.css?v=13">
+
   <style>
-    :root{
-      --text:#111827;
-      --muted:#6b7280;
-      --accent:#2563eb;
-      --bg:#ffffff;
-      --border:#d1d5db;
-    }
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family: Arial, Helvetica, sans-serif;
-      color:var(--text);
-      background:var(--bg);
-    }
-    .wrap{
-      max-width:980px;
-      margin:32px auto;
-      padding:0 16px;
-    }
     .topbar{
       display:flex;
       justify-content:space-between;
@@ -32,56 +21,76 @@
       gap:12px;
       flex-wrap:wrap;
     }
-    .topbar a{
-      color:var(--accent);
-      text-decoration:none;
-      font-weight:600;
+
+    .page-title{
+      margin:0;
+      color:var(--text);
+      font-family:"UnifrakturCook", serif;
+      font-size:clamp(1.6rem,3vw,2.2rem);
+      line-height:1.1;
     }
-    .card{
-      border:1px solid var(--border);
-      border-radius:10px;
-      padding:16px;
-      margin-bottom:14px;
-      background:#fff;
+
+    .muted{ color:var(--muted); margin:0; }
+
+    .section-title{
+      margin:0 0 .35rem 0;
+      color:var(--text);
+      font-family:"UnifrakturCook", serif;
+      font-size:1.25rem;
     }
-    h1{margin:0 0 6px 0}
-    h2{margin:0 0 10px 0}
-    .muted{color:var(--muted);margin:0}
+
+    .section-subtext{
+      margin:0;
+      color:var(--muted);
+      font-size:.95rem;
+    }
 
     .grid{
       display:grid;
       grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
       gap:10px;
-      margin-top:10px;
+      margin-top:12px;
     }
+
     .field label{
       display:block;
-      font-size:.86rem;
+      font-size:.83rem;
       color:var(--muted);
       margin-bottom:4px;
-      font-weight:600;
+      font-weight:700;
       text-transform:uppercase;
-      letter-spacing:.3px;
+      letter-spacing:.35px;
     }
+
     .field input{
       width:100%;
       border:1px solid var(--border);
-      border-radius:8px;
-      padding:9px 10px;
+      border-radius:10px;
+      padding:10px;
       font:inherit;
+      background:rgba(10,26,110,0.85);
+      color:var(--text);
+    }
+
+    .field input::placeholder{
+      color:rgba(255,230,109,.75);
     }
 
     .accordion{
       border:1px solid var(--border);
-      border-radius:10px;
+      border-radius:12px;
       overflow:hidden;
-      margin-top:8px;
+      margin-top:10px;
+      background:var(--surface);
     }
+
     details{
       border-bottom:1px solid var(--border);
-      background:#fff;
+      background:rgba(10,26,110,0.35);
     }
-    details:last-child{border-bottom:none;}
+
+    details:last-child{ border-bottom:none; }
+
     summary{
       list-style:none;
       cursor:pointer;
@@ -90,30 +99,42 @@
       display:flex;
       justify-content:space-between;
       align-items:center;
+      color:var(--text);
     }
-    summary::-webkit-details-marker{display:none;}
+
+    summary::-webkit-details-marker{ display:none; }
+
     summary::after{
       content:"+";
       color:var(--muted);
       font-size:1.1rem;
     }
+
     details[open] summary::after{
       content:"−";
-      color:var(--accent);
+      color:var(--primary);
     }
+
     .section-body{
       padding:0 14px 14px 14px;
     }
+
     textarea{
       width:100%;
       min-height:160px;
       resize:vertical;
       border:1px solid var(--border);
-      border-radius:8px;
+      border-radius:10px;
       padding:10px;
       font:inherit;
       line-height:1.45;
       margin-top:8px;
+      background:rgba(10,26,110,0.85);
+      color:var(--text);
+    }
+
+    textarea::placeholder{
+      color:rgba(255,230,109,.75);
     }
 
     .actions{
@@ -122,37 +143,27 @@
       margin-top:12px;
       flex-wrap:wrap;
     }
-    button{
-      border:1px solid var(--border);
-      background:#fff;
-      color:var(--text);
-      padding:10px 14px;
-      border-radius:8px;
-      cursor:pointer;
-      font-weight:600;
-    }
-    .primary{
-      background:var(--accent);
-      color:#fff;
-      border-color:var(--accent);
+
+    @media(max-width:720px){
+      .actions .btn{ flex:1; min-width:140px; }
     }
   </style>
 </head>
 <body>
-  <main class="wrap">
+  <main class="container">
     <div class="topbar">
-      <h1 id="character-name">Character</h1>
-      <a href="Characters.html">← Back to Characters</a>
+      <h1 id="character-name" class="page-title">Character</h1>
+      <a class="link-back" href="Characters.html">← Back to Characters</a>
     </div>
 
-    <section class="card">
+    <section class="card" style="margin-bottom:14px;">
       <p id="character-role" class="muted">Role: Unknown</p>
-      <p id="character-description">No description available.</p>
+      <p id="character-description" style="margin:.4rem 0 0 0; color:var(--text);">No description available.</p>
     </section>
 
-    <section class="card">
-      <h2>Quick Profile (Short Answers)</h2>
-      <p class="muted">Always visible, quick-reference facts.</p>
+    <section class="card" style="margin-bottom:14px;">
+      <h2 class="section-title">Quick Profile (Short Answers)</h2>
+      <p class="section-subtext">Always visible, quick-reference facts.</p>
 
       <div class="grid">
         <div class="field"><label>Age</label><input id="q_age" type="text" placeholder="e.g., 27"></div>
@@ -166,16 +177,16 @@
     </section>
 
     <section class="card">
-      <h2>Important Questions</h2>
-      <p class="muted">Use these for deep character development.</p>
+      <h2 class="section-title">Important Questions</h2>
+      <p class="section-subtext">Use these for deep character development.</p>
 
       <div class="accordion" id="deepAccordion"></div>
 
       <div class="actions">
-        <button class="primary" id="saveBtn">Save All</button>
-        <button id="expandAllBtn">Expand All</button>
-        <button id="collapseAllBtn">Collapse All</button>
-        <button id="clearBtn">Clear All</button>
+        <button class="btn btn-primary" id="saveBtn">Save All</button>
+        <button class="btn btn-muted" id="expandAllBtn">Expand All</button>
+        <button class="btn btn-muted" id="collapseAllBtn">Collapse All</button>
+        <button class="btn btn-muted" id="clearBtn">Clear All</button>
       </div>
     </section>
   </main>
@@ -314,7 +325,6 @@
       const saved = loadSavedProfile(storageKey);
       applyAllData(saved);
 
-      // buttons
       document.getElementById("saveBtn").addEventListener("click", () => saveProfile(storageKey));
       document.getElementById("expandAllBtn").addEventListener("click", () => {
         document.querySelectorAll("#deepAccordion details").forEach(d => d.open = true);
@@ -328,7 +338,6 @@
         applyAllData({});
       });
 
-      // auto-save on input
       document.addEventListener("input", (e) => {
         if (e.target.matches("input, textarea")) {
           localStorage.setItem(storageKey, JSON.stringify(collectAllData()));
