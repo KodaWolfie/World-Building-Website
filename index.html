@@ -5,109 +5,54 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Welcome to World Building!</title>
 
-  <!-- Preconnect and Google Fonts -->
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&family=Old+Standard+TT:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- Shared theme -->
+  <link rel="stylesheet" href="theme.css?v=13">
 
   <!-- Supabase Library -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
-    :root{
-      --bg:#f7fbff;
-      --card:#ffffff;
-      --card-alpha: 0.92;
-      --text:#0f1724;
-      --muted:#6b7280;
-      --accent:#0b84ff;
-      --radius:12px;
-      --max-width:900px;
-    }
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family: "Old Standard TT", Georgia, "Times New Roman", serif;
-      color:var(--text);
-      -webkit-font-smoothing:antialiased;
-      background-image: url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1700&q=80');
-      background-position: center;
-      background-size: cover;
-      background-repeat: no-repeat;
-      background-attachment: fixed;
-      min-height: 100vh;
-      position: relative;
-    }
-    body::before{
-      content: "";
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.28);
-      pointer-events: none;
-      z-index: 0;
-    }
-    .wrap{
-      max-width:var(--max-width);
-      margin:6vh auto;
-      padding:1.25rem;
-      position: relative;
-      z-index: 1;
-    }
+    /* Layout-only styles */
     .center{ text-align:center; }
-    .h-blackletter {
-      font-family: "UnifrakturCook", serif;
-      font-weight: 700;
-      color: #fff7e6;
-    }
-    h1{
+
+    .page-title{
       margin:0 0 .5rem 0;
-      font-size:2.4rem;
+      color:var(--text);
+      font-family:"UnifrakturCook", serif;
+      font-size:clamp(2rem,4vw,3rem);
       line-height:1.05;
     }
+
     .lead{
-      margin:0 0 1.5rem 0;
-      color:#f2ebdf;
+      margin:0 0 1.25rem 0;
+      color:var(--muted);
       font-size:1rem;
       line-height:1.5;
     }
-    .box{
-      background: rgba(255,255,255,var(--card-alpha));
-      border-radius:var(--radius);
-      padding:1rem 1.25rem;
-      box-shadow:0 6px 18px rgba(15,23,36,0.12);
-      border:1px solid rgba(11,132,255,0.06);
-      max-width:620px;
+
+    .hero-card{
+      max-width:700px;
       margin:0 auto;
-      color: var(--text);
-      backdrop-filter: blur(2px);
+      padding:1.1rem 1.25rem;
+      text-align:center;
     }
-    .box h2{
+
+    .hero-card h2{
       margin:0;
-      font-size:1.1rem;
-      color:var(--accent);
-      font-weight:700;
+      font-size:1.2rem;
+      color:var(--text);
+      font-family:"UnifrakturCook", serif;
     }
-    .box p{
+
+    .hero-card p{
       margin:.5rem 0 0 0;
       color:var(--muted);
       font-size:.95rem;
-    }
-    .box-cta{ margin-top:1rem; }
-    button{
-      background:var(--accent);
-      color:white;
-      border:none;
-      padding:.5rem 1rem;
-      border-radius:8px;
-      font-size:.95rem;
-      font-weight:500;
-      cursor:pointer;
-      transition:all 0.2s ease;
-      font-family: "Old Standard TT", Georgia, "Times New Roman", serif;
-    }
-    button:hover{
-      background:#0968d6;
-      box-shadow:0 4px 12px rgba(11,132,255,0.3);
     }
 
     .auth-row{
@@ -118,51 +63,58 @@
       align-items:center;
       justify-content:center;
     }
+
     .auth-row input{
-      padding:.5rem .75rem;
-      border:1px solid #d1d5db;
-      border-radius:8px;
+      padding:.6rem .75rem;
+      border:1px solid var(--border);
+      border-radius:10px;
       min-width:220px;
-      font-family: "Old Standard TT", Georgia, "Times New Roman", serif;
+      font-family:"Old Standard TT", Georgia, "Times New Roman", serif;
+      background:rgba(10,26,110,0.85);
+      color:var(--text);
     }
+
+    .auth-row input::placeholder{
+      color:rgba(255,230,109,.75);
+    }
+
     #authStatus{
       margin-top:.75rem;
       color:var(--muted);
       font-size:.95rem;
     }
 
-    @media(min-width:720px){ h1{font-size:3.2rem} }
+    .box-cta{ margin-top:1rem; }
+
     @media(max-width:720px){
-      body{ background-attachment: scroll; }
-      .wrap{ margin:4vh 1rem; }
-      h1{ font-size:2rem; }
       .auth-row input{ min-width:100%; }
     }
   </style>
 </head>
 <body>
-  <main class="wrap center" role="main" aria-labelledby="hero-title">
-    <header>
-      <h1 id="hero-title" class="h-blackletter">Welcome to World Building!</h1>
+  <main class="container center" role="main" aria-labelledby="hero-title">
+    <header style="margin-bottom:12px;">
+      <h1 id="hero-title" class="page-title">Welcome to World Building!</h1>
       <p class="lead">Create, manage, and explore the worlds you imagine.</p>
     </header>
 
-    <section class="box" aria-labelledby="your-worlds">
+    <section class="glass hero-card" aria-labelledby="your-worlds">
       <h2 id="your-worlds">Your Worlds</h2>
-      <p class="muted" id="description-text">No worlds yet — get started by creating your first world.</p>
+      <p id="description-text">No worlds yet — get started by creating your first world.</p>
 
       <div class="auth-row">
         <input id="emailInput" type="email" placeholder="you@example.com" />
         <input id="passwordInput" type="password" placeholder="password" />
-        <button id="signupBtn" type="button">Sign Up</button>
-        <button id="loginBtn" type="button">Log In</button>
-        <button id="logoutBtn" type="button">Log Out</button>
+        <button id="signupBtn" type="button" class="btn btn-muted">Sign Up</button>
+        <button id="loginBtn" type="button" class="btn btn-primary">Log In</button>
+        <button id="logoutBtn" type="button" class="btn btn-muted">Log Out</button>
       </div>
+
       <div id="authStatus">Checking login...</div>
 
       <div class="box-cta">
-        <a id="worlds-link" href="CreateWorld.html" style="text-decoration: none;">
-          <button id="worlds-btn">Create World</button>
+        <a id="worlds-link" href="CreateWorld.html" style="text-decoration:none;">
+          <button id="worlds-btn" class="btn btn-primary">Create World</button>
         </a>
       </div>
     </section>
@@ -185,7 +137,7 @@
       if (worlds.length > 0) {
         button.textContent = 'Your Worlds';
         link.href = 'YourWorlds.html';
-        description.textContent = 'You have ' + worlds.length + ' world(s). Explore and create more!';
+        description.textContent = `You have ${worlds.length} world(s). Explore and create more!`;
       } else {
         button.textContent = 'Create World';
         link.href = 'CreateWorld.html';
@@ -234,5 +186,4 @@
     });
   </script>
 </body>
-</html>
 </html>
