@@ -9,9 +9,9 @@
   --surface-strong:rgba(10,26,110,0.88);
 
   --text:#ffe66d;          /* bright yellow */
-  --muted:#ffd84d;         /* softer bright yellow */
-  --primary:#ffd84d;       /* yellow buttons */
-  --primary-hover:#ffea8a; /* lighter yellow hover */
+  --muted:#ffe66d;         /* bright yellow */
+  --primary:#ffe66d;       /* bright yellow */
+  --primary-hover:#ffe66d; /* bright yellow */
 
   --border:rgba(255,230,109,0.35);
   --radius:16px;
