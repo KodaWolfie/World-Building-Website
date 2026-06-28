@@ -1,21 +1,21 @@
 @import url('https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&family=Old+Standard+TT:wght@400;700&display=swap');
 
 :root{
-  --bg-1:#020b3a;          /* deepest blue */
-  --bg-2:#041a72;          /* rich royal blue */
-  --bg-3:#0a2ea8;          /* lighter blend blue */
+  --bg-1:#01041a;   /* deepest blue */
+  --bg-2:#020b3a;   /* very deep blue */
+  --bg-3:#041a72;   /* deep blue blend */
 
-  --surface:rgba(8,20,90,0.72);
-  --surface-strong:rgba(10,26,110,0.88);
+  --surface:rgba(20,56,180,0.35);       /* lighter blue glass */
+  --surface-strong:rgba(36,84,220,0.45);/* lighter blue cards */
 
-  --text:#ffe66d;          /* bright yellow */
-  --muted:#ffe66d;         /* bright yellow */
-  --primary:#ffe66d;       /* bright yellow */
-  --primary-hover:#ffe66d; /* bright yellow */
+  --text:#ffe66d;
+  --muted:#ffe66d;
+  --primary:#ffe66d;
+  --primary-hover:#fff08a;
 
-  --border:rgba(255,230,109,0.35);
+  --border:rgba(140,180,255,0.45);
   --radius:16px;
-  --shadow:0 10px 30px rgba(1,6,30,.5);
+  --shadow:0 10px 30px rgba(1,6,30,.55);
 }
 
 *{box-sizing:border-box}
@@ -30,9 +30,9 @@ body{
   color:var(--text);
   min-height:100vh;
   background:
-    radial-gradient(1200px 700px at 10% -10%, #1234b8 0%, transparent 60%),
-    radial-gradient(1000px 600px at 100% 0%, #0a1f8f 0%, transparent 45%),
-    linear-gradient(165deg,var(--bg-1),var(--bg-2) 55%, var(--bg-3));
+    radial-gradient(1200px 700px at 10% -10%, #0a1f8f 0%, transparent 55%),
+    radial-gradient(1000px 600px at 100% 0%, #1234b8 0%, transparent 45%),
+    linear-gradient(165deg,var(--bg-1),var(--bg-2) 50%, var(--bg-3));
 }
 
 .container{
