@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Central Conflict</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&family=Old+Standard+TT:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="theme.css?v=14">
+
+  <style>
+    .topbar{
+      display:flex; justify-content:space-between; align-items:center;
+      gap:12px; margin-bottom:12px; flex-wrap:wrap;
+    }
+    .page-title{
+      margin:0; color:var(--text); font-family:"UnifrakturCook", serif;
+      font-size:clamp(1.9rem,3.3vw,2.6rem); line-height:1.1;
+    }
+    .world-name{
+      color:var(--muted); font-size:.95rem; margin:.2rem 0 0; font-weight:700;
+    }
+
+    .intro{
+      margin:0; color:var(--muted); font-size:.98rem;
+    }
+
+    .conflict-stack{
+      display:grid; gap:14px; margin-top:14px;
+    }
+
+    .conflict-card{
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:14px;
+      background:linear-gradient(180deg, rgba(12,34,130,.72), rgba(8,24,100,.65));
+      box-shadow:var(--shadow);
+    }
+
+    .conflict-card h2{
+      margin:0 0 .5rem 0;
+      color:var(--text);
+      font-family:"UnifrakturCook", serif;
+      font-size:1.7rem;
+      line-height:1.1;
+    }
+
+    .conflict-help{
+      margin:0 0 .7rem 0;
+      color:var(--muted);
+      font-size:.95rem;
+    }
+
+    .conflict-card textarea{
+      width:100%;
+      min-height:240px;
+      resize:vertical;
+      border:1px solid var(--border);
+      border-radius:10px;
+      padding:.8rem;
+      font:inherit;
+      line-height:1.5;
+      background:rgba(6,18,80,.88);
+      color:var(--text);
+    }
+    .conflict-card textarea::placeholder{
+      color:rgba(255,230,109,.75);
+    }
+
+    .actions{
+      display:flex; gap:.65rem; flex-wrap:wrap; margin-top:14px;
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <div class="topbar">
+      <div>
+        <h1 class="page-title">Conflict Builder</h1>
+        <p class="world-name" id="worldNameDisplay">World: New World</p>
+      </div>
+      <a class="link-back" href="WorldBuildingIdeas.html">← Back to World Ideas</a>
+    </div>
+
+    <section class="glass" style="padding:14px;">
+      <p class="intro">
+        Define the core pressure of your story world. These sections auto-save as you type.
+      </p>
+
+      <div class="conflict-stack">
+        <section class="conflict-card">
+          <h2>The Central Conflict</h2>
+          <p class="conflict-help">What is the main struggle driving the story/world?</p>
+          <textarea id="centralConflict" placeholder="Write the core conflict here..."></textarea>
+        </section>
+
+        <section class="conflict-card">
+          <h2>The External Conflict</h2>
+          <p class="conflict-help">What outside force opposes your characters (war, regime, nature, apocalypse, enemy)?</p>
+          <textarea id="externalConflict" placeholder="Write the external conflict here..."></textarea>
+        </section>
+
+        <section class="conflict-card">
+          <h2>The Internal Conflict</h2>
+          <p class="conflict-help">What inner emotional/psychological struggle must be faced?</p>
+          <textarea id="internalConflict" placeholder="Write the internal conflict here..."></textarea>
+        </section>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-primary" id="saveBtn">Save</button>
+        <button class="btn btn-muted" id="clearBtn">Clear All</button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    function getCurrentWorldSafe() {
+      try { return JSON.parse(localStorage.getItem('currentWorld') || 'null'); }
+      catch { return null; }
+    }
+
+    const world = getCurrentWorldSafe();
+    const worldName = world?.name || "New World";
+    document.getElementById("worldNameDisplay").textContent = `World: ${worldName}`;
+
+    const KEY = `centralConflict:${worldName}`;
+
+    function loadData() {
+      try {
+        return JSON.parse(localStorage.getItem(KEY) || "{}");
+      } catch {
+        return {};
+      }
+    }
+
+    function saveData(data) {
+      localStorage.setItem(KEY, JSON.stringify(data));
+    }
+
+    function collectData() {
+      return {
+        central: document.getElementById('centralConflict').value || '',
+        external: document.getElementById('externalConflict').value || '',
+        internal: document.getElementById('internalConflict').value || ''
+      };
+    }
+
+    function applyData(data) {
+      document.getElementById('centralConflict').value = data.central || '';
+      document.getElementById('externalConflict').value = data.external || '';
+      document.getElementById('internalConflict').value = data.internal || '';
+    }
+
+    document.getElementById('saveBtn').addEventListener('click', () => {
+      saveData(collectData());
+      alert('Saved!');
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', () => {
+      if (!confirm('Clear all conflict sections for this world?')) return;
+      localStorage.removeItem(KEY);
+      applyData({});
+    });
+
+    document.addEventListener('input', (e) => {
+      if (e.target.matches('#centralConflict, #externalConflict, #internalConflict')) {
+        saveData(collectData());
+      }
+    });
+
+    applyData(loadData());
+  </script>
+</body>
+</html>
