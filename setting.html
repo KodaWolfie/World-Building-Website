@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&family=Old+Standard+TT:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="theme.css?v=16">
+  <link rel="stylesheet" href="theme.css?v=17">
 
   <style>
     .topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
@@ -25,16 +25,10 @@
     }
     textarea::placeholder{color:rgba(255,230,109,.75)}
     #freeWrite{min-height:260px;margin-top:.6rem}
-
-    .questions-grid{
-      display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px;
-    }
-    .question-card{
-      border:1px solid var(--border);border-radius:12px;padding:10px;background:rgba(10,26,110,.35)
-    }
+    .questions-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
+    .question-card{border:1px solid var(--border);border-radius:12px;padding:10px;background:rgba(10,26,110,.35)}
     .question-card h3{margin:0 0 .45rem 0;color:var(--text);font-size:.98rem;font-weight:700;line-height:1.3}
     .question-card textarea{min-height:130px}
-
     .actions{display:flex;gap:.65rem;flex-wrap:wrap;margin-top:14px}
     @media(max-width:900px){ .questions-grid{grid-template-columns:1fr;} }
   </style>
@@ -68,25 +62,21 @@
   </main>
 
   <script>
-    // Replace with your own 10 prompts whenever ready
     const QUESTIONS = [
       "1) What is this setting called, and why?",
-      "2) What type of place is it? (City, Beach, Forest, ect)",
+      "2) What does it look and feel like at first glance?",
       "3) What is the geography and climate?",
-      "4) Where is it in the world?",
-      "5) Who has power of it?
-      "6) What is daily life like?",
-      "7) Sight, smell, sound, touch, taste?",
-      "8)  What emotions should the reader feel here?",
-      "9) What danger or secret is hidden here?",
-      "10) What conflict exists here right now?",
-      "11) What is this place known for?",
-      "12) How does this setting connect to the main plot, theme, or characters?"
+      "4) Who holds power here?",
+      "5) What is daily life like?",
+      "6) What is this place known for?",
+      "7) What conflict exists here right now?",
+      "8) What danger or secret is hidden here?",
+      "9) How does this setting connect to the main plot?",
+      "10) What could change this setting forever?"
     ];
 
     function getQueryParam(name) {
-      const params = new URLSearchParams(window.location.search);
-      return params.get(name);
+      return new URLSearchParams(window.location.search).get(name);
     }
 
     function getCurrentWorldSafe() {
@@ -94,8 +84,16 @@
       catch { return null; }
     }
 
-    const world = getCurrentWorldSafe();
-    const worldName = (world && typeof world.name === "string" && world.name.trim()) ? world.name.trim() : null;
+    function resolveWorldName() {
+      const fromCurrent = getCurrentWorldSafe()?.name?.trim();
+      const fromUrl = getQueryParam("world")?.trim();
+      const fromCache = localStorage.getItem("lastWorldName")?.trim();
+      const resolved = fromCurrent || fromUrl || fromCache || "";
+      if (resolved) localStorage.setItem("lastWorldName", resolved);
+      return resolved;
+    }
+
+    const worldName = resolveWorldName();
 
     function settingsListKey() {
       return worldName ? `settingsList:${worldName}` : `settingsList:__no_world_selected__`;
@@ -135,7 +133,6 @@
     function renderQuestions(saved = {}) {
       const grid = document.getElementById("questionsGrid");
       grid.innerHTML = "";
-
       QUESTIONS.forEach((q, i) => {
         const id = `q_${i + 1}`;
         const card = document.createElement("article");
@@ -159,7 +156,7 @@
 
     function applyData(saved = {}) {
       document.getElementById("freeWrite").value = saved.freeWrite || "";
-      renderQuestions(saved);
+      renderQuestions(saved); // always renders questions
     }
 
     function loadSavedProfile(key) {
@@ -174,6 +171,10 @@
 
     window.addEventListener("load", () => {
       const setting = loadSetting();
+
+      // always render questions even if setting fails
+      renderQuestions({});
+
       if (!setting) return;
 
       const storageKey = makeStorageKey(setting);
