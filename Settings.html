@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&family=Old+Standard+TT:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="theme.css?v=16">
+  <link rel="stylesheet" href="theme.css?v=17">
 
   <style>
     .topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap}
@@ -22,6 +22,7 @@
     .empty-state{padding:22px;text-align:center}
     .empty-state h2{margin-top:0;color:var(--text)}
     .empty-state p{color:var(--muted)}
+    .card-actions{display:flex;justify-content:flex-end;margin-top:.65rem}
 
     .modal{display:none;position:fixed;z-index:1000;inset:0;background-color:rgba(0,0,0,.5);padding:16px}
     .modal-content{
@@ -93,13 +94,25 @@
   <script>
     let settings = [];
 
+    function getQueryParam(name){
+      return new URLSearchParams(window.location.search).get(name);
+    }
+
     function getCurrentWorldSafe() {
       try { return JSON.parse(localStorage.getItem('currentWorld') || 'null'); }
       catch { return null; }
     }
 
-    const world = getCurrentWorldSafe();
-    const worldName = (world && typeof world.name === "string" && world.name.trim()) ? world.name.trim() : null;
+    function resolveWorldName() {
+      const fromCurrentWorld = getCurrentWorldSafe()?.name?.trim();
+      const fromUrl = getQueryParam("world")?.trim();
+      const fromCache = localStorage.getItem("lastWorldName")?.trim();
+      const resolved = fromCurrentWorld || fromUrl || fromCache || "";
+      if (resolved) localStorage.setItem("lastWorldName", resolved);
+      return resolved;
+    }
+
+    const worldName = resolveWorldName();
     document.getElementById("worldNameDisplay").textContent = `World: ${worldName || "—"}`;
 
     function worldSettingsKey() {
@@ -127,7 +140,15 @@
       const selected = settings.find(s => String(s.id) === String(settingId));
       if (!selected) return;
       localStorage.setItem('selectedSetting', JSON.stringify(selected));
-      window.location.href = `setting.html?id=${selected.id}&name=${encodeURIComponent(slugify(selected.name))}`;
+      const w = encodeURIComponent(worldName || "");
+      window.location.href = `setting.html?id=${selected.id}&name=${encodeURIComponent(slugify(selected.name))}&world=${w}`;
+    }
+
+    function deleteSetting(settingId) {
+      if (!confirm("Delete this setting?")) return;
+      settings = settings.filter(s => String(s.id) !== String(settingId));
+      saveSettingsList();
+      displaySettings();
     }
 
     function displaySettings() {
@@ -146,25 +167,36 @@
       list.innerHTML = '';
 
       settings.forEach((setting) => {
-        const link = document.createElement('a');
-        link.className = 'setting-link';
-        link.href = `setting.html?id=${setting.id}&name=${encodeURIComponent(slugify(setting.name))}`;
-        link.addEventListener('click', (e) => {
-          e.preventDefault();
-          openSettingPage(setting.id);
-        });
-
         const card = document.createElement('div');
         card.className = 'card';
         card.innerHTML = `
-          <h3 class="setting-name">${setting.name}</h3>
-          <p class="setting-text"><strong>Type:</strong> ${setting.type || '—'}</p>
-          <p class="setting-text">${setting.description || 'No description provided'}</p>
+          <a class="setting-link" href="#" data-open="${setting.id}">
+            <h3 class="setting-name">${setting.name}</h3>
+            <p class="setting-text"><strong>Type:</strong> ${setting.type || '—'}</p>
+            <p class="setting-text">${setting.description || 'No description provided'}</p>
+          </a>
+          <div class="card-actions">
+            <button class="btn btn-muted" data-delete="${setting.id}">Delete</button>
+          </div>
         `;
-        link.appendChild(card);
-        list.appendChild(link);
+        list.appendChild(card);
       });
     }
+
+    document.getElementById("settings-list").addEventListener("click", (e) => {
+      const openEl = e.target.closest("[data-open]");
+      if (openEl) {
+        e.preventDefault();
+        openSettingPage(openEl.dataset.open);
+        return;
+      }
+
+      const deleteEl = e.target.closest("[data-delete]");
+      if (deleteEl) {
+        e.preventDefault();
+        deleteSetting(deleteEl.dataset.delete);
+      }
+    });
 
     function openSettingModal() {
       document.getElementById('settingModal').style.display = 'block';
