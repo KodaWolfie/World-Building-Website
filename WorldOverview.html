@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>World Overview / Plot Summary</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&family=Old+Standard+TT:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="theme.css?v=17">
+
+  <style>
+    :root{
+      --col-gap: 12px;
+      --col-min-h: calc(100vh - 210px);
+    }
+
+    .topbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      margin-bottom:12px;
+      flex-wrap:wrap;
+    }
+
+    .page-title{
+      margin:0;
+      color:var(--text);
+      font-family:"UnifrakturCook", serif;
+      font-size:clamp(1.8rem,3.1vw,2.5rem);
+      line-height:1.1;
+    }
+
+    .world-name{
+      color:var(--muted);
+      font-size:.95rem;
+      margin:.2rem 0 0;
+      font-weight:700;
+    }
+
+    .columns{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:var(--col-gap);
+      align-items:stretch;
+    }
+
+    .col{
+      border:1px solid var(--border);
+      border-radius:14px;
+      background:linear-gradient(180deg, rgba(12,34,130,.72), rgba(8,24,100,.65));
+      box-shadow:var(--shadow);
+      padding:12px;
+      display:flex;
+      flex-direction:column;
+      min-height:var(--col-min-h);
+    }
+
+    .col h2{
+      margin:0 0 .45rem 0;
+      color:var(--text);
+      font-family:"UnifrakturCook", serif;
+      font-size:1.6rem;
+      line-height:1.1;
+    }
+
+    .col p{
+      margin:0 0 .65rem 0;
+      color:var(--muted);
+      font-size:.94rem;
+    }
+
+    .col textarea{
+      flex:1;
+      width:100%;
+      min-height:320px;
+      resize:vertical;
+      border:1px solid var(--border);
+      border-radius:10px;
+      padding:.8rem;
+      font:inherit;
+      line-height:1.5;
+      background:rgba(6,18,80,.88);
+      color:var(--text);
+      box-sizing:border-box;
+    }
+
+    .col textarea::placeholder{
+      color:rgba(255,230,109,.75);
+    }
+
+    .actions{
+      display:flex;
+      gap:.65rem;
+      flex-wrap:wrap;
+      margin-top:12px;
+    }
+
+    @media(max-width:900px){
+      :root{ --col-min-h: 420px; }
+      .columns{ grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <div class="topbar">
+      <div>
+        <h1 class="page-title">World Overview / Plot Summary</h1>
+        <p class="world-name" id="worldNameDisplay">World: —</p>
+      </div>
+      <a class="link-back" href="WorldBuildingIdeas.html">← Back to World Ideas</a>
+    </div>
+
+    <section class="glass" style="padding:12px;">
+      <div class="columns">
+        <section class="col">
+          <h2>World Overview</h2>
+          <p>Describe the world at a high level: tone, setting, systems, and major forces.</p>
+          <textarea id="worldOverviewText" placeholder="Write the world overview here..."></textarea>
+        </section>
+
+        <section class="col">
+          <h2>Plot Summary</h2>
+          <p>Summarize the main story arc, key beats, stakes, and core character movement.</p>
+          <textarea id="plotSummaryText" placeholder="Write the plot summary here..."></textarea>
+        </section>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-primary" id="saveBtn">Save</button>
+        <button class="btn btn-muted" id="clearBtn">Clear Both</button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    function getQueryParam(name){
+      return new URLSearchParams(window.location.search).get(name);
+    }
+
+    function getCurrentWorldSafe() {
+      try { return JSON.parse(localStorage.getItem('currentWorld') || 'null'); }
+      catch { return null; }
+    }
+
+    function resolveWorldName() {
+      const fromCurrent = getCurrentWorldSafe()?.name?.trim();
+      const fromUrl = getQueryParam("world")?.trim();
+      const fromCache = localStorage.getItem("lastWorldName")?.trim();
+      const resolved = fromCurrent || fromUrl || fromCache || "";
+      if (resolved) localStorage.setItem("lastWorldName", resolved);
+      return resolved;
+    }
+
+    const worldName = resolveWorldName();
+    document.getElementById("worldNameDisplay").textContent = `World: ${worldName || "—"}`;
+
+    const KEY = worldName
+      ? `worldOverviewPlotSummary:${worldName}`
+      : `worldOverviewPlotSummary:__no_world_selected__`;
+
+    function loadData() {
+      try { return JSON.parse(localStorage.getItem(KEY) || "{}"); }
+      catch { return {}; }
+    }
+
+    function saveData(data) {
+      localStorage.setItem(KEY, JSON.stringify(data));
+    }
+
+    function collectData() {
+      return {
+        worldOverview: document.getElementById("worldOverviewText").value || "",
+        plotSummary: document.getElementById("plotSummaryText").value || ""
+      };
+    }
+
+    function applyData(data) {
+      document.getElementById("worldOverviewText").value = data.worldOverview || "";
+      document.getElementById("plotSummaryText").value = data.plotSummary || "";
+    }
+
+    document.getElementById("saveBtn").addEventListener("click", () => {
+      saveData(collectData());
+      alert("Saved!");
+    });
+
+    document.getElementById("clearBtn").addEventListener("click", () => {
+      if (!confirm("Clear world overview and plot summary for this world?")) return;
+      localStorage.removeItem(KEY);
+      applyData({});
+    });
+
+    document.addEventListener("input", (e) => {
+      if (e.target.matches("#worldOverviewText, #plotSummaryText")) {
+        saveData(collectData());
+      }
+    });
+
+    applyData(loadData());
+  </script>
+</body>
+</html>
