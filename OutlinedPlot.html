@@ -151,10 +151,10 @@
           <p class="plot-role"><strong>Role:</strong> ${item.role || "—"}</p>
           <p class="plot-text"><strong>Plot:</strong> ${item.plot || "—"}</p>
           <div class="plot-actions">
-            <button class="btn btn-muted" data-action="up" data-index="${index}" ${isFirst ? "disabled" : ""}>↑ Move Up</button>
-            <button class="btn btn-muted" data-action="down" data-index="${index}" ${isLast ? "disabled" : ""}>↓ Move Down</button>
-            <button class="btn btn-muted" data-action="delete" data-id="${item.id}">Delete</button>
-          </div>
+  <button class="btn btn-muted" data-action="up" data-index="${index}" ${isFirst ? "disabled" : ""}>↑ Move Up</button>
+  <button class="btn btn-muted" data-action="down" data-index="${index}" ${isLast ? "disabled" : ""}>↓ Move Down</button>
+  <button class="btn btn-muted" data-action="delete" data-index="${index}">Delete</button>
+</div>
         `;
         list.appendChild(card);
       });
@@ -189,24 +189,32 @@
     });
 
     document.getElementById("plotList").addEventListener("click", (e) => {
-      const actionBtn = e.target.closest("button[data-action]");
-      if (actionBtn) {
-        const action = actionBtn.dataset.action;
-        const index = Number(actionBtn.dataset.index);
-        if (Number.isNaN(index)) return;
+  const btn = e.target.closest("button[data-action]");
+  if (!btn) return;
 
-        if (action === "up") return movePoint(index, index - 1);
-        if (action === "down") return movePoint(index, index + 1);
-        return;
-      }
+  const action = btn.dataset.action;
+  const index = Number(btn.dataset.index);
+  if (Number.isNaN(index)) return;
 
-      const deleteBtn = e.target.closest("button[data-id]");
-      if (!deleteBtn) return;
-      const id = Number(deleteBtn.dataset.id);
-      plotPoints = plotPoints.filter(p => p.id !== id);
-      savePlotPoints();
-      renderPlotPoints();
-    });
+  if (action === "up") {
+    if (index <= 0) return;
+    const [item] = plotPoints.splice(index, 1);
+    plotPoints.splice(index - 1, 0, item);
+  }
+
+  if (action === "down") {
+    if (index >= plotPoints.length - 1) return;
+    const [item] = plotPoints.splice(index, 1);
+    plotPoints.splice(index + 1, 0, item);
+  }
+
+  if (action === "delete") {
+    plotPoints.splice(index, 1);
+  }
+
+  savePlotPoints();
+  renderPlotPoints();
+});
 
     document.getElementById("clearBtn").addEventListener("click", () => {
       if (!confirm("Clear all outlined plot points for this world?")) return;
