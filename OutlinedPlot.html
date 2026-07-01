@@ -11,117 +11,33 @@
   <link rel="stylesheet" href="theme.css?v=16">
 
   <style>
-    .topbar{
-      display:flex; justify-content:space-between; align-items:center;
-      gap:12px; margin-bottom:12px; flex-wrap:wrap;
-    }
-    .page-title{
-      margin:0; color:var(--text); font-family:"UnifrakturCook", serif;
-      font-size:clamp(1.9rem,3.3vw,2.6rem); line-height:1.1;
-    }
-    .world-name{
-      color:var(--muted); font-size:.95rem; margin:.2rem 0 0; font-weight:700;
-    }
+    .topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+    .page-title{margin:0;color:var(--text);font-family:"UnifrakturCook",serif;font-size:clamp(1.9rem,3.3vw,2.6rem);line-height:1.1}
+    .world-name{color:var(--muted);font-size:.95rem;margin:.2rem 0 0;font-weight:700}
+    .section-title{margin:0 0 .45rem 0;color:var(--text);font-family:"UnifrakturCook",serif;font-size:1.3rem}
+    .section-sub{margin:0;color:var(--muted);font-size:.95rem}
 
-    .section-title{
-      margin:0 0 .45rem 0;
-      color:var(--text);
-      font-family:"UnifrakturCook", serif;
-      font-size:1.3rem;
+    .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-top:12px}
+    .field label{display:block;font-size:.83rem;color:var(--muted);margin-bottom:4px;font-weight:700;text-transform:uppercase;letter-spacing:.35px}
+    .field input,.field select,.field textarea{
+      width:100%;border:1px solid var(--border);border-radius:10px;padding:.72rem;font:inherit;
+      background:rgba(6,18,80,.88);color:var(--text);box-sizing:border-box
     }
-    .section-sub{
-      margin:0;
-      color:var(--muted);
-      font-size:.95rem;
-    }
+    .field textarea{min-height:130px;resize:vertical;grid-column:1/-1;line-height:1.45}
+    .field input::placeholder,.field textarea::placeholder{color:rgba(255,230,109,.75)}
 
-    .form-grid{
-      display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-      gap:10px;
-      margin-top:12px;
-    }
-
-    .field label{
-      display:block;
-      font-size:.83rem;
-      color:var(--muted);
-      margin-bottom:4px;
-      font-weight:700;
-      text-transform:uppercase;
-      letter-spacing:.35px;
-    }
-
-    .field input, .field select, .field textarea{
-      width:100%;
-      border:1px solid var(--border);
-      border-radius:10px;
-      padding:.72rem;
-      font:inherit;
-      background:rgba(6,18,80,.88);
-      color:var(--text);
-      box-sizing:border-box;
-    }
-
-    .field textarea{
-      min-height:130px;
-      resize:vertical;
-      grid-column:1 / -1;
-      line-height:1.45;
-    }
-
-    .field input::placeholder,
-    .field textarea::placeholder{
-      color:rgba(255,230,109,.75);
-    }
-
-    .actions{
-      display:flex; gap:.65rem; flex-wrap:wrap; margin-top:12px;
-    }
-
-    .plot-list{
-      margin-top:14px;
-      display:grid;
-      gap:10px;
-    }
+    .actions{display:flex;gap:.65rem;flex-wrap:wrap;margin-top:12px}
+    .plot-list{margin-top:14px;display:grid;gap:10px}
 
     .plot-card{
-      border:1px solid var(--border);
-      border-radius:12px;
-      padding:12px;
-      background:linear-gradient(180deg, rgba(12,34,130,.72), rgba(8,24,100,.65));
-      box-shadow:var(--shadow);
+      border:1px solid var(--border);border-radius:12px;padding:12px;
+      background:linear-gradient(180deg,rgba(12,34,130,.72),rgba(8,24,100,.65));box-shadow:var(--shadow)
     }
-
-    .plot-meta{
-      display:flex; gap:10px; flex-wrap:wrap; margin-bottom:.45rem;
-      color:var(--muted); font-size:.88rem; font-weight:700;
-    }
-
-    .plot-role{
-      margin:0 0 .35rem 0;
-      color:var(--text);
-      font-size:1.03rem;
-      font-weight:700;
-    }
-
-    .plot-text{
-      margin:0;
-      color:var(--text);
-      white-space:pre-wrap;
-      line-height:1.45;
-    }
-
-    .plot-actions{
-      display:flex; justify-content:flex-end; margin-top:.6rem;
-    }
-
-    .empty{
-      color:var(--muted);
-      margin:0;
-      text-align:center;
-      padding:.7rem 0;
-    }
+    .plot-meta{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:.45rem;color:var(--muted);font-size:.88rem;font-weight:700}
+    .plot-role{margin:0 0 .35rem 0;color:var(--text);font-size:1.03rem;font-weight:700}
+    .plot-text{margin:0;color:var(--text);white-space:pre-wrap;line-height:1.45}
+    .plot-actions{display:flex;justify-content:flex-end;gap:.5rem;flex-wrap:wrap;margin-top:.6rem}
+    .empty{color:var(--muted);margin:0;text-align:center;padding:.7rem 0}
   </style>
 </head>
 <body>
@@ -129,7 +45,7 @@
     <div class="topbar">
       <div>
         <h1 class="page-title">Outlined Plot</h1>
-        <p class="world-name" id="worldNameDisplay">World: New World</p>
+        <p class="world-name" id="worldNameDisplay">World: —</p>
       </div>
       <a class="link-back" href="WorldBuildingIdeas.html">← Back to World Ideas</a>
     </div>
@@ -175,7 +91,7 @@
 
     <section class="glass" style="padding:14px; margin-top:14px;">
       <h2 class="section-title">Your Plot Outline</h2>
-      <p class="section-sub">Ordered by creation. Add ideas as they come.</p>
+      <p class="section-sub">Use arrows to reorder plot points.</p>
       <div class="plot-list" id="plotList"></div>
     </section>
   </main>
@@ -187,10 +103,12 @@
     }
 
     const world = getCurrentWorldSafe();
-    const worldName = world?.name || "New World";
-    document.getElementById("worldNameDisplay").textContent = `World: ${worldName}`;
+    const worldName = (world && typeof world.name === "string" && world.name.trim()) ? world.name.trim() : null;
+    document.getElementById("worldNameDisplay").textContent = `World: ${worldName || "—"}`;
 
-    const KEY = `outlinedPlot:${worldName}`;
+    // If no world exists, use a neutral key so it doesn't pretend to be "New World"
+    const KEY = worldName ? `outlinedPlot:${worldName}` : `outlinedPlot:__no_world_selected__`;
+
     let plotPoints = loadPlotPoints();
 
     function loadPlotPoints() {
@@ -200,6 +118,14 @@
 
     function savePlotPoints() {
       localStorage.setItem(KEY, JSON.stringify(plotPoints));
+    }
+
+    function movePoint(fromIndex, toIndex) {
+      if (toIndex < 0 || toIndex >= plotPoints.length) return;
+      const [item] = plotPoints.splice(fromIndex, 1);
+      plotPoints.splice(toIndex, 0, item);
+      savePlotPoints();
+      renderPlotPoints();
     }
 
     function renderPlotPoints() {
@@ -212,6 +138,9 @@
       }
 
       plotPoints.forEach((item, index) => {
+        const isFirst = index === 0;
+        const isLast = index === plotPoints.length - 1;
+
         const card = document.createElement("article");
         card.className = "plot-card";
         card.innerHTML = `
@@ -222,7 +151,9 @@
           <p class="plot-role"><strong>Role:</strong> ${item.role || "—"}</p>
           <p class="plot-text"><strong>Plot:</strong> ${item.plot || "—"}</p>
           <div class="plot-actions">
-            <button class="btn btn-muted" data-delete="${item.id}">Delete</button>
+            <button class="btn btn-muted" data-action="up" data-index="${index}" ${isFirst ? "disabled" : ""}>↑ Move Up</button>
+            <button class="btn btn-muted" data-action="down" data-index="${index}" ${isLast ? "disabled" : ""}>↓ Move Down</button>
+            <button class="btn btn-muted" data-action="delete" data-id="${item.id}">Delete</button>
           </div>
         `;
         list.appendChild(card);
@@ -258,10 +189,20 @@
     });
 
     document.getElementById("plotList").addEventListener("click", (e) => {
-      const btn = e.target.closest("button[data-delete]");
-      if (!btn) return;
+      const actionBtn = e.target.closest("button[data-action]");
+      if (actionBtn) {
+        const action = actionBtn.dataset.action;
+        const index = Number(actionBtn.dataset.index);
+        if (Number.isNaN(index)) return;
 
-      const id = Number(btn.dataset.delete);
+        if (action === "up") return movePoint(index, index - 1);
+        if (action === "down") return movePoint(index, index + 1);
+        return;
+      }
+
+      const deleteBtn = e.target.closest("button[data-id]");
+      if (!deleteBtn) return;
+      const id = Number(deleteBtn.dataset.id);
       plotPoints = plotPoints.filter(p => p.id !== id);
       savePlotPoints();
       renderPlotPoints();
