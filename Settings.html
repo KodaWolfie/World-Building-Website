@@ -11,125 +11,33 @@
   <link rel="stylesheet" href="theme.css?v=16">
 
   <style>
-    .topbar{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:12px;
-      margin-bottom:12px;
-      flex-wrap:wrap;
-    }
+    .topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+    .page-title{margin:0;color:var(--text);font-family:"UnifrakturCook",serif;font-size:clamp(1.9rem,3.2vw,2.6rem);line-height:1.1}
+    .world-name{color:var(--muted);font-size:.95rem;margin:.2rem 0 0;font-weight:700}
+    .header-row{display:flex;justify-content:space-between;align-items:center;gap:.75rem;flex-wrap:wrap;margin-bottom:1rem}
+    .settings-container{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:1rem;margin-top:1rem}
+    .setting-link{text-decoration:none;color:inherit;display:block}
+    .setting-name{margin:0 0 .5rem 0;color:var(--text);font-weight:700;font-size:1.1rem}
+    .setting-text{margin:.25rem 0;color:var(--muted);font-size:.95rem}
+    .empty-state{padding:22px;text-align:center}
+    .empty-state h2{margin-top:0;color:var(--text)}
+    .empty-state p{color:var(--muted)}
 
-    .page-title{
-      margin:0;
-      color:var(--text);
-      font-family:"UnifrakturCook", serif;
-      font-size:clamp(1.9rem,3.2vw,2.6rem);
-      line-height:1.1;
+    .modal{display:none;position:fixed;z-index:1000;inset:0;background-color:rgba(0,0,0,.5);padding:16px}
+    .modal-content{
+      background:var(--surface-strong);border:1px solid var(--border);border-radius:14px;width:min(520px,100%);
+      margin:5vh auto 0 auto;padding:1.25rem;box-shadow:var(--shadow)
     }
-
-    .world-name{
-      color:var(--muted);
-      font-size:.95rem;
-      margin:.2rem 0 0;
-      font-weight:700;
+    .modal-header{font-size:1.4rem;color:var(--text);font-weight:700;margin-bottom:1rem;font-family:"UnifrakturCook",serif}
+    .form-group{margin-bottom:1rem}
+    .form-group label{display:block;margin-bottom:.45rem;color:var(--text);font-weight:700}
+    .form-group input,.form-group textarea{
+      width:100%;padding:.75rem;border:1px solid var(--border);border-radius:10px;
+      font-family:"Old Standard TT", Georgia, "Times New Roman", serif;font-size:.95rem;
+      background:rgba(10,26,110,0.85);color:var(--text);box-sizing:border-box
     }
-
-    .section-card{
-      border:1px solid var(--border);
-      border-radius:14px;
-      padding:14px;
-      background:linear-gradient(180deg, rgba(12,34,130,.72), rgba(8,24,100,.65));
-      box-shadow:var(--shadow);
-      margin-top:14px;
-    }
-
-    .section-title{
-      margin:0 0 .35rem 0;
-      color:var(--text);
-      font-family:"UnifrakturCook", serif;
-      font-size:1.5rem;
-      line-height:1.1;
-    }
-
-    .section-sub{
-      margin:0;
-      color:var(--muted);
-      font-size:.95rem;
-    }
-
-    .freewrite-wrap{
-      margin-top:10px;
-    }
-
-    .label{
-      display:block;
-      margin-bottom:6px;
-      color:var(--muted);
-      font-weight:700;
-      font-size:.84rem;
-      text-transform:uppercase;
-      letter-spacing:.35px;
-    }
-
-    textarea, input{
-      width:100%;
-      border:1px solid var(--border);
-      border-radius:10px;
-      padding:.75rem;
-      font:inherit;
-      background:rgba(6,18,80,.88);
-      color:var(--text);
-      box-sizing:border-box;
-    }
-
-    textarea{
-      min-height:220px;
-      resize:vertical;
-      line-height:1.45;
-    }
-
-    textarea::placeholder,
-    input::placeholder{
-      color:rgba(255,230,109,.75);
-    }
-
-    .questions-grid{
-      margin-top:12px;
-      display:grid;
-      grid-template-columns:repeat(2, minmax(0,1fr));
-      gap:10px;
-    }
-
-    .question-box{
-      border:1px solid var(--border);
-      border-radius:12px;
-      padding:10px;
-      background:rgba(10,26,110,.35);
-    }
-
-    .question-title{
-      margin:0 0 .5rem 0;
-      color:var(--text);
-      font-size:.98rem;
-      font-weight:700;
-      line-height:1.3;
-    }
-
-    .question-box textarea{
-      min-height:125px;
-    }
-
-    .actions{
-      display:flex;
-      gap:.65rem;
-      flex-wrap:wrap;
-      margin-top:14px;
-    }
-
-    @media(max-width:900px){
-      .questions-grid{ grid-template-columns:1fr; }
-    }
+    .form-group textarea{resize:vertical;min-height:90px}
+    .modal-buttons{display:flex;gap:.75rem;justify-content:flex-end;margin-top:1.25rem;flex-wrap:wrap}
   </style>
 </head>
 <body>
@@ -142,41 +50,48 @@
       <a class="link-back" href="WorldBuildingIdeas.html">← Back to World Ideas</a>
     </div>
 
-    <section class="glass" style="padding:14px;">
-      <p style="margin:0; color:var(--muted);">
-        Build the major settings in your world. Each section has a free write + guided questions.
-      </p>
-
-      <div id="settingsSections"></div>
-
-      <div class="actions">
-        <button class="btn btn-primary" id="saveBtn">Save</button>
-        <button class="btn btn-muted" id="clearBtn">Clear All</button>
-      </div>
+    <section class="header-row">
+      <h2 style="margin:0; color:var(--text); font-family:'UnifrakturCook',serif;">Your Settings</h2>
+      <button class="btn btn-primary" onclick="openSettingModal()">+ New Setting</button>
     </section>
+
+    <section class="glass empty-state" id="no-settings-section">
+      <h2>No Settings Yet</h2>
+      <p>Create a setting, name it, and build it out with free write + guided questions.</p>
+      <button class="btn btn-primary" onclick="openSettingModal()">Create Setting</button>
+    </section>
+
+    <section class="settings-container" id="settings-list" style="display:none;"></section>
   </main>
 
-  <script>
-    // You can rename/add/remove sections here
-    const SECTION_DEFS = [
-      { key: "capital", title: "Capital City" },
-      { key: "majorCity", title: "Major City / Trade Hub" },
-      { key: "frontier", title: "Frontier / Wilderness Region" }
-    ];
+  <div id="settingModal" class="modal" aria-hidden="true">
+    <div class="modal-content">
+      <div class="modal-header">Create a New Setting</div>
 
-    // Placeholder 10 questions (replace with your real ones anytime)
-    const TEN_QUESTIONS = [
-      "1) What is this place called, and why?",
-      "2) What does it look and feel like on first impression?",
-      "3) What is the climate and geography?",
-      "4) Who holds power here?",
-      "5) What is everyday life like for common people?",
-      "6) What is this place known for (good or bad)?",
-      "7) What conflict is active in this setting right now?",
-      "8) What hidden danger or secret exists here?",
-      "9) How does this location connect to the main plot?",
-      "10) What would change this place forever?"
-    ];
+      <div class="form-group">
+        <label for="setting-name">Setting Name</label>
+        <input type="text" id="setting-name" placeholder="e.g., Emberfall City">
+      </div>
+
+      <div class="form-group">
+        <label for="setting-type">Type (optional)</label>
+        <input type="text" id="setting-type" placeholder="e.g., City, Region, Fortress, Forest">
+      </div>
+
+      <div class="form-group">
+        <label for="setting-description">Short Description (optional)</label>
+        <textarea id="setting-description" placeholder="One-paragraph overview..."></textarea>
+      </div>
+
+      <div class="modal-buttons">
+        <button class="btn btn-muted" onclick="closeSettingModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveSetting()">Create Setting</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let settings = [];
 
     function getCurrentWorldSafe() {
       try { return JSON.parse(localStorage.getItem('currentWorld') || 'null'); }
@@ -187,86 +102,111 @@
     const worldName = (world && typeof world.name === "string" && world.name.trim()) ? world.name.trim() : null;
     document.getElementById("worldNameDisplay").textContent = `World: ${worldName || "—"}`;
 
-    const KEY = worldName ? `settingsPage:${worldName}` : `settingsPage:__no_world_selected__`;
-
-    function loadData() {
-      try { return JSON.parse(localStorage.getItem(KEY) || "{}"); }
-      catch { return {}; }
+    function worldSettingsKey() {
+      return worldName ? `settingsList:${worldName}` : `settingsList:__no_world_selected__`;
     }
 
-    function saveData(data) {
-      localStorage.setItem(KEY, JSON.stringify(data));
+    function slugify(text) {
+      return text.toString().toLowerCase().trim()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-');
     }
 
-    function buildSectionHTML(section, saved = {}) {
-      const freeKey = `${section.key}_freewrite`;
-
-      let qHtml = "";
-      TEN_QUESTIONS.forEach((q, i) => {
-        const qKey = `${section.key}_q_${i + 1}`;
-        qHtml += `
-          <article class="question-box">
-            <h3 class="question-title">${q}</h3>
-            <textarea id="${qKey}" placeholder="Write your answer...">${saved[qKey] || ""}</textarea>
-          </article>
-        `;
-      });
-
-      return `
-        <section class="section-card">
-          <h2 class="section-title">${section.title}</h2>
-          <p class="section-sub">Free write first, then answer the 10 prompts.</p>
-
-          <div class="freewrite-wrap">
-            <label class="label" for="${freeKey}">Free Write</label>
-            <textarea id="${freeKey}" placeholder="Freely describe this setting...">${saved[freeKey] || ""}</textarea>
-          </div>
-
-          <div class="questions-grid">
-            ${qHtml}
-          </div>
-        </section>
-      `;
+    function loadSettings() {
+      const stored = localStorage.getItem(worldSettingsKey());
+      settings = stored ? JSON.parse(stored) : [];
+      displaySettings();
     }
 
-    function renderAll(saved = {}) {
-      const mount = document.getElementById("settingsSections");
-      mount.innerHTML = SECTION_DEFS.map(s => buildSectionHTML(s, saved)).join("");
+    function saveSettingsList() {
+      localStorage.setItem(worldSettingsKey(), JSON.stringify(settings));
     }
 
-    function collectAllData() {
-      const out = {};
-      SECTION_DEFS.forEach(section => {
-        const freeKey = `${section.key}_freewrite`;
-        out[freeKey] = document.getElementById(freeKey)?.value || "";
-
-        TEN_QUESTIONS.forEach((_, i) => {
-          const qKey = `${section.key}_q_${i + 1}`;
-          out[qKey] = document.getElementById(qKey)?.value || "";
-        });
-      });
-      return out;
+    function openSettingPage(settingId) {
+      const selected = settings.find(s => String(s.id) === String(settingId));
+      if (!selected) return;
+      localStorage.setItem('selectedSetting', JSON.stringify(selected));
+      window.location.href = `setting.html?id=${selected.id}&name=${encodeURIComponent(slugify(selected.name))}`;
     }
 
-    // initial render with saved data
-    renderAll(loadData());
+    function displaySettings() {
+      const noSection = document.getElementById('no-settings-section');
+      const list = document.getElementById('settings-list');
 
-    document.addEventListener("input", (e) => {
-      if (e.target.matches("textarea, input")) {
-        saveData(collectAllData());
+      if (settings.length === 0) {
+        noSection.style.display = 'block';
+        list.style.display = 'none';
+        list.innerHTML = '';
+        return;
       }
-    });
 
-    document.getElementById("saveBtn").addEventListener("click", () => {
-      saveData(collectAllData());
-      alert("Saved!");
-    });
+      noSection.style.display = 'none';
+      list.style.display = 'grid';
+      list.innerHTML = '';
 
-    document.getElementById("clearBtn").addEventListener("click", () => {
-      if (!confirm("Clear all settings notes for this world?")) return;
-      localStorage.removeItem(KEY);
-      renderAll({});
-    });
+      settings.forEach((setting) => {
+        const link = document.createElement('a');
+        link.className = 'setting-link';
+        link.href = `setting.html?id=${setting.id}&name=${encodeURIComponent(slugify(setting.name))}`;
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+          openSettingPage(setting.id);
+        });
+
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <h3 class="setting-name">${setting.name}</h3>
+          <p class="setting-text"><strong>Type:</strong> ${setting.type || '—'}</p>
+          <p class="setting-text">${setting.description || 'No description provided'}</p>
+        `;
+        link.appendChild(card);
+        list.appendChild(link);
+      });
+    }
+
+    function openSettingModal() {
+      document.getElementById('settingModal').style.display = 'block';
+      document.getElementById('settingModal').setAttribute('aria-hidden', 'false');
+      document.getElementById('setting-name').value = '';
+      document.getElementById('setting-type').value = '';
+      document.getElementById('setting-description').value = '';
+    }
+
+    function closeSettingModal() {
+      document.getElementById('settingModal').style.display = 'none';
+      document.getElementById('settingModal').setAttribute('aria-hidden', 'true');
+    }
+
+    function saveSetting() {
+      const name = document.getElementById('setting-name').value.trim();
+      const type = document.getElementById('setting-type').value.trim();
+      const description = document.getElementById('setting-description').value.trim();
+
+      if (!name) {
+        alert('Please enter a setting name.');
+        return;
+      }
+
+      settings.push({
+        id: Date.now(),
+        name,
+        type,
+        description
+      });
+
+      saveSettingsList();
+      closeSettingModal();
+      displaySettings();
+    }
+
+    window.onclick = function(event) {
+      const modal = document.getElementById('settingModal');
+      if (event.target === modal) closeSettingModal();
+    };
+
+    window.addEventListener('load', loadSettings);
   </script>
 </body>
 </html>
