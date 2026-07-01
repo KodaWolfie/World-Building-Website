@@ -160,7 +160,26 @@
 
   <script>
     // Replace these placeholders with your real 18 questions later
-    const QUESTIONS = Array.from({ length: 18 }, (_, i) => `Question ${i + 1}`);
+    const QUESTIONS = [
+  "Core Concept?",
+  "Where does it come from?",
+  "What are the laws of magic?",
+  "Who in society can use it?",
+  "Can animals or plants or anything else other than society use it?",
+  "Can it be lost?",
+  "How is it learned?",
+  "Can it be controlled or harnessed?",
+  "What does it feel like?",
+  "What exactly does it do?",
+  "How is it used?",
+  "What are its limitations?",
+  "What are its flaws or cost?",
+  "How does it relate to the plot, theme, characters, etc?",
+  "How do societies react to it?",
+  "Is there a cultural impact?",
+  "Why haven’t people with powers taken over the world—or have they?",
+  "Other?"
+];
 
     function getCurrentWorldSafe() {
       try { return JSON.parse(localStorage.getItem('currentWorld') || 'null'); }
