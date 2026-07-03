@@ -17,7 +17,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
-    /* Layout-only styles */
     .center{ text-align:center; }
 
     .page-title{
@@ -129,10 +128,20 @@
     }
 
     async function updateButtonText() {
-      const worlds = await getUserWorlds();
+      const user = await getCurrentUser();
       const button = document.getElementById('worlds-btn');
       const link = document.getElementById('worlds-link');
       const description = document.getElementById('description-text');
+
+      // If not logged in, avoid querying worlds and show create flow
+      if (!user) {
+        button.textContent = 'Create World';
+        link.href = 'CreateWorld.html';
+        description.textContent = 'No worlds yet — get started by creating your first world.';
+        return;
+      }
+
+      const worlds = await getUserWorlds();
 
       if (worlds.length > 0) {
         button.textContent = 'Your Worlds';
@@ -156,7 +165,8 @@
     document.getElementById('signupBtn').addEventListener('click', async () => {
       const creds = getCredentials();
       if (!creds) return;
-      await signUpWithPassword(creds.email, creds.password);
+      const ok = await signUpWithPassword(creds.email, creds.password);
+      if (!ok) return;
       await refreshAuthStatus();
       await updateButtonText();
     });
@@ -164,18 +174,21 @@
     document.getElementById('loginBtn').addEventListener('click', async () => {
       const creds = getCredentials();
       if (!creds) return;
-      await signInWithPassword(creds.email, creds.password);
+      const ok = await signInWithPassword(creds.email, creds.password);
+      if (!ok) return;
       await refreshAuthStatus();
       await updateButtonText();
     });
 
     document.getElementById('logoutBtn').addEventListener('click', async () => {
-      await signOut();
+      const ok = await signOut();
+      if (!ok) return;
       await refreshAuthStatus();
       await updateButtonText();
     });
 
-    supabaseClient.auth.onAuthStateChange(async () => {
+    // FIX: use `supabase` (from supabase-config.js), not supabaseClient
+    supabase.auth.onAuthStateChange(async () => {
       await refreshAuthStatus();
       await updateButtonText();
     });
