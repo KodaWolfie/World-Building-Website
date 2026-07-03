@@ -1,67 +1,247 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Themes</title>
-  <link rel="stylesheet" href="theme.css" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&family=Old+Standard+TT:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- Shared theme -->
+  <link rel="stylesheet" href="theme.css?v=13">
+
+  <style>
+    .page-title{
+      margin:0 0 1rem 0;
+      color:var(--text);
+      font-family:"UnifrakturCook", serif;
+      font-size:clamp(1.8rem,3vw,2.4rem);
+      line-height:1.1;
+      text-align:center;
+    }
+
+    .section-title{
+      margin:0 0 .85rem 0;
+      color:var(--text);
+      font-family:"UnifrakturCook", serif;
+      font-size:1.55rem;
+      line-height:1.1;
+    }
+
+    .subtext{
+      margin:0 0 1rem 0;
+      color:var(--muted);
+      font-size:.98rem;
+      line-height:1.45;
+    }
+
+    /* Graph/Table */
+    .themes-graph{
+      border:1px solid var(--border);
+      border-radius:14px;
+      overflow:hidden;
+      background:var(--surface-strong);
+      box-shadow:var(--shadow);
+    }
+
+    .graph-header,
+    .graph-row{
+      display:grid;
+      grid-template-columns:1fr 3fr; /* 1/4 + 3/4 */
+    }
+
+    .graph-header{
+      background:rgba(255,255,255,.04);
+      border-bottom:1px solid var(--border);
+    }
+
+    .graph-head{
+      padding:.8rem .9rem;
+      color:var(--text);
+      font-weight:700;
+      letter-spacing:.2px;
+    }
+
+    .graph-head + .graph-head{
+      border-left:1px solid var(--border);
+    }
+
+    .graph-row{
+      border-bottom:1px solid var(--border);
+      min-height:110px;
+    }
+
+    .graph-row:last-child{
+      border-bottom:none;
+    }
+
+    .cell{
+      padding:.65rem;
+    }
+
+    .cell + .cell{
+      border-left:1px solid var(--border);
+    }
+
+    .cell textarea{
+      width:100%;
+      min-height:86px;
+      resize:vertical;
+      border:1px solid var(--border);
+      border-radius:10px;
+      padding:.6rem .7rem;
+      background:var(--surface);
+      color:var(--text);
+      font-family:"Old Standard TT", serif;
+      font-size:1rem;
+      line-height:1.35;
+      outline:none;
+    }
+
+    .cell textarea:focus{
+      border-color:var(--accent);
+      box-shadow:0 0 0 3px rgba(255,255,255,.06);
+    }
+
+    .prompt-grid{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:.9rem;
+      margin-top:1rem;
+    }
+
+    .prompt-card{
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:.8rem;
+      background:var(--surface-strong);
+      box-shadow:var(--shadow);
+    }
+
+    .prompt-card label{
+      display:block;
+      color:var(--text);
+      font-weight:700;
+      margin:0 0 .45rem 0;
+    }
+
+    .prompt-card textarea{
+      width:100%;
+      min-height:92px;
+      resize:vertical;
+      border:1px solid var(--border);
+      border-radius:10px;
+      padding:.65rem .75rem;
+      background:var(--surface);
+      color:var(--text);
+      font-family:"Old Standard TT", serif;
+      font-size:1rem;
+      line-height:1.4;
+      outline:none;
+    }
+
+    .prompt-card textarea:focus{
+      border-color:var(--accent);
+      box-shadow:0 0 0 3px rgba(255,255,255,.06);
+    }
+
+    .button-group{
+      display:flex;
+      gap:.75rem;
+      justify-content:center;
+      margin-top:1.4rem;
+      flex-wrap:wrap;
+    }
+
+    @media (max-width:760px){
+      .graph-header,
+      .graph-row{
+        grid-template-columns:1fr;
+      }
+
+      .graph-head + .graph-head,
+      .cell + .cell{
+        border-left:none;
+        border-top:1px solid var(--border);
+      }
+    }
+  </style>
 </head>
 <body>
-  <main class="themes-page">
-    <h1>Themes</h1>
+  <main class="container" role="main">
+    <section class="glass" style="padding:18px; margin-bottom:16px;">
+      <h1 class="page-title">Theme(s)</h1>
+      <p class="subtext">
+        Map each <strong>Topic</strong> to a deeper <strong>Theme</strong>. Use this page to clarify your message and how it appears in your world.
+      </p>
 
-    <section class="theme-graph" aria-label="Topic and Theme planning graph">
-      <div class="graph-header">
-        <div class="topic-header">Topic</div>
-        <div class="theme-header">Theme</div>
-      </div>
+      <h2 class="section-title">Topic → Theme Graph</h2>
+      <div class="themes-graph" aria-label="Topic and Theme graph">
+        <div class="graph-header">
+          <div class="graph-head">Topic</div>
+          <div class="graph-head">Theme</div>
+        </div>
 
-      <div class="graph-row">
-        <label for="topic-1" class="sr-only">Topic 1</label>
-        <textarea id="topic-1" name="topic-1" placeholder="Enter topic..."></textarea>
+        <div class="graph-row">
+          <div class="cell">
+            <textarea placeholder="Example: Power, loyalty, loss..."></textarea>
+          </div>
+          <div class="cell">
+            <textarea placeholder="What statement are you making about this topic?"></textarea>
+          </div>
+        </div>
 
-        <label for="theme-1" class="sr-only">Theme 1</label>
-        <textarea id="theme-1" name="theme-1" placeholder="Enter theme details..."></textarea>
-      </div>
+        <div class="graph-row">
+          <div class="cell">
+            <textarea placeholder="Another topic..."></textarea>
+          </div>
+          <div class="cell">
+            <textarea placeholder="Theme meaning/details..."></textarea>
+          </div>
+        </div>
 
-      <div class="graph-row">
-        <label for="topic-2" class="sr-only">Topic 2</label>
-        <textarea id="topic-2" name="topic-2" placeholder="Enter topic..."></textarea>
-
-        <label for="theme-2" class="sr-only">Theme 2</label>
-        <textarea id="theme-2" name="theme-2" placeholder="Enter theme details..."></textarea>
-      </div>
-
-      <div class="graph-row">
-        <label for="topic-3" class="sr-only">Topic 3</label>
-        <textarea id="topic-3" name="topic-3" placeholder="Enter topic..."></textarea>
-
-        <label for="theme-3" class="sr-only">Theme 3</label>
-        <textarea id="theme-3" name="theme-3" placeholder="Enter theme details..."></textarea>
+        <div class="graph-row">
+          <div class="cell">
+            <textarea placeholder="Another topic..."></textarea>
+          </div>
+          <div class="cell">
+            <textarea placeholder="Theme meaning/details..."></textarea>
+          </div>
+        </div>
       </div>
     </section>
 
-    <section class="responses" aria-label="Theme development responses">
-      <h2>Theme Development</h2>
+    <section class="glass" style="padding:18px;">
+      <h2 class="section-title">Theme Development Questions</h2>
 
-      <div class="response-group">
-        <label for="core-message">Core Message</label>
-        <textarea id="core-message" name="core-message" placeholder="What is the main message of this theme?"></textarea>
+      <div class="prompt-grid">
+        <div class="prompt-card">
+          <label for="core-message">Core Message</label>
+          <textarea id="core-message" placeholder="What does your story ultimately say about this theme?"></textarea>
+        </div>
+
+        <div class="prompt-card">
+          <label for="conflict-tension">Conflict / Tension</label>
+          <textarea id="conflict-tension" placeholder="Which conflict best reveals this theme?"></textarea>
+        </div>
+
+        <div class="prompt-card">
+          <label for="character-impact">Character Impact</label>
+          <textarea id="character-impact" placeholder="How does this theme shape your characters' choices?"></textarea>
+        </div>
+
+        <div class="prompt-card">
+          <label for="symbols-motifs">Symbols / Motifs</label>
+          <textarea id="symbols-motifs" placeholder="What recurring symbol, image, or motif represents this theme?"></textarea>
+        </div>
       </div>
 
-      <div class="response-group">
-        <label for="conflict">Conflict / Tension</label>
-        <textarea id="conflict" name="conflict" placeholder="What conflict explores this theme?"></textarea>
-      </div>
-
-      <div class="response-group">
-        <label for="character-impact">Character Impact</label>
-        <textarea id="character-impact" name="character-impact" placeholder="How does this theme affect characters?"></textarea>
-      </div>
-
-      <div class="response-group">
-        <label for="symbolism">Symbolism / Motifs</label>
-        <textarea id="symbolism" name="symbolism" placeholder="Any symbols or repeated motifs tied to the theme?"></textarea>
+      <div class="button-group">
+        <button class="btn btn-muted" onclick="window.location.href='WorldBuildingIdeas.html'">Back to Ideas</button>
+        <button class="btn btn-primary" onclick="window.location.href='index.html'">Back Home</button>
       </div>
     </section>
   </main>
