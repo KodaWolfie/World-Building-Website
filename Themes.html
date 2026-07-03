@@ -74,7 +74,8 @@
       min-height:110px;
     }
 
-    .graph-row:last-child{
+    /* avoid double border on last row */
+    #graph-rows .graph-row:last-child{
       border-bottom:none;
     }
 
@@ -99,6 +100,7 @@
       font-size:1rem;
       line-height:1.35;
       outline:none;
+      box-sizing:border-box;
     }
 
     .cell textarea:focus{
@@ -141,6 +143,7 @@
       font-size:1rem;
       line-height:1.4;
       outline:none;
+      box-sizing:border-box;
     }
 
     .prompt-card textarea:focus{
@@ -185,32 +188,21 @@
           <div class="graph-head">Theme</div>
         </div>
 
-        <div class="graph-row">
-          <div class="cell">
-            <textarea placeholder="Example: Power, loyalty, loss..."></textarea>
-          </div>
-          <div class="cell">
-            <textarea placeholder="What statement are you making about this topic?"></textarea>
+        <!-- dynamic rows container -->
+        <div id="graph-rows">
+          <div class="graph-row">
+            <div class="cell">
+              <textarea placeholder="Example: Power, loyalty, loss..."></textarea>
+            </div>
+            <div class="cell">
+              <textarea placeholder="What statement are you making about this topic?"></textarea>
+            </div>
           </div>
         </div>
+      </div>
 
-        <div class="graph-row">
-          <div class="cell">
-            <textarea placeholder="Another topic..."></textarea>
-          </div>
-          <div class="cell">
-            <textarea placeholder="Theme meaning/details..."></textarea>
-          </div>
-        </div>
-
-        <div class="graph-row">
-          <div class="cell">
-            <textarea placeholder="Another topic..."></textarea>
-          </div>
-          <div class="cell">
-            <textarea placeholder="Theme meaning/details..."></textarea>
-          </div>
-        </div>
+      <div class="button-group" style="margin-top:.9rem;">
+        <button type="button" class="btn btn-muted" id="add-graph-row">+ Add Row</button>
       </div>
     </section>
 
@@ -245,27 +237,28 @@
       </div>
     </section>
   </main>
+
   <script>
-  (function () {
-    const rowsContainer = document.getElementById('graph-rows');
-    const addBtn = document.getElementById('add-graph-row');
+    (function () {
+      const rowsContainer = document.getElementById('graph-rows');
+      const addBtn = document.getElementById('add-graph-row');
 
-    if (!rowsContainer || !addBtn) return;
+      if (!rowsContainer || !addBtn) return;
 
-    addBtn.addEventListener('click', () => {
-      const row = document.createElement('div');
-      row.className = 'graph-row';
-      row.innerHTML = `
-        <div class="cell">
-          <textarea placeholder="Another topic..."></textarea>
-        </div>
-        <div class="cell">
-          <textarea placeholder="Theme meaning/details..."></textarea>
-        </div>
-      `;
-      rowsContainer.appendChild(row);
-    });
-  })();
-</script>
+      addBtn.addEventListener('click', function () {
+        const row = document.createElement('div');
+        row.className = 'graph-row';
+        row.innerHTML = `
+          <div class="cell">
+            <textarea placeholder="Another topic..."></textarea>
+          </div>
+          <div class="cell">
+            <textarea placeholder="Theme meaning/details..."></textarea>
+          </div>
+        `;
+        rowsContainer.appendChild(row);
+      });
+    })();
+  </script>
 </body>
 </html>
