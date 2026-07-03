@@ -136,11 +136,9 @@
     </section>
   </main>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="./supabase-config.js?v=9"></script>
-</script>
-    // ...your existing page script...
-  </script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="./supabase-config.js?v=11"></script>
+  <script>
     function getQueryParam(name){
       return new URLSearchParams(window.location.search).get(name);
     }
@@ -150,29 +148,46 @@
       catch { return null; }
     }
 
-    function resolveWorldName() {
+    async function resolveWorldName() {
       const fromCurrent = getCurrentWorldSafe()?.name?.trim();
       const fromUrl = getQueryParam("world")?.trim();
       const fromCache = localStorage.getItem("lastWorldName")?.trim();
-      const resolved = fromCurrent || fromUrl || fromCache || "";
+
+      let resolved = fromCurrent || fromUrl || fromCache || "";
+
+      // fallback to latest DB world if nothing else found
+      if (!resolved && typeof getUserWorlds === 'function') {
+        const worlds = await getUserWorlds();
+        if (worlds && worlds.length > 0) {
+          const latest = worlds[0];
+          resolved = (latest.world_name || '').trim();
+          if (resolved) {
+            const genre = latest.genre || '';
+            const theme = latest.theme || '';
+            if (typeof setCurrentWorld === 'function') {
+              setCurrentWorld(resolved, genre, theme);
+            }
+          }
+        }
+      }
+
       if (resolved) localStorage.setItem("lastWorldName", resolved);
       return resolved;
     }
 
-    const worldName = resolveWorldName();
-    document.getElementById("worldNameDisplay").textContent = `World: ${worldName || "—"}`;
+    function getStorageKey(worldName) {
+      return worldName
+        ? `worldOverviewPlotSummary:${worldName}`
+        : `worldOverviewPlotSummary:__no_world_selected__`;
+    }
 
-    const KEY = worldName
-      ? `worldOverviewPlotSummary:${worldName}`
-      : `worldOverviewPlotSummary:__no_world_selected__`;
-
-    function loadData() {
-      try { return JSON.parse(localStorage.getItem(KEY) || "{}"); }
+    function loadData(key) {
+      try { return JSON.parse(localStorage.getItem(key) || "{}"); }
       catch { return {}; }
     }
 
-    function saveData(data) {
-      localStorage.setItem(KEY, JSON.stringify(data));
+    function saveData(key, data) {
+      localStorage.setItem(key, JSON.stringify(data));
     }
 
     function collectData() {
@@ -187,24 +202,32 @@
       document.getElementById("plotSummaryText").value = data.plotSummary || "";
     }
 
-    document.getElementById("saveBtn").addEventListener("click", () => {
-      saveData(collectData());
-      alert("Saved!");
-    });
+    async function initPage() {
+      const worldName = await resolveWorldName();
+      document.getElementById("worldNameDisplay").textContent = `World: ${worldName || "—"}`;
 
-    document.getElementById("clearBtn").addEventListener("click", () => {
-      if (!confirm("Clear world overview and plot summary for this world?")) return;
-      localStorage.removeItem(KEY);
-      applyData({});
-    });
+      const KEY = getStorageKey(worldName);
+      applyData(loadData(KEY));
 
-    document.addEventListener("input", (e) => {
-      if (e.target.matches("#worldOverviewText, #plotSummaryText")) {
-        saveData(collectData());
-      }
-    });
+      document.getElementById("saveBtn").addEventListener("click", () => {
+        saveData(KEY, collectData());
+        alert("Saved!");
+      });
 
-    applyData(loadData());
+      document.getElementById("clearBtn").addEventListener("click", () => {
+        if (!confirm("Clear world overview and plot summary for this world?")) return;
+        localStorage.removeItem(KEY);
+        applyData({});
+      });
+
+      document.addEventListener("input", (e) => {
+        if (e.target.matches("#worldOverviewText, #plotSummaryText")) {
+          saveData(KEY, collectData());
+        }
+      });
+    }
+
+    window.addEventListener('load', initPage);
   </script>
 </body>
 </html>
