@@ -13,7 +13,7 @@
   <!-- Shared theme -->
   <link rel="stylesheet" href="theme.css?v=13">
 
-  <!-- Supabase Library -->
+  <!-- Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="./supabase-config.js?v=11"></script>
 
@@ -120,112 +120,117 @@
     </section>
   </main>
 
-<script>
-  function setStatus(msg) {
-    document.getElementById('authStatus').textContent = msg;
-  }
-
-  async function refreshAuthStatus() {
-    try {
-      const user = await getCurrentUser();
-      setStatus(user ? `Logged in as ${user.email}` : 'Not logged in');
-    } catch (e) {
-      console.error('refreshAuthStatus error:', e);
-      setStatus('Auth check failed. See console.');
+  <script>
+    function setStatus(msg) {
+      document.getElementById('authStatus').textContent = msg;
     }
-  }
 
-  async function updateButtonText() {
-    try {
-      const user = await getCurrentUser();
-      const button = document.getElementById('worlds-btn');
-      const link = document.getElementById('worlds-link');
-      const description = document.getElementById('description-text');
-
-      if (!user) {
-        button.textContent = 'Create World';
-        link.href = 'CreateWorld.html';
-        description.textContent = 'No worlds yet — get started by creating your first world.';
-        return;
+    async function refreshAuthStatus() {
+      try {
+        const user = await getCurrentUser();
+        setStatus(user ? `Logged in as ${user.email}` : 'Not logged in');
+      } catch (e) {
+        console.error('refreshAuthStatus error:', e);
+        setStatus('Auth check failed. See console.');
       }
+    }
 
-      const worlds = await getUserWorlds();
-      if (worlds.length > 0) {
-        button.textContent = 'Your Worlds';
-        link.href = 'YourWorlds.html';
-        description.textContent = `You have ${worlds.length} world(s). Explore and create more!`;
-      } else {
-        button.textContent = 'Create World';
-        link.href = 'CreateWorld.html';
-        description.textContent = 'No worlds yet — get started by creating your first world.';
+    async function updateButtonText() {
+      try {
+        const user = await getCurrentUser();
+        const button = document.getElementById('worlds-btn');
+        const link = document.getElementById('worlds-link');
+        const description = document.getElementById('description-text');
+
+        if (!user) {
+          button.textContent = 'Create World';
+          link.href = 'CreateWorld.html';
+          description.textContent = 'No worlds yet — get started by creating your first world.';
+          return;
+        }
+
+        const worlds = await getUserWorlds();
+        if (worlds.length > 0) {
+          button.textContent = 'Your Worlds';
+          link.href = 'YourWorlds.html';
+          description.textContent = `You have ${worlds.length} world(s). Explore and create more!`;
+        } else {
+          button.textContent = 'Create World';
+          link.href = 'CreateWorld.html';
+          description.textContent = 'No worlds yet — get started by creating your first world.';
+        }
+      } catch (e) {
+        console.error('updateButtonText error:', e);
       }
-    } catch (e) {
-      console.error('updateButtonText error:', e);
     }
-  }
 
-  function getCredentials() {
-    const email = document.getElementById('emailInput').value.trim();
-    const password = document.getElementById('passwordInput').value;
-    if (!email) { alert('Please enter your email'); return null; }
-    if (!password || password.length < 6) { alert('Password must be at least 6 characters'); return null; }
-    return { email, password };
-  }
+    function getCredentials() {
+      const email = document.getElementById('emailInput').value.trim();
+      const password = document.getElementById('passwordInput').value;
+      if (!email) { alert('Please enter your email'); return null; }
+      if (!password || password.length < 6) { alert('Password must be at least 6 characters'); return null; }
+      return { email, password };
+    }
 
-  document.getElementById('signupBtn').addEventListener('click', async () => {
-    const creds = getCredentials();
-    if (!creds) return;
-    setStatus('Signing up...');
-    try {
-      const ok = await signUpWithPassword(creds.email, creds.password);
-      if (!ok) { setStatus('Sign up failed.'); return; }
-      setStatus('Sign up success. You can log in now.');
+    document.getElementById('signupBtn').addEventListener('click', async () => {
+      const creds = getCredentials();
+      if (!creds) return;
+      setStatus('Signing up...');
+      try {
+        const ok = await signUpWithPassword(creds.email, creds.password);
+        if (!ok) { setStatus('Sign up failed.'); return; }
+        setStatus('Sign up success. You can log in now.');
+        await refreshAuthStatus();
+        await updateButtonText();
+      } catch (e) {
+        console.error('signup error:', e);
+        setStatus('Sign up error. See console.');
+      }
+    });
+
+    document.getElementById('loginBtn').addEventListener('click', async () => {
+      const creds = getCredentials();
+      if (!creds) return;
+      setStatus('Logging in...');
+      try {
+        const ok = await signInWithPassword(creds.email, creds.password);
+        if (!ok) { setStatus('Login failed.'); return; }
+        setStatus('Login success.');
+        await refreshAuthStatus();
+        await updateButtonText();
+      } catch (e) {
+        console.error('login error:', e);
+        setStatus('Login error. See console.');
+      }
+    });
+
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+      setStatus('Logging out...');
+      try {
+        const ok = await signOut();
+        if (!ok) { setStatus('Logout failed.'); return; }
+        setStatus('Logged out.');
+        await refreshAuthStatus();
+        await updateButtonText();
+      } catch (e) {
+        console.error('logout error:', e);
+        setStatus('Logout error. See console.');
+      }
+    });
+
+    // Keep UI in sync when auth state changes
+    sb.auth.onAuthStateChange(async () => {
       await refreshAuthStatus();
       await updateButtonText();
-    } catch (e) {
-      console.error('signup error:', e);
-      setStatus('Sign up error. See console.');
-    }
-  });
+    });
 
-  document.getElementById('loginBtn').addEventListener('click', async () => {
-    const creds = getCredentials();
-    if (!creds) return;
-    setStatus('Logging in...');
-    try {
-      const ok = await signInWithPassword(creds.email, creds.password);
-      if (!ok) { setStatus('Login failed.'); return; }
-      setStatus('Login success.');
+    window.addEventListener('load', async () => {
+      if (!window.supabase) console.error('Supabase CDN not loaded');
+      if (typeof sb === 'undefined') console.error('sb client not defined (check supabase-config.js)');
+      if (typeof signInWithPassword !== 'function') console.error('signInWithPassword missing (check supabase-config.js)');
       await refreshAuthStatus();
       await updateButtonText();
-    } catch (e) {
-      console.error('login error:', e);
-      setStatus('Login error. See console.');
-    }
-  });
-
-  document.getElementById('logoutBtn').addEventListener('click', async () => {
-    setStatus('Logging out...');
-    try {
-      const ok = await signOut();
-      if (!ok) { setStatus('Logout failed.'); return; }
-      setStatus('Logged out.');
-      await refreshAuthStatus();
-      await updateButtonText();
-    } catch (e) {
-      console.error('logout error:', e);
-      setStatus('Logout error. See console.');
-    }
-  });
-
-  window.addEventListener('load', async () => {
-    // sanity checks
-    if (!window.supabase) console.error('Supabase CDN not loaded');
-    if (typeof supabase === 'undefined') console.error('supabase client not defined (check supabase-config.js)');
-    if (typeof signInWithPassword !== 'function') console.error('signInWithPassword missing (check supabase-config.js)');
-    await refreshAuthStatus();
-    await updateButtonText();
-  });
-</script>
+    });
+  </script>
 </body>
 </html>
