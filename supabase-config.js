@@ -2,15 +2,19 @@
   const SUPABASE_URL = 'https://ncxgjtcxymfkekmwqxta.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_g7u6v_H5QXdoOYPM4sL6hQ_r4lkZHVs';
 
-  if (!window.supabase || !window.supabase.createClient) {
+  // Keep the Supabase library object separate
+  const supabaseLib = window.supabase;
+
+  if (!supabaseLib || typeof supabaseLib.createClient !== 'function') {
     alert('Supabase library failed to load.');
     return;
   }
 
-  const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  // Shared client instance
+  const client = supabaseLib.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  // expose one shared client
-  window.supabase = client;
+  // Expose client on a NEW name (do not overwrite library object)
+  window.sb = client;
 
   async function signUpWithPassword(email, password) {
     const { error } = await client.auth.signUp({ email, password });
@@ -42,19 +46,13 @@
 
   async function getCurrentUser() {
     const { data, error } = await client.auth.getUser();
-    if (error) {
-      console.error('getCurrentUser error:', error);
-      return null;
-    }
+    if (error) return null;
     return data?.user ?? null;
   }
 
   async function saveWorld(worldName, genre, theme) {
     const user = await getCurrentUser();
-    if (!user) {
-      alert('Please log in first.');
-      return false;
-    }
+    if (!user) { alert('Please log in first.'); return false; }
 
     const { error } = await client.from('worlds').insert([{
       user_id: user.id,
@@ -64,10 +62,7 @@
       theme
     }]);
 
-    if (error) {
-      alert('Error saving world: ' + error.message);
-      return false;
-    }
+    if (error) { alert('Error saving world: ' + error.message); return false; }
     return true;
   }
 
@@ -81,10 +76,7 @@
       .eq('user_id', user.id)
       .order('created_at', { ascending: false });
 
-    if (error) {
-      console.error('getUserWorlds error:', error);
-      return [];
-    }
+    if (error) return [];
     return data || [];
   }
 
@@ -98,10 +90,7 @@
       .eq('id', worldId)
       .eq('user_id', user.id);
 
-    if (error) {
-      alert('Error updating world: ' + error.message);
-      return false;
-    }
+    if (error) { alert('Error updating world: ' + error.message); return false; }
     return true;
   }
 
@@ -115,10 +104,7 @@
       .eq('id', worldId)
       .eq('user_id', user.id);
 
-    if (error) {
-      alert('Error deleting world: ' + error.message);
-      return false;
-    }
+    if (error) { alert('Error deleting world: ' + error.message); return false; }
     return true;
   }
 
@@ -131,7 +117,7 @@
     return world ? JSON.parse(world) : null;
   }
 
-  // expose functions globally
+  // expose helper functions globally
   window.signUpWithPassword = signUpWithPassword;
   window.signInWithPassword = signInWithPassword;
   window.signOut = signOut;
