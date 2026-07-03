@@ -17,7 +17,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
-    /* Layout-only styles (theme colors come from theme.css) */
     .header-container{
       display:flex;
       justify-content:space-between;
@@ -57,6 +56,7 @@
       color:var(--text);
       font-weight:700;
       font-size:1.1rem;
+      word-break:break-word;
     }
 
     .detail{
@@ -76,6 +76,19 @@
       color:var(--text);
       margin-top:.2rem;
       font-weight:700;
+      word-break:break-word;
+    }
+
+    .card-actions{
+      display:flex;
+      gap:.5rem;
+      margin-top:.9rem;
+      flex-wrap:wrap;
+    }
+
+    .card-actions .btn{
+      flex:1;
+      min-width:95px;
     }
 
     .empty-state{
@@ -100,6 +113,16 @@
       font-size:1rem;
       padding:1rem;
     }
+
+    .status{
+      margin-top:1rem;
+      text-align:center;
+      font-weight:700;
+      display:none;
+    }
+
+    .status.error{ color:#ffb3b3; }
+    .status.success{ color:#b6ffbe; }
 
     @media(max-width:720px){
       .worlds-container{ grid-template-columns:1fr; }
@@ -128,53 +151,144 @@
     <section class="worlds-container" id="worlds-list" style="display:none;"></section>
 
     <!-- Loading -->
-    <div class="loading" id="loading" style="display:none;">
-      Loading your worlds...
-    </div>
+    <div class="loading" id="loading" style="display:none;">Loading your worlds...</div>
+
+    <!-- Status -->
+    <div id="status" class="status"></div>
   </main>
 
   <script src="supabase-config.js"></script>
   <script>
+    function showStatus(message, type = 'success') {
+      const el = document.getElementById('status');
+      el.className = `status ${type}`;
+      el.textContent = message;
+      el.style.display = 'block';
+      setTimeout(() => { el.style.display = 'none'; }, 3000);
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    async function handleDelete(world) {
+      if (!world?.id) {
+        showStatus('Cannot delete: missing world id.', 'error');
+        return;
+      }
+
+      const confirmed = confirm(`Delete "${world.world_name}"? This cannot be undone.`);
+      if (!confirmed) return;
+
+      const ok = await deleteWorldById(world.id);
+      if (!ok) {
+        showStatus('Delete failed. Please try again.', 'error');
+        return;
+      }
+
+      showStatus('World deleted.');
+      await loadWorlds();
+    }
+
+    async function handleEdit(world) {
+      if (!world?.id) {
+        showStatus('Cannot edit: missing world id.', 'error');
+        return;
+      }
+
+      const nextName = prompt('Edit World Name:', world.world_name || '');
+      if (nextName === null) return;
+
+      const nextGenre = prompt('Edit Genre:', world.genre || '');
+      if (nextGenre === null) return;
+
+      const nextTheme = prompt('Edit Theme:', world.theme || '');
+      if (nextTheme === null) return;
+
+      const worldName = nextName.trim();
+      const genre = nextGenre.trim();
+      const theme = nextTheme.trim();
+
+      if (!worldName) {
+        showStatus('World name cannot be empty.', 'error');
+        return;
+      }
+
+      const ok = await updateWorld(world.id, worldName, genre, theme);
+      if (!ok) {
+        showStatus('Update failed. Please try again.', 'error');
+        return;
+      }
+
+      showStatus('World updated.');
+      await loadWorlds();
+    }
+
     async function loadWorlds() {
-      document.getElementById('loading').style.display = 'block';
+      const loading = document.getElementById('loading');
+      const noWorldsSection = document.getElementById('no-worlds-section');
+      const worldsList = document.getElementById('worlds-list');
 
+      loading.style.display = 'block';
       const worlds = await getUserWorlds();
-
-      document.getElementById('loading').style.display = 'none';
+      loading.style.display = 'none';
 
       if (!worlds || worlds.length === 0) {
-        document.getElementById('no-worlds-section').style.display = 'block';
-        document.getElementById('worlds-list').style.display = 'none';
-      } else {
-        document.getElementById('no-worlds-section').style.display = 'none';
-        document.getElementById('worlds-list').style.display = 'grid';
-
-        const worldsList = document.getElementById('worlds-list');
+        noWorldsSection.style.display = 'block';
+        worldsList.style.display = 'none';
         worldsList.innerHTML = '';
-
-        worlds.forEach(world => {
-          const card = document.createElement('div');
-          card.className = 'card world-card';
-          card.onclick = () => {
-            setCurrentWorld(world.world_name, world.genre, world.theme);
-            window.location.href = 'WorldBuildingIdeas.html';
-          };
-
-          card.innerHTML = `
-            <h3 class="world-name">${world.world_name}</h3>
-            <div class="detail">
-              <div class="label">Genre</div>
-              <div class="value">${world.genre || '-'}</div>
-            </div>
-            <div class="detail">
-              <div class="label">Theme</div>
-              <div class="value">${world.theme || '-'}</div>
-            </div>
-          `;
-
-          worldsList.appendChild(card);
-        });
+        return;
       }
+
+      noWorldsSection.style.display = 'none';
+      worldsList.style.display = 'grid';
+      worldsList.innerHTML = '';
+
+      worlds.forEach(world => {
+        const card = document.createElement('div');
+        card.className = 'card world-card';
+
+        card.addEventListener('click', () => {
+          setCurrentWorld(world.world_name || '', world.genre || '', world.theme || '');
+          window.location.href = 'WorldBuildingIdeas.html';
+        });
+
+        card.innerHTML = `
+          <h3 class="world-name">${escapeHtml(world.world_name || 'Untitled World')}</h3>
+
+          <div class="detail">
+            <div class="label">Genre</div>
+            <div class="value">${escapeHtml(world.genre || '-')}</div>
+          </div>
+
+          <div class="detail">
+            <div class="label">Theme</div>
+            <div class="value">${escapeHtml(world.theme || '-')}</div>
+          </div>
+
+          <div class="card-actions">
+            <button type="button" class="btn btn-muted edit-btn">Edit</button>
+            <button type="button" class="btn btn-primary delete-btn">Delete</button>
+          </div>
+        `;
+
+        card.querySelector('.edit-btn').addEventListener('click', (e) => {
+          e.stopPropagation();
+          handleEdit(world);
+        });
+
+        card.querySelector('.delete-btn').addEventListener('click', (e) => {
+          e.stopPropagation();
+          handleDelete(world);
+        });
+
+        worldsList.appendChild(card);
+      });
     }
 
     window.addEventListener('load', loadWorlds);
