@@ -120,20 +120,29 @@
   </main>
 
   <script src="supabase-config.js"></script>
-  <script>
-    async function refreshAuthStatus() {
-      const user = await getCurrentUser();
-      document.getElementById('authStatus').textContent =
-        user ? `Logged in as ${user.email}` : 'Not logged in';
-    }
+  <script src="supabase-config.js"></script>
+<script>
+  function setStatus(msg) {
+    document.getElementById('authStatus').textContent = msg;
+  }
 
-    async function updateButtonText() {
+  async function refreshAuthStatus() {
+    try {
+      const user = await getCurrentUser();
+      setStatus(user ? `Logged in as ${user.email}` : 'Not logged in');
+    } catch (e) {
+      console.error('refreshAuthStatus error:', e);
+      setStatus('Auth check failed. See console.');
+    }
+  }
+
+  async function updateButtonText() {
+    try {
       const user = await getCurrentUser();
       const button = document.getElementById('worlds-btn');
       const link = document.getElementById('worlds-link');
       const description = document.getElementById('description-text');
 
-      // If not logged in, avoid querying worlds and show create flow
       if (!user) {
         button.textContent = 'Create World';
         link.href = 'CreateWorld.html';
@@ -142,7 +151,6 @@
       }
 
       const worlds = await getUserWorlds();
-
       if (worlds.length > 0) {
         button.textContent = 'Your Worlds';
         link.href = 'YourWorlds.html';
@@ -152,51 +160,73 @@
         link.href = 'CreateWorld.html';
         description.textContent = 'No worlds yet — get started by creating your first world.';
       }
+    } catch (e) {
+      console.error('updateButtonText error:', e);
     }
+  }
 
-    function getCredentials() {
-      const email = document.getElementById('emailInput').value.trim();
-      const password = document.getElementById('passwordInput').value;
-      if (!email) { alert('Please enter your email'); return null; }
-      if (!password || password.length < 6) { alert('Password must be at least 6 characters'); return null; }
-      return { email, password };
-    }
+  function getCredentials() {
+    const email = document.getElementById('emailInput').value.trim();
+    const password = document.getElementById('passwordInput').value;
+    if (!email) { alert('Please enter your email'); return null; }
+    if (!password || password.length < 6) { alert('Password must be at least 6 characters'); return null; }
+    return { email, password };
+  }
 
-    document.getElementById('signupBtn').addEventListener('click', async () => {
-      const creds = getCredentials();
-      if (!creds) return;
+  document.getElementById('signupBtn').addEventListener('click', async () => {
+    const creds = getCredentials();
+    if (!creds) return;
+    setStatus('Signing up...');
+    try {
       const ok = await signUpWithPassword(creds.email, creds.password);
-      if (!ok) return;
+      if (!ok) { setStatus('Sign up failed.'); return; }
+      setStatus('Sign up success. You can log in now.');
       await refreshAuthStatus();
       await updateButtonText();
-    });
+    } catch (e) {
+      console.error('signup error:', e);
+      setStatus('Sign up error. See console.');
+    }
+  });
 
-    document.getElementById('loginBtn').addEventListener('click', async () => {
-      const creds = getCredentials();
-      if (!creds) return;
+  document.getElementById('loginBtn').addEventListener('click', async () => {
+    const creds = getCredentials();
+    if (!creds) return;
+    setStatus('Logging in...');
+    try {
       const ok = await signInWithPassword(creds.email, creds.password);
-      if (!ok) return;
+      if (!ok) { setStatus('Login failed.'); return; }
+      setStatus('Login success.');
       await refreshAuthStatus();
       await updateButtonText();
-    });
+    } catch (e) {
+      console.error('login error:', e);
+      setStatus('Login error. See console.');
+    }
+  });
 
-    document.getElementById('logoutBtn').addEventListener('click', async () => {
+  document.getElementById('logoutBtn').addEventListener('click', async () => {
+    setStatus('Logging out...');
+    try {
       const ok = await signOut();
-      if (!ok) return;
+      if (!ok) { setStatus('Logout failed.'); return; }
+      setStatus('Logged out.');
       await refreshAuthStatus();
       await updateButtonText();
-    });
+    } catch (e) {
+      console.error('logout error:', e);
+      setStatus('Logout error. See console.');
+    }
+  });
 
-    // FIX: use `supabase` (from supabase-config.js), not supabaseClient
-    supabase.auth.onAuthStateChange(async () => {
-      await refreshAuthStatus();
-      await updateButtonText();
-    });
-
-    window.addEventListener('load', async () => {
-      await refreshAuthStatus();
-      await updateButtonText();
-    });
-  </script>
+  window.addEventListener('load', async () => {
+    // sanity checks
+    if (!window.supabase) console.error('Supabase CDN not loaded');
+    if (typeof supabase === 'undefined') console.error('supabase client not defined (check supabase-config.js)');
+    if (typeof signInWithPassword !== 'function') console.error('signInWithPassword missing (check supabase-config.js)');
+    await refreshAuthStatus();
+    await updateButtonText();
+  });
+</script>
 </body>
 </html>
