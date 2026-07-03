@@ -1,3 +1,5 @@
+alert('supabase-config loaded');
+// Supabase Configuration
 const SUPABASE_URL = 'https://ncxgjtcxymfkekmwqxta.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_g7u6v_H5QXdoOYPM4sL6hQ_r4lkZHVs';
 
