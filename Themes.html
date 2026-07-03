@@ -245,5 +245,27 @@
       </div>
     </section>
   </main>
+  <script>
+  (function () {
+    const rowsContainer = document.getElementById('graph-rows');
+    const addBtn = document.getElementById('add-graph-row');
+
+    if (!rowsContainer || !addBtn) return;
+
+    addBtn.addEventListener('click', () => {
+      const row = document.createElement('div');
+      row.className = 'graph-row';
+      row.innerHTML = `
+        <div class="cell">
+          <textarea placeholder="Another topic..."></textarea>
+        </div>
+        <div class="cell">
+          <textarea placeholder="Theme meaning/details..."></textarea>
+        </div>
+      `;
+      rowsContainer.appendChild(row);
+    });
+  })();
+</script>
 </body>
 </html>
