@@ -154,8 +154,11 @@
     </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="./supabase-config.js?v=20"></script>
   <script>
     let antagonists = [];
+    let currentWorld = null;
 
     function slugify(text) {
       return text.toString().toLowerCase().trim()
@@ -167,13 +170,38 @@
     function openAntagonistPage(antagonistId) {
       const selected = antagonists.find(a => String(a.id) === String(antagonistId));
       if (!selected) return;
-      localStorage.setItem('selectedAntagonist', JSON.stringify(selected));
+      localStorage.setItem('selectedAntagonist', JSON.stringify(selected)); // UI convenience only
       window.location.href = `antagonist.html?id=${selected.id}&name=${encodeURIComponent(slugify(selected.name))}`;
     }
 
-    function loadAntagonists() {
-      const stored = localStorage.getItem('antagonists');
-      antagonists = stored ? JSON.parse(stored) : [];
+    async function loadAntagonists() {
+      currentWorld = getCurrentWorld();
+      if (!currentWorld || !currentWorld.id) {
+        alert('Please select a world first.');
+        window.location.href = 'YourWorlds.html';
+        return;
+      }
+
+      const user = await getCurrentUser();
+      if (!user) {
+        alert('Please log in first.');
+        return;
+      }
+
+      const { data, error } = await sb
+        .from('antagonists')
+        .select('id, name, role, description, created_at')
+        .eq('user_id', user.id)
+        .eq('world_id', currentWorld.id)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        alert('Error loading antagonists: ' + error.message);
+        antagonists = [];
+      } else {
+        antagonists = data || [];
+      }
+
       displayAntagonists();
     }
 
@@ -227,7 +255,7 @@
       document.getElementById('antagonistModal').setAttribute('aria-hidden', 'true');
     }
 
-    function saveAntagonist() {
+    async function saveAntagonist() {
       const name = document.getElementById('antagonist-name').value.trim();
       const role = document.getElementById('antagonist-role').value.trim();
       const description = document.getElementById('antagonist-description').value.trim();
@@ -237,16 +265,36 @@
         return;
       }
 
-      const newAntagonist = {
-        id: Date.now(),
-        name,
-        role: role || 'Unknown',
-        description: description || 'No description provided'
-      };
+      currentWorld = getCurrentWorld();
+      if (!currentWorld || !currentWorld.id) {
+        alert('No world selected.');
+        return;
+      }
 
-      antagonists.push(newAntagonist);
-      localStorage.setItem('antagonists', JSON.stringify(antagonists));
+      const user = await getCurrentUser();
+      if (!user) {
+        alert('Please log in first.');
+        return;
+      }
 
+      const { data, error } = await sb
+        .from('antagonists')
+        .insert([{
+          user_id: user.id,
+          world_id: currentWorld.id,
+          name,
+          role: role || 'Unknown',
+          description: description || 'No description provided'
+        }])
+        .select('id, name, role, description, created_at')
+        .single();
+
+      if (error) {
+        alert('Error creating antagonist: ' + error.message);
+        return;
+      }
+
+      antagonists.unshift(data);
       closeAntagonistModal();
       displayAntagonists();
     }
