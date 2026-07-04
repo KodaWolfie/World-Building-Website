@@ -5,98 +5,31 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Create World Survey</title>
 
-  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&family=Old+Standard+TT:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="theme.css?v=14">
 
-  <!-- Shared theme -->
-  <link rel="stylesheet" href="theme.css?v=13">
-
-  <!-- Supabase Library -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
-    /* Layout-only styles */
     .center{ text-align:center; }
-
-    .page-title{
-      margin:0 0 .5rem 0;
-      color:var(--text);
-      font-family:"UnifrakturCook", serif;
-      font-size:clamp(2rem,4vw,2.6rem);
-      line-height:1.05;
-    }
-
-    .lead{
-      margin:0 0 1.25rem 0;
-      color:var(--muted);
-      font-size:1rem;
-      line-height:1.5;
-    }
-
-    .survey-card{
-      max-width:560px;
-      margin:0 auto;
-      padding:1rem 1.25rem;
-      text-align:left;
-    }
-
-    .survey-title{
-      margin:0 0 1rem 0;
-      font-size:1.2rem;
-      color:var(--text);
-      font-family:"UnifrakturCook", serif;
-    }
-
-    .form-group{
-      margin-bottom:1.1rem;
-    }
-
-    label{
-      display:block;
-      margin-bottom:.45rem;
-      color:var(--text);
-      font-weight:700;
-      font-size:.95rem;
-    }
-
+    .page-title{ margin:0 0 .5rem 0; color:var(--text); font-family:"UnifrakturCook", serif; font-size:clamp(2rem,4vw,2.6rem); line-height:1.05; }
+    .lead{ margin:0 0 1.25rem 0; color:var(--muted); font-size:1rem; line-height:1.5; }
+    .survey-card{ max-width:560px; margin:0 auto; padding:1rem 1.25rem; text-align:left; }
+    .survey-title{ margin:0 0 1rem 0; font-size:1.2rem; color:var(--text); font-family:"UnifrakturCook", serif; }
+    .form-group{ margin-bottom:1.1rem; }
+    label{ display:block; margin-bottom:.45rem; color:var(--text); font-weight:700; font-size:.95rem; }
     input{
-      width:100%;
-      padding:.75rem;
-      border:1px solid var(--border);
-      border-radius:10px;
-      font-family:"Old Standard TT", Georgia, "Times New Roman", serif;
-      font-size:.95rem;
-      color:var(--text);
-      background:rgba(10,26,110,0.85);
-      box-sizing:border-box;
+      width:100%; padding:.75rem; border:1px solid var(--border); border-radius:10px;
+      font-family:"Old Standard TT", Georgia, "Times New Roman", serif; font-size:.95rem;
+      color:var(--text); background:rgba(10,26,110,0.85); box-sizing:border-box;
     }
-
     input::placeholder{ color:rgba(255,230,109,.75); }
-
-    input:focus{
-      outline:none;
-      border-color:var(--primary);
-      box-shadow:0 0 0 2px rgba(255,230,109,.2);
-    }
-
-    .button-group{
-      display:flex;
-      gap:.75rem;
-      margin-top:1.25rem;
-      flex-wrap:wrap;
-    }
-
-    .button-group button{
-      flex:1;
-      min-width:140px;
-    }
-
-    button:disabled{
-      opacity:.65;
-      cursor:not-allowed;
-    }
+    input:focus{ outline:none; border-color:var(--primary); box-shadow:0 0 0 2px rgba(255,230,109,.2); }
+    .button-group{ display:flex; gap:.75rem; margin-top:1.25rem; flex-wrap:wrap; }
+    .button-group button{ flex:1; min-width:140px; }
+    button:disabled{ opacity:.65; cursor:not-allowed; }
   </style>
 </head>
 <body>
@@ -112,59 +45,65 @@
       <form id="world-form">
         <div class="form-group">
           <label for="world-name">World Name *</label>
-          <input
-            type="text"
-            id="world-name"
-            name="world-name"
-            placeholder="e.g., The Shattered Realms"
-            required
-          >
+          <input type="text" id="world-name" name="world-name" placeholder="e.g., The Shattered Realms" required>
         </div>
 
         <div class="form-group">
           <label for="genre">Genre *</label>
-          <input
-            type="text"
-            id="genre"
-            name="genre"
-            placeholder="e.g., Fantasy, Sci-Fi, Horror"
-            required
-          >
+          <input type="text" id="genre" name="genre" placeholder="e.g., Fantasy, Sci-Fi, Horror" required>
         </div>
 
         <div class="form-group">
           <label for="theme">Theme *</label>
-          <input
-            type="text"
-            id="theme"
-            name="theme"
-            placeholder="e.g., Magic, Technology, Survival"
-            required
-          >
+          <input type="text" id="theme" name="theme" placeholder="e.g., Magic, Technology, Survival" required>
         </div>
 
         <div class="button-group">
           <button type="button" class="btn btn-muted" onclick="window.history.back()">Cancel</button>
-          <button type="submit" class="btn btn-primary">Continue →</button>
+          <button id="continueBtn" type="submit" class="btn btn-primary">Continue →</button>
         </div>
       </form>
     </section>
   </main>
 
-  <script src="supabase-config.js"></script>
+  <script src="./supabase-config.js?v=12"></script>
   <script>
-    document.getElementById('world-form').addEventListener('submit', async function(e) {
+    const form = document.getElementById('world-form');
+    const continueBtn = document.getElementById('continueBtn');
+
+    form.addEventListener('submit', async function(e) {
       e.preventDefault();
 
       const worldName = document.getElementById('world-name').value.trim();
       const genre = document.getElementById('genre').value.trim();
       const theme = document.getElementById('theme').value.trim();
 
-      setCurrentWorld(worldName, genre, theme);
+      if (!worldName || !genre || !theme) {
+        alert('Please complete all required fields.');
+        return;
+      }
 
-      const saved = await saveWorld(worldName, genre, theme);
-      if (saved) {
-        window.location.href = 'WorldBuildingIdeas.html';
+      continueBtn.disabled = true;
+      continueBtn.textContent = 'Saving...';
+
+      try {
+        // Set selected world context for next pages
+        setCurrentWorld(worldName, genre, theme);
+
+        // Must be an INSERT in supabase-config.js
+        const saved = await saveWorld(worldName, genre, theme);
+
+        if (saved) {
+          window.location.href = 'WorldBuildingIdeas.html';
+        } else {
+          continueBtn.disabled = false;
+          continueBtn.textContent = 'Continue →';
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Could not save world. Check console.');
+        continueBtn.disabled = false;
+        continueBtn.textContent = 'Continue →';
       }
     });
   </script>
