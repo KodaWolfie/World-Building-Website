@@ -72,9 +72,8 @@
     </section>
   </main>
 
-  <!-- aligned with your new setup -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="./supabase-config.js?v=11"></script>
+  <script src="./supabase-config.js?v=20"></script>
 
   <script>
     const PROMPTS = [
@@ -90,72 +89,26 @@
       "Other?"
     ];
 
-    function getCurrentWorldSafe() {
-      try { return JSON.parse(localStorage.getItem('currentWorld') || 'null'); }
-      catch { return null; }
-    }
-
-    async function resolveWorld() {
-      const local = getCurrentWorldSafe();
-      if (local?.name) return local;
-
-      const cachedName = (localStorage.getItem('lastWorldName') || '').trim();
-      if (cachedName) return { name: cachedName, genre: '', theme: '' };
-
-      // fallback: latest world from Supabase
-      if (typeof getUserWorlds === 'function') {
-        const worlds = await getUserWorlds();
-        if (worlds && worlds.length > 0) {
-          const latest = worlds[0];
-          const world = {
-            name: latest.world_name || 'New World',
-            genre: latest.genre || '',
-            theme: latest.theme || ''
-          };
-          if (typeof setCurrentWorld === 'function') {
-            setCurrentWorld(world.name, world.genre, world.theme);
-          }
-          localStorage.setItem('lastWorldName', world.name);
-          return world;
-        }
-      }
-
-      return { name: 'New World', genre: '', theme: '' };
-    }
-
-    function keyForWorld(worldName) {
-      return `globalLoreV2:${worldName}`;
-    }
-
-    function loadData(key) {
-      try { return JSON.parse(localStorage.getItem(key) || "{}"); }
-      catch { return {}; }
-    }
-
-    function saveData(key, data) {
-      localStorage.setItem(key, JSON.stringify(data));
-    }
-
     function defaultData() {
       return { timeline: [], prompts: {} };
     }
 
     function ensureDataShape(data) {
       return {
-        timeline: Array.isArray(data.timeline) ? data.timeline : [],
-        prompts: data.prompts && typeof data.prompts === 'object' ? data.prompts : {}
+        timeline: Array.isArray(data?.timeline) ? data.timeline : [],
+        prompts: data?.prompts && typeof data.prompts === 'object' ? data.prompts : {}
       };
     }
 
     let state = defaultData();
-    let KEY = '';
+    let currentWorld = null;
 
     function moveEvent(fromIndex, toIndex) {
       if (toIndex < 0 || toIndex >= state.timeline.length) return;
       const [item] = state.timeline.splice(fromIndex, 1);
       state.timeline.splice(toIndex, 0, item);
-      saveData(KEY, state);
       renderTimeline();
+      saveAll(false);
     }
 
     function renderTimeline() {
@@ -216,10 +169,71 @@
       return out;
     }
 
+    async function loadFromSupabase() {
+      currentWorld = getCurrentWorld();
+      const worldName = currentWorld?.name || 'New World';
+      document.getElementById('worldNameDisplay').textContent = `World: ${worldName}`;
+
+      if (!currentWorld || !currentWorld.id) {
+        alert('Please select a world first.');
+        window.location.href = 'YourWorlds.html';
+        return false;
+      }
+
+      const user = await getCurrentUser();
+      if (!user) {
+        alert('Please log in first.');
+        return false;
+      }
+
+      const { data, error } = await sb
+        .from('global_lore')
+        .select('timeline, prompts')
+        .eq('user_id', user.id)
+        .eq('world_id', currentWorld.id)
+        .maybeSingle();
+
+      if (error) {
+        alert('Error loading lore: ' + error.message);
+        state = defaultData();
+      } else {
+        state = ensureDataShape(data || defaultData());
+      }
+
+      renderTimeline();
+      renderPrompts();
+      return true;
+    }
+
+    async function saveAll(showAlert) {
+      if (!currentWorld || !currentWorld.id) return;
+
+      const user = await getCurrentUser();
+      if (!user) return;
+
+      state.prompts = collectPromptData();
+
+      const { error } = await sb
+        .from('global_lore')
+        .upsert([{
+          user_id: user.id,
+          world_id: currentWorld.id,
+          timeline: state.timeline,
+          prompts: state.prompts
+        }], { onConflict: 'world_id' });
+
+      if (error) {
+        alert('Error saving lore: ' + error.message);
+        return;
+      }
+
+      if (showAlert) alert('Saved!');
+    }
+
     document.getElementById('addEventBtn').addEventListener('click', () => {
       state.timeline.push({ date: '', title: '', details: '' });
-      saveData(KEY, state);
       renderTimeline();
+      saveAll(false);
     });
 
     document.getElementById('timeline').addEventListener('input', (e) => {
@@ -227,7 +241,7 @@
       const field = e.target.dataset.field;
       if (Number.isNaN(index) || !field) return;
       state.timeline[index][field] = e.target.value;
-      saveData(KEY, state);
+      saveAll(false);
     });
 
     document.getElementById('timeline').addEventListener('click', (e) => {
@@ -240,8 +254,8 @@
       const action = btn.dataset.action;
       if (action === 'delete') {
         state.timeline.splice(index, 1);
-        saveData(KEY, state);
         renderTimeline();
+        saveAll(false);
       } else if (action === 'up') {
         moveEvent(index, index - 1);
       } else if (action === 'down') {
@@ -251,36 +265,22 @@
 
     document.getElementById('prompts').addEventListener('input', () => {
       state.prompts = collectPromptData();
-      saveData(KEY, state);
+      saveAll(false);
     });
 
-    document.getElementById('saveAllBtn').addEventListener('click', () => {
-      state.prompts = collectPromptData();
-      saveData(KEY, state);
-      alert('Saved!');
+    document.getElementById('saveAllBtn').addEventListener('click', async () => {
+      await saveAll(true);
     });
 
-    document.getElementById('clearAllBtn').addEventListener('click', () => {
+    document.getElementById('clearAllBtn').addEventListener('click', async () => {
       if (!confirm('Clear timeline and all lore answers for this world?')) return;
       state = defaultData();
-      saveData(KEY, state);
       renderTimeline();
       renderPrompts();
+      await saveAll(false);
     });
 
-    async function init() {
-      const world = await resolveWorld();
-      const worldName = world?.name || 'New World';
-      document.getElementById('worldNameDisplay').textContent = `World: ${worldName}`;
-
-      KEY = keyForWorld(worldName);
-      state = ensureDataShape({ ...defaultData(), ...loadData(KEY) });
-
-      renderTimeline();
-      renderPrompts();
-    }
-
-    window.addEventListener('load', init);
+    window.addEventListener('load', loadFromSupabase);
   </script>
 </body>
 </html>
