@@ -3,167 +3,29 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Sovereignties</title>
+  <title>Kingdoms</title>
 
-  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&family=Old+Standard+TT:wght@400;700&display=swap" rel="stylesheet">
-
-  <!-- Shared theme -->
-  <link rel="stylesheet" href="theme.css?v=12">
-
-  <!-- Supabase lib -->
+  <link rel="stylesheet" href="theme.css?v=15">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
-    .page-title {
-      margin: 0;
-      color: var(--text);
-      font-family: "UnifrakturCook", serif;
-      font-size: clamp(1.6rem, 3vw, 2.4rem);
-      line-height: 1.1;
-    }
-
-    .meta-grid {
-      display: flex;
-      gap: 24px;
-      flex-wrap: wrap;
-    }
-
-    .meta-label {
-      color: var(--muted);
-      font-size: .8rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: .4px;
-    }
-
-    .meta-value {
-      color: var(--text);
-      font-weight: 700;
-      margin-top: 4px;
-    }
-
-    .section-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 12px;
-      flex-wrap: wrap;
-    }
-
-    .empty-state {
-      padding: 22px;
-      text-align: center;
-    }
-
-    .empty-state h2 {
-      margin-top: 0;
-      color: var(--text);
-    }
-
-    .empty-state p {
-      color: var(--muted);
-    }
-
-    #kingdoms-list {
-      display: none;
-      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-      gap: 14px;
-      margin-top: 12px;
-    }
-
-    .kingdom-link {
-      text-decoration: none;
-      color: inherit;
-      display: block;
-    }
-
-    .kingdom-link:focus-visible .card {
-      outline: 2px solid var(--primary);
-      outline-offset: 2px;
-    }
-
-    .kingdom-name {
-      margin: 0 0 .5rem 0;
-      color: var(--text);
-      font-weight: 700;
-      font-size: 1.1rem;
-    }
-
-    .kingdom-text {
-      margin: .25rem 0;
-      color: var(--muted);
-      font-size: .95rem;
-    }
-
-    .modal {
-      display: none;
-      position: fixed;
-      z-index: 1000;
-      inset: 0;
-      background-color: rgba(0,0,0,0.5);
-      padding: 16px;
-    }
-
-    .modal-content {
-      background: var(--surface-strong);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      width: min(520px, 100%);
-      margin: 5vh auto 0 auto;
-      padding: 1.25rem;
-      box-shadow: var(--shadow);
-    }
-
-    .modal-header {
-      font-size: 1.4rem;
-      color: var(--text);
-      font-weight: 700;
-      margin-bottom: 1rem;
-      font-family: "UnifrakturCook", serif;
-    }
-
-    .form-group { margin-bottom: 1rem; }
-
-    .form-group label {
-      display: block;
-      margin-bottom: .45rem;
-      color: var(--text);
-      font-weight: 700;
-    }
-
-    .form-group input,
-    .form-group textarea {
-      width: 100%;
-      padding: .75rem;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      font-family: "Old Standard TT", Georgia, "Times New Roman", serif;
-      font-size: .95rem;
-      background: rgba(255,255,255,.95);
-      color: #111827;
-    }
-
-    .form-group textarea {
-      resize: vertical;
-      min-height: 90px;
-    }
-
-    .modal-buttons {
-      display: flex;
-      gap: .75rem;
-      justify-content: flex-end;
-      margin-top: 1.25rem;
-      flex-wrap: wrap;
-    }
-
-    @media (max-width: 720px) {
-      .meta-grid { gap: 14px; }
-      .modal-content { margin-top: 3vh; }
-    }
+    .page-title{margin:0;color:var(--text);font-family:"UnifrakturCook",serif;font-size:clamp(1.6rem,3vw,2.4rem);line-height:1.1}
+    .meta-grid{display:flex;gap:24px;flex-wrap:wrap}
+    .meta-label{color:var(--muted);font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.4px}
+    .meta-value{color:var(--text);font-weight:700;margin-top:4px}
+    .section-row{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+    .empty-state{padding:22px;text-align:center}
+    .empty-state h2{margin-top:0;color:var(--text)}
+    .empty-state p{color:var(--muted)}
+    #kingdoms-list{display:none;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;margin-top:12px}
+    .kingdom-link{text-decoration:none;color:inherit;display:block}
+    .kingdom-link:focus-visible .card{outline:2px solid var(--primary);outline-offset:2px}
+    .kingdom-name{margin:0 0 .5rem 0;color:var(--text);font-weight:700;font-size:1.1rem}
+    .kingdom-text{margin:.25rem 0;color:var(--muted);font-size:.95rem}
+    @media (max-width:720px){.meta-grid{gap:14px}}
   </style>
 </head>
 <body>
@@ -175,191 +37,98 @@
     <section class="glass" style="padding:18px; margin-bottom:16px;">
       <h1 id="world-name" class="page-title">Your World</h1>
       <div class="meta-grid" style="margin-top:10px;">
-        <div>
-          <div class="meta-label">Genre</div>
-          <div class="meta-value" id="genre-display">-</div>
-        </div>
-        <div>
-          <div class="meta-label">Theme</div>
-          <div class="meta-value" id="theme-display">-</div>
-        </div>
+        <div><div class="meta-label">Genre</div><div class="meta-value" id="genre-display">-</div></div>
+        <div><div class="meta-label">Theme</div><div class="meta-value" id="theme-display">-</div></div>
       </div>
     </section>
 
     <section class="section-row">
-      <h1 class="page-title" style="font-size:clamp(1.4rem,2.6vw,2rem);">Sovereignties</h1>
-      <button class="btn btn-primary" title="Create a new kingdom" onclick="window.location.href='kingdom.html'">+ New</button>
+      <h1 class="page-title" style="font-size:clamp(1.4rem,2.6vw,2rem);">Kingdoms</h1>
+      <button class="btn btn-primary" onclick="window.location.href='kingdom.html?new=1'">+ New</button>
     </section>
 
     <section class="glass empty-state" id="no-kingdoms-section">
-      <h2>No Sovereignties Yet</h2>
+      <h2>No Kingdoms Yet</h2>
       <p>Get started by creating your first kingdom.</p>
-    <button class="btn btn-primary" onclick="window.location.href='kingdom.html'">Create Kingdom</button>
+      <button class="btn btn-primary" onclick="window.location.href='kingdom.html?new=1'">Create Kingdom</button>
     </section>
 
     <section id="kingdoms-list"></section>
   </main>
 
-  <!-- Create Kingdom Modal -->
-  <div id="kingdomModal" class="modal" aria-hidden="true">
-    <div class="modal-content">
-      <div class="modal-header">Create a New Kingdom</div>
-
-      <div class="form-group">
-        <label for="kingdom-name">Kingdom Name</label>
-        <input type="text" id="kingdom-name" placeholder="Enter kingdom name">
-      </div>
-
-      <div class="form-group">
-        <label for="kingdom-type">Type (e.g., Monarchy, Republic, Empire)</label>
-        <input type="text" id="kingdom-type" placeholder="Enter government type">
-      </div>
-
-      <div class="form-group">
-        <label for="kingdom-description">Description</label>
-        <textarea id="kingdom-description" placeholder="Describe your kingdom..."></textarea>
-      </div>
-
-      <div class="modal-buttons">
-        <button class="btn btn-muted" onclick="closeKingdomModal()">Cancel</button>
-        <button class="btn btn-primary" onclick="saveKingdom()">Create Kingdom</button>
-      </div>
-    </div>
-  </div>
-
-  <script src="./supabase-config.js?v=11"></script>
+  <script src="./supabase-config.js?v=12"></script>
   <script>
     let kingdoms = [];
-    let currentWorldName = '';
     let kingdomsStorageKey = 'kingdoms:__no_world__';
 
-    function slugify(text) {
-      return text
-        .toString()
-        .toLowerCase()
-        .trim()
-        .replace(/[^a-z0-9\s-]/g, '')
-        .replace(/\s+/g, '-')
-        .replace(/-+/g, '-');
-    }
-
-    function openKingdomPage(kingdomId) {
-      const selectedKingdom = kingdoms.find(k => String(k.id) === String(kingdomId));
-      if (!selectedKingdom) return;
-
-      localStorage.setItem('selectedKingdom', JSON.stringify(selectedKingdom));
-      localStorage.setItem('selectedCountryName', selectedKingdom.name);
-      window.location.href = `CountryTemplate.html?id=${selectedKingdom.id}&name=${encodeURIComponent(slugify(selectedKingdom.name))}`;
+    function slugify(text){
+      return text.toString().toLowerCase().trim()
+        .replace(/[^a-z0-9\s-]/g,'').replace(/\s+/g,'-').replace(/-+/g,'-');
     }
 
     function resolveWorldAndKey() {
       const world = (typeof getCurrentWorld === 'function') ? getCurrentWorld() : null;
-      currentWorldName = world?.name?.trim() || '';
-      kingdomsStorageKey = currentWorldName ? `kingdoms:${currentWorldName}` : 'kingdoms:__no_world__';
-
-      document.getElementById('world-name').textContent = currentWorldName || 'Your World';
+      const worldName = world?.name?.trim() || (localStorage.getItem('lastWorldName') || '').trim() || '';
+      kingdomsStorageKey = worldName ? `kingdoms:${worldName}` : 'kingdoms:__no_world__';
+      document.getElementById('world-name').textContent = worldName || 'Your World';
       document.getElementById('genre-display').textContent = world?.genre || '-';
       document.getElementById('theme-display').textContent = world?.theme || '-';
     }
 
-    function loadWorld() {
-      resolveWorldAndKey();
-      loadKingdoms();
-    }
-
     function loadKingdoms() {
-      const storedKingdoms = localStorage.getItem(kingdomsStorageKey);
-      kingdoms = storedKingdoms ? JSON.parse(storedKingdoms) : [];
+      try {
+        const raw = JSON.parse(localStorage.getItem(kingdomsStorageKey) || '[]');
+        kingdoms = Array.isArray(raw) ? raw : [];
+      } catch { kingdoms = []; }
       displayKingdoms();
     }
 
-    function persistKingdoms() {
-      localStorage.setItem(kingdomsStorageKey, JSON.stringify(kingdoms));
+    function openKingdomPage(id) {
+      const selected = kingdoms.find(k => String(k.id) === String(id));
+      if (!selected) return;
+      localStorage.setItem('selectedKingdom', JSON.stringify(selected));
+      localStorage.setItem('selectedCountryName', selected.name || '');
+      window.location.href = `kingdom.html?id=${selected.id}&name=${encodeURIComponent(slugify(selected.name || 'kingdom'))}`;
     }
 
     function displayKingdoms() {
-      const noKingdomsSection = document.getElementById('no-kingdoms-section');
-      const kingdomsList = document.getElementById('kingdoms-list');
+      const empty = document.getElementById('no-kingdoms-section');
+      const list = document.getElementById('kingdoms-list');
 
-      if (kingdoms.length === 0) {
-        noKingdomsSection.style.display = 'block';
-        kingdomsList.style.display = 'none';
-        kingdomsList.innerHTML = '';
+      if (!kingdoms.length) {
+        empty.style.display = 'block';
+        list.style.display = 'none';
+        list.innerHTML = '';
         return;
       }
 
-      noKingdomsSection.style.display = 'none';
-      kingdomsList.style.display = 'grid';
-      kingdomsList.innerHTML = '';
+      empty.style.display = 'none';
+      list.style.display = 'grid';
+      list.innerHTML = '';
 
-      kingdoms.forEach((kingdom) => {
+      kingdoms.forEach(k => {
         const link = document.createElement('a');
         link.className = 'kingdom-link';
-        link.href = `CountryTemplate.html?id=${kingdom.id}&name=${encodeURIComponent(slugify(kingdom.name))}`;
-        link.setAttribute('aria-label', `Open ${kingdom.name}`);
-        link.addEventListener('click', (event) => {
-          event.preventDefault();
-          openKingdomPage(kingdom.id);
-        });
+        link.href = `kingdom.html?id=${k.id}&name=${encodeURIComponent(slugify(k.name || 'kingdom'))}`;
+        link.addEventListener('click', (e) => { e.preventDefault(); openKingdomPage(k.id); });
 
         const card = document.createElement('div');
         card.className = 'card';
         card.innerHTML = `
-          <h3 class="kingdom-name">${kingdom.name}</h3>
-          <p class="kingdom-text"><strong>Type:</strong> ${kingdom.type || 'Unknown'}</p>
-          <p class="kingdom-text">${kingdom.description || 'No description provided'}</p>
+          <h3 class="kingdom-name">${k.name || 'Untitled Kingdom'}</h3>
+          <p class="kingdom-text"><strong>Type:</strong> ${k.type || 'Unknown'}</p>
+          <p class="kingdom-text">${k.description || 'No description provided'}</p>
         `;
 
         link.appendChild(card);
-        kingdomsList.appendChild(link);
+        list.appendChild(link);
       });
     }
 
-    function openKingdomModal() {
-      document.getElementById('kingdomModal').style.display = 'block';
-      document.getElementById('kingdomModal').setAttribute('aria-hidden', 'false');
-      document.getElementById('kingdom-name').value = '';
-      document.getElementById('kingdom-type').value = '';
-      document.getElementById('kingdom-description').value = '';
-    }
-
-    function closeKingdomModal() {
-      document.getElementById('kingdomModal').style.display = 'none';
-      document.getElementById('kingdomModal').setAttribute('aria-hidden', 'true');
-    }
-
-    function saveKingdom() {
-      const name = document.getElementById('kingdom-name').value.trim();
-      const type = document.getElementById('kingdom-type').value.trim();
-      const description = document.getElementById('kingdom-description').value.trim();
-
-      if (!name) {
-        alert('Please enter a kingdom name');
-        return;
-      }
-
-      const newKingdom = {
-        id: Date.now(),
-        name,
-        type: type || 'Unknown',
-        description: description || 'No description provided'
-      };
-
-      kingdoms.push(newKingdom);
-      persistKingdoms();
-
-      closeKingdomModal();
-      displayKingdoms();
-    }
-
-    window.onclick = function(event) {
-      const modal = document.getElementById('kingdomModal');
-      if (event.target === modal) {
-        closeKingdomModal();
-      }
-    };
-
-    window.addEventListener('load', loadWorld);
+    window.addEventListener('load', () => {
+      resolveWorldAndKey();
+      loadKingdoms();
+    });
   </script>
 </body>
 </html>
