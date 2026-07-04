@@ -137,97 +137,117 @@
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="./supabase-config.js?v=11"></script>
+  <script src="./supabase-config.js?v=20"></script>
   <script>
-    function getQueryParam(name){
-      return new URLSearchParams(window.location.search).get(name);
-    }
-
-    function getCurrentWorldSafe() {
-      try { return JSON.parse(localStorage.getItem('currentWorld') || 'null'); }
-      catch { return null; }
-    }
-
-    async function resolveWorldName() {
-      const fromCurrent = getCurrentWorldSafe()?.name?.trim();
-      const fromUrl = getQueryParam("world")?.trim();
-      const fromCache = localStorage.getItem("lastWorldName")?.trim();
-
-      let resolved = fromCurrent || fromUrl || fromCache || "";
-
-      // fallback to latest DB world if nothing else found
-      if (!resolved && typeof getUserWorlds === 'function') {
-        const worlds = await getUserWorlds();
-        if (worlds && worlds.length > 0) {
-          const latest = worlds[0];
-          resolved = (latest.world_name || '').trim();
-          if (resolved) {
-            const genre = latest.genre || '';
-            const theme = latest.theme || '';
-            if (typeof setCurrentWorld === 'function') {
-              setCurrentWorld(resolved, genre, theme);
-            }
-          }
-        }
-      }
-
-      if (resolved) localStorage.setItem("lastWorldName", resolved);
-      return resolved;
-    }
-
-    function getStorageKey(worldName) {
-      return worldName
-        ? `worldOverviewPlotSummary:${worldName}`
-        : `worldOverviewPlotSummary:__no_world_selected__`;
-    }
-
-    function loadData(key) {
-      try { return JSON.parse(localStorage.getItem(key) || "{}"); }
-      catch { return {}; }
-    }
-
-    function saveData(key, data) {
-      localStorage.setItem(key, JSON.stringify(data));
-    }
+    let currentWorld = null;
 
     function collectData() {
       return {
-        worldOverview: document.getElementById("worldOverviewText").value || "",
-        plotSummary: document.getElementById("plotSummaryText").value || ""
+        world_overview: document.getElementById("worldOverviewText").value || "",
+        plot_summary: document.getElementById("plotSummaryText").value || ""
       };
     }
 
     function applyData(data) {
-      document.getElementById("worldOverviewText").value = data.worldOverview || "";
-      document.getElementById("plotSummaryText").value = data.plotSummary || "";
+      document.getElementById("worldOverviewText").value = data?.world_overview || "";
+      document.getElementById("plotSummaryText").value = data?.plot_summary || "";
     }
 
-    async function initPage() {
-      const worldName = await resolveWorldName();
-      document.getElementById("worldNameDisplay").textContent = `World: ${worldName || "—"}`;
+    async function loadFromSupabase() {
+      currentWorld = getCurrentWorld();
+      document.getElementById("worldNameDisplay").textContent = `World: ${currentWorld?.name || "—"}`;
 
-      const KEY = getStorageKey(worldName);
-      applyData(loadData(KEY));
+      if (!currentWorld || !currentWorld.id) {
+        alert('Please select a world first.');
+        window.location.href = 'YourWorlds.html';
+        return false;
+      }
 
-      document.getElementById("saveBtn").addEventListener("click", () => {
-        saveData(KEY, collectData());
-        alert("Saved!");
-      });
+      const user = await getCurrentUser();
+      if (!user) {
+        alert('Please log in first.');
+        return false;
+      }
 
-      document.getElementById("clearBtn").addEventListener("click", () => {
-        if (!confirm("Clear world overview and plot summary for this world?")) return;
-        localStorage.removeItem(KEY);
+      const { data, error } = await sb
+        .from('world_overviews')
+        .select('world_overview, plot_summary')
+        .eq('user_id', user.id)
+        .eq('world_id', currentWorld.id)
+        .maybeSingle();
+
+      if (error) {
+        alert('Error loading world overview: ' + error.message);
         applyData({});
-      });
+        return false;
+      }
 
-      document.addEventListener("input", (e) => {
-        if (e.target.matches("#worldOverviewText, #plotSummaryText")) {
-          saveData(KEY, collectData());
-        }
-      });
+      applyData(data || {});
+      return true;
     }
 
-    window.addEventListener('load', initPage);
+    async function saveToSupabase(showAlert = false) {
+      if (!currentWorld || !currentWorld.id) return;
+
+      const user = await getCurrentUser();
+      if (!user) return;
+
+      const payload = collectData();
+
+      const { error } = await sb
+        .from('world_overviews')
+        .upsert([{
+          user_id: user.id,
+          world_id: currentWorld.id,
+          world_overview: payload.world_overview,
+          plot_summary: payload.plot_summary
+        }], { onConflict: 'world_id' });
+
+      if (error) {
+        alert('Error saving world overview: ' + error.message);
+        return;
+      }
+
+      if (showAlert) alert("Saved!");
+    }
+
+    async function clearInSupabase() {
+      if (!currentWorld || !currentWorld.id) return;
+
+      const user = await getCurrentUser();
+      if (!user) return;
+
+      const { error } = await sb
+        .from('world_overviews')
+        .upsert([{
+          user_id: user.id,
+          world_id: currentWorld.id,
+          world_overview: '',
+          plot_summary: ''
+        }], { onConflict: 'world_id' });
+
+      if (error) {
+        alert('Error clearing world overview: ' + error.message);
+      }
+    }
+
+    document.getElementById("saveBtn").addEventListener("click", async () => {
+      await saveToSupabase(true);
+    });
+
+    document.getElementById("clearBtn").addEventListener("click", async () => {
+      if (!confirm("Clear world overview and plot summary for this world?")) return;
+      applyData({});
+      await clearInSupabase();
+    });
+
+    document.addEventListener("input", async (e) => {
+      if (e.target.matches("#worldOverviewText, #plotSummaryText")) {
+        await saveToSupabase(false);
+      }
+    });
+
+    window.addEventListener('load', loadFromSupabase);
   </script>
 </body>
 </html>
