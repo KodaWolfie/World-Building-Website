@@ -8,145 +8,30 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&family=Old+Standard+TT:wght@400;700&display=swap" rel="stylesheet">
-
-  <!-- Shared theme -->
   <link rel="stylesheet" href="theme.css?v=13">
 
   <style>
-    .topbar{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      margin-bottom:12px;
-      gap:12px;
-      flex-wrap:wrap;
-    }
-
-    .page-title{
-      margin:0;
-      color:var(--text);
-      font-family:"UnifrakturCook", serif;
-      font-size:clamp(1.6rem,3vw,2.2rem);
-      line-height:1.1;
-    }
-
+    .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:12px;flex-wrap:wrap;}
+    .page-title{margin:0;color:var(--text);font-family:"UnifrakturCook", serif;font-size:clamp(1.6rem,3vw,2.2rem);line-height:1.1;}
     .muted{ color:var(--muted); margin:0; }
-
-    .section-title{
-      margin:0 0 .35rem 0;
-      color:var(--text);
-      font-family:"UnifrakturCook", serif;
-      font-size:1.25rem;
-    }
-
-    .section-subtext{
-      margin:0;
-      color:var(--muted);
-      font-size:.95rem;
-    }
-
-    .grid{
-      display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
-      gap:10px;
-      margin-top:12px;
-    }
-
-    .field label{
-      display:block;
-      font-size:.83rem;
-      color:var(--muted);
-      margin-bottom:4px;
-      font-weight:700;
-      text-transform:uppercase;
-      letter-spacing:.35px;
-    }
-
-    .field input{
-      width:100%;
-      border:1px solid var(--border);
-      border-radius:10px;
-      padding:10px;
-      font:inherit;
-      background:rgba(10,26,110,0.85);
-      color:var(--text);
-    }
-
-    .field input::placeholder{
-      color:rgba(255,230,109,.75);
-    }
-
-    .accordion{
-      border:1px solid var(--border);
-      border-radius:12px;
-      overflow:hidden;
-      margin-top:10px;
-      background:var(--surface);
-    }
-
-    details{
-      border-bottom:1px solid var(--border);
-      background:rgba(10,26,110,0.35);
-    }
-
+    .section-title{margin:0 0 .35rem 0;color:var(--text);font-family:"UnifrakturCook", serif;font-size:1.25rem;}
+    .section-subtext{margin:0;color:var(--muted);font-size:.95rem;}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px;margin-top:12px;}
+    .field label{display:block;font-size:.83rem;color:var(--muted);margin-bottom:4px;font-weight:700;text-transform:uppercase;letter-spacing:.35px;}
+    .field input{width:100%;border:1px solid var(--border);border-radius:10px;padding:10px;font:inherit;background:rgba(10,26,110,0.85);color:var(--text);}
+    .field input::placeholder{color:rgba(255,230,109,.75);}
+    .accordion{border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-top:10px;background:var(--surface);}
+    details{border-bottom:1px solid var(--border);background:rgba(10,26,110,0.35);}
     details:last-child{ border-bottom:none; }
-
-    summary{
-      list-style:none;
-      cursor:pointer;
-      padding:12px 14px;
-      font-weight:700;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      color:var(--text);
-    }
-
+    summary{list-style:none;cursor:pointer;padding:12px 14px;font-weight:700;display:flex;justify-content:space-between;align-items:center;color:var(--text);}
     summary::-webkit-details-marker{ display:none; }
-
-    summary::after{
-      content:"+";
-      color:var(--muted);
-      font-size:1.1rem;
-    }
-
-    details[open] summary::after{
-      content:"−";
-      color:var(--primary);
-    }
-
-    .section-body{
-      padding:0 14px 14px 14px;
-    }
-
-    textarea{
-      width:100%;
-      min-height:160px;
-      resize:vertical;
-      border:1px solid var(--border);
-      border-radius:10px;
-      padding:10px;
-      font:inherit;
-      line-height:1.45;
-      margin-top:8px;
-      background:rgba(10,26,110,0.85);
-      color:var(--text);
-    }
-
-    textarea::placeholder{
-      color:rgba(255,230,109,.75);
-    }
-
-    .actions{
-      display:flex;
-      gap:10px;
-      margin-top:12px;
-      flex-wrap:wrap;
-    }
-
-    @media(max-width:720px){
-      .actions .btn{ flex:1; min-width:140px; }
-    }
+    summary::after{content:"+";color:var(--muted);font-size:1.1rem;}
+    details[open] summary::after{content:"−";color:var(--primary);}
+    .section-body{padding:0 14px 14px 14px;}
+    textarea{width:100%;min-height:160px;resize:vertical;border:1px solid var(--border);border-radius:10px;padding:10px;font:inherit;line-height:1.45;margin-top:8px;background:rgba(10,26,110,0.85);color:var(--text);}
+    textarea::placeholder{color:rgba(255,230,109,.75);}
+    .actions{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;}
+    @media(max-width:720px){.actions .btn{ flex:1; min-width:140px; }}
   </style>
 </head>
 <body>
@@ -191,6 +76,8 @@
     </section>
   </main>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="./supabase-config.js?v=20"></script>
   <script>
     const DEEP_TITLES = [
       "1) What do they look like? (including quirks)",
@@ -222,45 +109,11 @@
       "27) Why is this character in the role that they’re in?"
     ];
 
-    const QUICK_IDS = [
-      "q_age","q_pronouns","q_occupation","q_species",
-      "q_homeland","q_affiliation","q_meaning"
-    ];
+    const QUICK_IDS = ["q_age","q_pronouns","q_occupation","q_species","q_homeland","q_affiliation","q_meaning"];
+    let currentCharacter = null;
 
     function getQueryParam(name) {
-      const params = new URLSearchParams(window.location.search);
-      return params.get(name);
-    }
-
-    function loadCharacter() {
-      const characterId = getQueryParam('id');
-      const storedCharacters = localStorage.getItem('characters');
-      const characters = storedCharacters ? JSON.parse(storedCharacters) : [];
-
-      let character = null;
-      if (characterId) character = characters.find(c => String(c.id) === String(characterId));
-      if (!character) {
-        const selectedCharacter = localStorage.getItem('selectedCharacter');
-        character = selectedCharacter ? JSON.parse(selectedCharacter) : null;
-      }
-
-      if (!character) {
-        document.getElementById('character-name').textContent = 'Character Not Found';
-        document.getElementById('character-role').textContent = 'Role: -';
-        document.getElementById('character-description').textContent =
-          'This character could not be found. Return to Characters page.';
-        return null;
-      }
-
-      document.title = `${character.name} | Character Details`;
-      document.getElementById('character-name').textContent = character.name;
-      document.getElementById('character-role').textContent = `Role: ${character.role || 'Unknown'}`;
-      document.getElementById('character-description').textContent = character.description || 'No description provided';
-      return character;
-    }
-
-    function makeStorageKey(character) {
-      return `characterProfile:${character.id}:${character.name}`;
+      return new URLSearchParams(window.location.search).get(name);
     }
 
     function renderDeepSections(savedDeep = {}) {
@@ -282,9 +135,7 @@
 
     function collectAllData() {
       const quick = {};
-      QUICK_IDS.forEach(id => {
-        quick[id] = document.getElementById(id)?.value || "";
-      });
+      QUICK_IDS.forEach(id => { quick[id] = document.getElementById(id)?.value || ""; });
 
       const deep = {};
       DEEP_TITLES.forEach((_, i) => {
@@ -297,51 +148,102 @@
 
     function applyAllData(saved) {
       QUICK_IDS.forEach(id => {
-        if (document.getElementById(id)) {
-          document.getElementById(id).value = saved?.quick?.[id] || "";
-        }
+        const el = document.getElementById(id);
+        if (el) el.value = saved?.quick?.[id] || "";
       });
       renderDeepSections(saved?.deep || {});
     }
 
-    function loadSavedProfile(key) {
-      try {
-        return JSON.parse(localStorage.getItem(key) || "{}");
-      } catch {
-        return {};
+    async function loadCharacter() {
+      const characterId = Number(getQueryParam('id'));
+      if (!characterId) return null;
+
+      const user = await getCurrentUser();
+      if (!user) return null;
+
+      const { data, error } = await sb
+        .from('characters')
+        .select('id, name, role, description')
+        .eq('user_id', user.id)
+        .eq('id', characterId)
+        .single();
+
+      if (error) return null;
+      return data;
+    }
+
+    async function loadProfile() {
+      const user = await getCurrentUser();
+      if (!user || !currentCharacter?.id) return {};
+
+      const { data, error } = await sb
+        .from('character_profiles')
+        .select('quick, deep')
+        .eq('user_id', user.id)
+        .eq('character_id', currentCharacter.id)
+        .maybeSingle();
+
+      if (error) return {};
+      return data || {};
+    }
+
+    async function saveProfile(showAlert = true) {
+      const user = await getCurrentUser();
+      if (!user || !currentCharacter?.id) return;
+
+      const payload = collectAllData();
+
+      const { error } = await sb
+        .from('character_profiles')
+        .upsert([{
+          user_id: user.id,
+          character_id: currentCharacter.id,
+          quick: payload.quick,
+          deep: payload.deep
+        }], { onConflict: 'character_id' });
+
+      if (error) {
+        alert('Error saving character profile: ' + error.message);
+        return;
       }
+
+      if (showAlert) alert("Saved!");
     }
 
-    function saveProfile(key) {
-      localStorage.setItem(key, JSON.stringify(collectAllData()));
-      alert("Saved!");
-    }
+    window.addEventListener("load", async () => {
+      currentCharacter = await loadCharacter();
+      if (!currentCharacter) {
+        document.getElementById('character-name').textContent = 'Character Not Found';
+        document.getElementById('character-role').textContent = 'Role: -';
+        document.getElementById('character-description').textContent =
+          'This character could not be found. Return to Characters page.';
+        renderDeepSections({});
+        return;
+      }
 
-    window.addEventListener("load", () => {
-      const character = loadCharacter();
-      if (!character) return;
+      document.title = `${currentCharacter.name} | Character Details`;
+      document.getElementById('character-name').textContent = currentCharacter.name;
+      document.getElementById('character-role').textContent = `Role: ${currentCharacter.role || 'Unknown'}`;
+      document.getElementById('character-description').textContent = currentCharacter.description || 'No description provided';
 
-      const storageKey = makeStorageKey(character);
-      const saved = loadSavedProfile(storageKey);
+      const saved = await loadProfile();
       applyAllData(saved);
 
-      document.getElementById("saveBtn").addEventListener("click", () => saveProfile(storageKey));
+      document.getElementById("saveBtn").addEventListener("click", () => saveProfile(true));
       document.getElementById("expandAllBtn").addEventListener("click", () => {
         document.querySelectorAll("#deepAccordion details").forEach(d => d.open = true);
       });
       document.getElementById("collapseAllBtn").addEventListener("click", () => {
         document.querySelectorAll("#deepAccordion details").forEach(d => d.open = false);
       });
-      document.getElementById("clearBtn").addEventListener("click", () => {
+      document.getElementById("clearBtn").addEventListener("click", async () => {
         if (!confirm("Clear all quick + important answers for this character?")) return;
-        localStorage.removeItem(storageKey);
         applyAllData({});
+        await saveProfile(false);
       });
 
       document.addEventListener("input", (e) => {
-        if (e.target.matches("input, textarea")) {
-          localStorage.setItem(storageKey, JSON.stringify(collectAllData()));
-        }
+        if (e.target.matches("input, textarea")) saveProfile(false);
       });
     });
   </script>
