@@ -66,7 +66,7 @@
     </section>
   </main>
 
-  <script src="./supabase-config.js?v=12"></script>
+  <script src="./supabase-config.js?v=20"></script>
   <script>
     const form = document.getElementById('world-form');
     const continueBtn = document.getElementById('continueBtn');
@@ -87,10 +87,7 @@
       continueBtn.textContent = 'Saving...';
 
       try {
-        // Set selected world context for next pages
-        setCurrentWorld(worldName, genre, theme);
-
-        // Must be an INSERT in supabase-config.js
+        // saveWorld() in config v20 inserts into Supabase AND sets currentWorld with ID
         const saved = await saveWorld(worldName, genre, theme);
 
         if (saved) {
