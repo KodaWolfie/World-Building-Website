@@ -96,36 +96,66 @@
     </section>
   </main>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="./supabase-config.js?v=20"></script>
   <script>
-    function getCurrentWorldSafe() {
-      try { return JSON.parse(localStorage.getItem('currentWorld') || 'null'); }
-      catch { return null; }
-    }
+    let currentWorld = null;
+    let plotPoints = [];
 
-    const world = getCurrentWorldSafe();
-    const worldName = (world && typeof world.name === "string" && world.name.trim()) ? world.name.trim() : null;
-    document.getElementById("worldNameDisplay").textContent = `World: ${worldName || "—"}`;
+    async function init() {
+      currentWorld = getCurrentWorld();
+      const worldName = (currentWorld && typeof currentWorld.name === "string" && currentWorld.name.trim()) ? currentWorld.name.trim() : null;
+      document.getElementById("worldNameDisplay").textContent = `World: ${worldName || "—"}`;
 
-    // If no world exists, use a neutral key so it doesn't pretend to be "New World"
-    const KEY = worldName ? `outlinedPlot:${worldName}` : `outlinedPlot:__no_world_selected__`;
+      if (!currentWorld || !currentWorld.id) {
+        alert('Please select a world first.');
+        window.location.href = 'YourWorlds.html';
+        return;
+      }
 
-    let plotPoints = loadPlotPoints();
-
-    function loadPlotPoints() {
-      try { return JSON.parse(localStorage.getItem(KEY) || "[]"); }
-      catch { return []; }
-    }
-
-    function savePlotPoints() {
-      localStorage.setItem(KEY, JSON.stringify(plotPoints));
-    }
-
-    function movePoint(fromIndex, toIndex) {
-      if (toIndex < 0 || toIndex >= plotPoints.length) return;
-      const [item] = plotPoints.splice(fromIndex, 1);
-      plotPoints.splice(toIndex, 0, item);
-      savePlotPoints();
+      await loadPlotPoints();
       renderPlotPoints();
+    }
+
+    async function loadPlotPoints() {
+      const user = await getCurrentUser();
+      if (!user) {
+        alert('Please log in first.');
+        plotPoints = [];
+        return;
+      }
+
+      const { data, error } = await sb
+        .from('outlined_plots')
+        .select('points')
+        .eq('user_id', user.id)
+        .eq('world_id', currentWorld.id)
+        .maybeSingle();
+
+      if (error) {
+        alert('Error loading outlined plot: ' + error.message);
+        plotPoints = [];
+        return;
+      }
+
+      plotPoints = Array.isArray(data?.points) ? data.points : [];
+    }
+
+    async function savePlotPoints() {
+      const user = await getCurrentUser();
+      if (!user) return;
+
+      const { error } = await sb
+        .from('outlined_plots')
+        .upsert([{
+          user_id: user.id,
+          world_id: currentWorld.id,
+          points: plotPoints
+        }], { onConflict: 'world_id' });
+
+      if (error) {
+        alert('Error saving outlined plot: ' + error.message);
+      }
     }
 
     function renderPlotPoints() {
@@ -151,10 +181,10 @@
           <p class="plot-role"><strong>Role:</strong> ${item.role || "—"}</p>
           <p class="plot-text"><strong>Plot:</strong> ${item.plot || "—"}</p>
           <div class="plot-actions">
-  <button class="btn btn-muted" data-action="up" data-index="${index}" ${isFirst ? "disabled" : ""}>↑ Move Up</button>
-  <button class="btn btn-muted" data-action="down" data-index="${index}" ${isLast ? "disabled" : ""}>↓ Move Down</button>
-  <button class="btn btn-muted" data-action="delete" data-index="${index}">Delete</button>
-</div>
+            <button class="btn btn-muted" data-action="up" data-index="${index}" ${isFirst ? "disabled" : ""}>↑ Move Up</button>
+            <button class="btn btn-muted" data-action="down" data-index="${index}" ${isLast ? "disabled" : ""}>↓ Move Down</button>
+            <button class="btn btn-muted" data-action="delete" data-index="${index}">Delete</button>
+          </div>
         `;
         list.appendChild(card);
       });
@@ -166,7 +196,7 @@
       document.getElementById("plotText").value = "";
     }
 
-    document.getElementById("addBtn").addEventListener("click", () => {
+    document.getElementById("addBtn").addEventListener("click", async () => {
       const section = document.getElementById("plotSection").value.trim();
       const role = document.getElementById("plotRole").value.trim();
       const plot = document.getElementById("plotText").value.trim();
@@ -183,48 +213,48 @@
         plot
       });
 
-      savePlotPoints();
+      await savePlotPoints();
       renderPlotPoints();
       resetInputs();
     });
 
-    document.getElementById("plotList").addEventListener("click", (e) => {
-  const btn = e.target.closest("button[data-action]");
-  if (!btn) return;
+    document.getElementById("plotList").addEventListener("click", async (e) => {
+      const btn = e.target.closest("button[data-action]");
+      if (!btn) return;
 
-  const action = btn.dataset.action;
-  const index = Number(btn.dataset.index);
-  if (Number.isNaN(index)) return;
+      const action = btn.dataset.action;
+      const index = Number(btn.dataset.index);
+      if (Number.isNaN(index)) return;
 
-  if (action === "up") {
-    if (index <= 0) return;
-    const [item] = plotPoints.splice(index, 1);
-    plotPoints.splice(index - 1, 0, item);
-  }
+      if (action === "up") {
+        if (index <= 0) return;
+        const [item] = plotPoints.splice(index, 1);
+        plotPoints.splice(index - 1, 0, item);
+      }
 
-  if (action === "down") {
-    if (index >= plotPoints.length - 1) return;
-    const [item] = plotPoints.splice(index, 1);
-    plotPoints.splice(index + 1, 0, item);
-  }
+      if (action === "down") {
+        if (index >= plotPoints.length - 1) return;
+        const [item] = plotPoints.splice(index, 1);
+        plotPoints.splice(index + 1, 0, item);
+      }
 
-  if (action === "delete") {
-    plotPoints.splice(index, 1);
-  }
+      if (action === "delete") {
+        plotPoints.splice(index, 1);
+      }
 
-  savePlotPoints();
-  renderPlotPoints();
-});
+      await savePlotPoints();
+      renderPlotPoints();
+    });
 
-    document.getElementById("clearBtn").addEventListener("click", () => {
+    document.getElementById("clearBtn").addEventListener("click", async () => {
       if (!confirm("Clear all outlined plot points for this world?")) return;
       plotPoints = [];
-      savePlotPoints();
+      await savePlotPoints();
       renderPlotPoints();
       resetInputs();
     });
 
-    renderPlotPoints();
+    window.addEventListener('load', init);
   </script>
 </body>
 </html>
