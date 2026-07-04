@@ -124,39 +124,23 @@
     </section>
   </main>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="./supabase-config.js?v=20"></script>
   <script>
+    let currentWorld = null;
+    let sections = [];
+
     function getQueryParam(name){
       return new URLSearchParams(window.location.search).get(name);
     }
 
-    function getCurrentWorldSafe() {
-      try { return JSON.parse(localStorage.getItem('currentWorld') || 'null'); }
-      catch { return null; }
-    }
-
-    function resolveWorldName() {
-      const fromCurrent = getCurrentWorldSafe()?.name?.trim();
-      const fromUrl = getQueryParam("world")?.trim();
-      const fromCache = localStorage.getItem("lastWorldName")?.trim();
-      const resolved = fromCurrent || fromUrl || fromCache || "";
-      if (resolved) localStorage.setItem("lastWorldName", resolved);
-      return resolved;
-    }
-
-    const worldName = resolveWorldName();
-    document.getElementById("worldNameDisplay").textContent = `World: ${worldName || "—"}`;
-
-    const KEY = worldName ? `miscSections:${worldName}` : `miscSections:__no_world_selected__`;
-
-    let sections = loadSections();
-
-    function loadSections() {
-      try { return JSON.parse(localStorage.getItem(KEY) || "[]"); }
-      catch { return []; }
-    }
-
-    function saveSections() {
-      localStorage.setItem(KEY, JSON.stringify(sections));
+    function escapeHtml(str) {
+      return String(str)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
     }
 
     function makeId() {
@@ -200,53 +184,105 @@
       });
     }
 
-    function escapeHtml(str) {
-      return String(str)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
+    async function loadSectionsFromSupabase() {
+      const user = await getCurrentUser();
+      if (!user) {
+        alert('Please log in first.');
+        return;
+      }
+
+      const { data, error } = await sb
+        .from('misc_sections')
+        .select('sections')
+        .eq('user_id', user.id)
+        .eq('world_id', currentWorld.id)
+        .maybeSingle();
+
+      if (error) {
+        alert('Error loading sections: ' + error.message);
+        sections = [];
+      } else {
+        sections = Array.isArray(data?.sections) ? data.sections : [];
+      }
+
+      renderSections();
     }
 
-    document.getElementById("createSectionBtn").addEventListener("click", () => {
+    async function saveSectionsToSupabase() {
+      const user = await getCurrentUser();
+      if (!user) return;
+
+      const { error } = await sb
+        .from('misc_sections')
+        .upsert([{
+          user_id: user.id,
+          world_id: currentWorld.id,
+          sections
+        }], { onConflict: 'world_id' });
+
+      if (error) {
+        alert('Error saving sections: ' + error.message);
+      }
+    }
+
+    async function init() {
+      currentWorld = getCurrentWorld();
+
+      // fallback world from URL/cache, but still requires id from selected world
+      const fromUrl = getQueryParam("world")?.trim();
+      const fallbackName = currentWorld?.name || fromUrl || localStorage.getItem("lastWorldName") || "—";
+      document.getElementById("worldNameDisplay").textContent = `World: ${fallbackName}`;
+
+      if (!currentWorld || !currentWorld.id) {
+        alert('Please select a world first.');
+        window.location.href = 'YourWorlds.html';
+        return;
+      }
+
+      localStorage.setItem("lastWorldName", currentWorld.name || '');
+      document.getElementById("worldNameDisplay").textContent = `World: ${currentWorld.name || "—"}`;
+
+      await loadSectionsFromSupabase();
+    }
+
+    document.getElementById("createSectionBtn").addEventListener("click", async () => {
       sections.push({
         id: makeId(),
         title: "",
         content: ""
       });
-      saveSections();
       renderSections();
+      await saveSectionsToSupabase();
     });
 
-    document.getElementById("sections").addEventListener("input", (e) => {
+    document.getElementById("sections").addEventListener("input", async (e) => {
       const idx = Number(e.target.dataset.index);
       const field = e.target.dataset.field;
       if (Number.isNaN(idx) || !field || !sections[idx]) return;
 
       sections[idx][field] = e.target.value;
-      saveSections();
+      await saveSectionsToSupabase();
     });
 
-    document.getElementById("sections").addEventListener("click", (e) => {
+    document.getElementById("sections").addEventListener("click", async (e) => {
       const btn = e.target.closest("button[data-action='delete']");
       if (!btn) return;
       const idx = Number(btn.dataset.index);
       if (Number.isNaN(idx) || !sections[idx]) return;
 
       sections.splice(idx, 1);
-      saveSections();
       renderSections();
+      await saveSectionsToSupabase();
     });
 
-    document.getElementById("clearAllBtn").addEventListener("click", () => {
+    document.getElementById("clearAllBtn").addEventListener("click", async () => {
       if (!confirm("Clear all miscellaneous sections for this world?")) return;
       sections = [];
-      saveSections();
       renderSections();
+      await saveSectionsToSupabase();
     });
 
-    renderSections();
+    window.addEventListener('load', init);
   </script>
 </body>
 </html>
