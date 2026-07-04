@@ -38,7 +38,6 @@
       line-height:1.45;
     }
 
-    /* Graph/Table */
     .themes-graph{
       border:1px solid var(--border);
       border-radius:14px;
@@ -50,7 +49,7 @@
     .graph-header,
     .graph-row{
       display:grid;
-      grid-template-columns:1fr 3fr; /* 1/4 + 3/4 */
+      grid-template-columns:1fr 3fr;
     }
 
     .graph-header{
@@ -74,7 +73,6 @@
       min-height:110px;
     }
 
-    /* avoid double border on last row */
     #graph-rows .graph-row:last-child{
       border-bottom:none;
     }
@@ -188,17 +186,7 @@
           <div class="graph-head">Theme</div>
         </div>
 
-        <!-- dynamic rows container -->
-        <div id="graph-rows">
-          <div class="graph-row">
-            <div class="cell">
-              <textarea placeholder="Example: Love"></textarea>
-            </div>
-            <div class="cell">
-              <textarea placeholder="People need to be transparent to find love."></textarea>
-            </div>
-          </div>
-        </div>
+        <div id="graph-rows"></div>
       </div>
 
       <div class="button-group" style="margin-top:.9rem;">
@@ -231,7 +219,7 @@
         </div>
 
         <div class="prompt-card">
-          <label for="theme-conlusion">Theme Conclusion</label>
+          <label for="theme-conclusion">Theme Conclusion</label>
           <textarea id="theme-conclusion" placeholder="What conclusion/answer to the theme does my story give?"></textarea>
         </div>
       </div>
@@ -243,25 +231,152 @@
     </section>
   </main>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="./supabase-config.js?v=20"></script>
   <script>
     (function () {
       const rowsContainer = document.getElementById('graph-rows');
       const addBtn = document.getElementById('add-graph-row');
 
-      if (!rowsContainer || !addBtn) return;
+      const coreMessage = document.getElementById('core-message');
+      const conflictTension = document.getElementById('conflict-tension');
+      const characterImpact = document.getElementById('character-impact');
+      const symbolsMotifs = document.getElementById('symbols-motifs');
+      const themeConclusion = document.getElementById('theme-conclusion');
 
-      addBtn.addEventListener('click', function () {
+      let currentWorld = null;
+      let state = {
+        graph_rows: [],
+        core_message: '',
+        conflict_tension: '',
+        character_impact: '',
+        symbols_motifs: '',
+        theme_conclusion: ''
+      };
+
+      function makeRow(topic = '', theme = '') {
         const row = document.createElement('div');
         row.className = 'graph-row';
         row.innerHTML = `
           <div class="cell">
-            <textarea placeholder="Another topic..."></textarea>
+            <textarea placeholder="Another topic..." data-kind="topic">${topic}</textarea>
           </div>
           <div class="cell">
-            <textarea placeholder="Theme meaning/details..."></textarea>
+            <textarea placeholder="Theme meaning/details..." data-kind="theme">${theme}</textarea>
           </div>
         `;
-        rowsContainer.appendChild(row);
+        return row;
+      }
+
+      function renderRows() {
+        rowsContainer.innerHTML = '';
+        if (!state.graph_rows.length) {
+          rowsContainer.appendChild(makeRow('',''));
+          return;
+        }
+        state.graph_rows.forEach((r) => {
+          rowsContainer.appendChild(makeRow(r.topic || '', r.theme || ''));
+        });
+      }
+
+      function readRows() {
+        const rows = [];
+        rowsContainer.querySelectorAll('.graph-row').forEach((row) => {
+          const topic = row.querySelector('textarea[data-kind="topic"]')?.value || '';
+          const theme = row.querySelector('textarea[data-kind="theme"]')?.value || '';
+          if (topic.trim() || theme.trim()) rows.push({ topic, theme });
+        });
+        return rows;
+      }
+
+      function collectState() {
+        state.graph_rows = readRows();
+        state.core_message = coreMessage.value || '';
+        state.conflict_tension = conflictTension.value || '';
+        state.character_impact = characterImpact.value || '';
+        state.symbols_motifs = symbolsMotifs.value || '';
+        state.theme_conclusion = themeConclusion.value || '';
+      }
+
+      function applyState() {
+        renderRows();
+        coreMessage.value = state.core_message || '';
+        conflictTension.value = state.conflict_tension || '';
+        characterImpact.value = state.character_impact || '';
+        symbolsMotifs.value = state.symbols_motifs || '';
+        themeConclusion.value = state.theme_conclusion || '';
+      }
+
+      async function saveToSupabase() {
+        if (!currentWorld || !currentWorld.id) return;
+        const user = await getCurrentUser();
+        if (!user) return;
+
+        collectState();
+
+        const { error } = await sb
+          .from('themes')
+          .upsert([{
+            user_id: user.id,
+            world_id: currentWorld.id,
+            graph_rows: state.graph_rows,
+            core_message: state.core_message,
+            conflict_tension: state.conflict_tension,
+            character_impact: state.character_impact,
+            symbols_motifs: state.symbols_motifs,
+            theme_conclusion: state.theme_conclusion
+          }], { onConflict: 'world_id' });
+
+        if (error) alert('Error saving themes: ' + error.message);
+      }
+
+      async function loadFromSupabase() {
+        currentWorld = getCurrentWorld();
+        if (!currentWorld || !currentWorld.id) return;
+
+        const user = await getCurrentUser();
+        if (!user) return;
+
+        const { data, error } = await sb
+          .from('themes')
+          .select('graph_rows, core_message, conflict_tension, character_impact, symbols_motifs, theme_conclusion')
+          .eq('user_id', user.id)
+          .eq('world_id', currentWorld.id)
+          .maybeSingle();
+
+        if (error) {
+          alert('Error loading themes: ' + error.message);
+          return;
+        }
+
+        if (data) {
+          state = {
+            graph_rows: Array.isArray(data.graph_rows) ? data.graph_rows : [],
+            core_message: data.core_message || '',
+            conflict_tension: data.conflict_tension || '',
+            character_impact: data.character_impact || '',
+            symbols_motifs: data.symbols_motifs || '',
+            theme_conclusion: data.theme_conclusion || ''
+          };
+        }
+
+        applyState();
+      }
+
+      addBtn.addEventListener('click', function () {
+        rowsContainer.appendChild(makeRow('',''));
+        saveToSupabase();
+      });
+
+      document.addEventListener('input', function (e) {
+        if (e.target.matches('#graph-rows textarea, #core-message, #conflict-tension, #character-impact, #symbols-motifs, #theme-conclusion')) {
+          saveToSupabase();
+        }
+      });
+
+      window.addEventListener('load', async () => {
+        applyState();
+        await loadFromSupabase();
       });
     })();
   </script>
