@@ -9,171 +9,246 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&family=Old+Standard+TT:wght@400;700&display=swap" rel="stylesheet">
 
+  <!-- Use shared blue theme -->
+  <link rel="stylesheet" href="theme.css?v=13">
+
   <style>
-    :root{
-      --card:#ffffff;
-      --card-alpha: 0.92;
-      --text:#0f1724;
-      --muted:#6b7280;
-      --accent:#0b84ff;
-      --radius:12px;
-      --max-width:900px;
-    }
-
-    *{box-sizing:border-box}
-
-    body{
+    .page-title{
       margin:0;
-      font-family: "Old Standard TT", Georgia, "Times New Roman", serif;
       color:var(--text);
-      -webkit-font-smoothing:antialiased;
-      background-image: url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1700&q=80');
-      background-position: center;
-      background-size: cover;
-      background-repeat: no-repeat;
-      background-attachment: fixed;
-      min-height: 100vh;
-      position: relative;
+      font-family:"UnifrakturCook", serif;
+      font-size:clamp(1.8rem,3vw,2.4rem);
+      line-height:1.1;
     }
 
-    body::before{
-      content: "";
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.28);
-      pointer-events: none;
-      z-index: 0;
+    .world-name{
+      color:var(--muted);
+      margin:.25rem 0 0;
+      font-weight:700;
+      font-size:.95rem;
     }
 
-    .wrap{
-      max-width:var(--max-width);
-      margin:6vh auto;
-      padding:1.25rem;
-      position: relative;
-      z-index: 1;
+    .form-grid{
+      display:grid;
+      gap:12px;
+      margin-top:12px;
     }
 
-    .card {
-      background: rgba(255,255,255,var(--card-alpha));
-      border-radius: var(--radius);
-      padding: 1.5rem;
-      box-shadow: 0 6px 18px rgba(15,23,36,0.12);
-      border: 1px solid rgba(11,132,255,0.06);
-      backdrop-filter: blur(2px);
-      margin-bottom: 1rem;
+    .field label{
+      display:block;
+      margin-bottom:.45rem;
+      color:var(--text);
+      font-weight:700;
+      font-size:.95rem;
     }
 
-    .title {
-      margin: 0;
-      color: var(--accent);
-      font-size: 2rem;
-      font-family: "UnifrakturCook", serif;
+    .field input,
+    .field textarea{
+      width:100%;
+      border:1px solid var(--border);
+      border-radius:10px;
+      padding:.75rem;
+      font:inherit;
+      background:rgba(10,26,110,.85);
+      color:var(--text);
+      box-sizing:border-box;
     }
 
-    .meta {
-      color: var(--muted);
-      margin-top: 0.5rem;
-      margin-bottom: 1rem;
-      font-size: 1rem;
+    .field textarea{
+      min-height:150px;
+      resize:vertical;
+      line-height:1.5;
     }
 
-    .description {
-      color: var(--text);
-      font-size: 1.05rem;
-      line-height: 1.6;
-      margin: 0;
+    .field input::placeholder,
+    .field textarea::placeholder{
+      color:rgba(255,230,109,.75);
     }
 
-    .button-row {
-      display: flex;
-      gap: 0.75rem;
-      flex-wrap: wrap;
-    }
-
-    button {
-      background: var(--accent);
-      color: white;
-      border: none;
-      padding: 0.6rem 1rem;
-      border-radius: 8px;
-      font-size: 0.95rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      font-family: "Old Standard TT", Georgia, "Times New Roman", serif;
-    }
-
-    button:hover {
-      background: #0968d6;
-      box-shadow: 0 4px 12px rgba(11,132,255,0.3);
-    }
-
-    .secondary {
-      background: var(--muted);
-    }
-
-    .secondary:hover {
-      background: #5a6270;
-      box-shadow: none;
-    }
-
-    @media(max-width:720px){
-      body{ background-attachment: scroll; }
-      .wrap{ margin: 4vh 1rem; }
-      .title{ font-size: 1.6rem; }
+    .actions{
+      display:flex;
+      gap:.65rem;
+      flex-wrap:wrap;
+      margin-top:14px;
     }
   </style>
 </head>
 <body>
-  <main class="wrap" role="main">
-    <section class="card">
-      <h1 id="kingdom-name" class="title">Kingdom</h1>
-      <div id="kingdom-type" class="meta">Type: Unknown</div>
-      <p id="kingdom-description" class="description">No description available.</p>
-    </section>
-
-    <div class="button-row">
-      <button onclick="window.location.href='Kingdoms.html'">Back to Kingdoms</button>
-      <button class="secondary" onclick="window.location.href='WorldBuildingIdeas.html'">World Building Ideas</button>
+  <main class="container" role="main">
+    <div style="margin-bottom:12px;">
+      <a class="link-back" href="Kingdoms.html">← Back to Kingdoms</a>
     </div>
+
+    <section class="glass" style="padding:16px;">
+      <h1 class="page-title">Kingdom Details</h1>
+      <p id="worldNameDisplay" class="world-name">World: —</p>
+
+      <div class="form-grid">
+        <div class="field">
+          <label for="kingdom-name">Kingdom Name</label>
+          <input id="kingdom-name" type="text" placeholder="Enter kingdom name" />
+        </div>
+
+        <div class="field">
+          <label for="kingdom-type">Type</label>
+          <input id="kingdom-type" type="text" placeholder="Monarchy, Republic, Empire..." />
+        </div>
+
+        <div class="field">
+          <label for="kingdom-description">Short Description</label>
+          <textarea id="kingdom-description" placeholder="Summaraize this kingdom..."></textarea>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-primary" id="saveBtn">Save Changes</button>
+        <button class="btn btn-muted" id="deleteBtn">Delete Kingdom</button>
+        <button class="btn btn-muted" onclick="window.location.href='WorldBuildingIdeas.html'">World Building Ideas</button>
+      </div>
+    </section>
   </main>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="./supabase-config.js?v=11"></script>
   <script>
+    let currentKingdomId = null;
+    let kingdomsKey = 'kingdoms:__no_world__';
+
     function getQueryParam(name) {
-      const params = new URLSearchParams(window.location.search);
-      return params.get(name);
+      return new URLSearchParams(window.location.search).get(name);
     }
 
-    function loadKingdomDetails() {
-      const kingdomId = getQueryParam('id');
-      const storedKingdoms = localStorage.getItem('kingdoms');
-      const kingdoms = storedKingdoms ? JSON.parse(storedKingdoms) : [];
+    function getCurrentWorldSafe() {
+      try {
+        return (typeof getCurrentWorld === 'function')
+          ? getCurrentWorld()
+          : JSON.parse(localStorage.getItem('currentWorld') || 'null');
+      } catch {
+        return null;
+      }
+    }
 
-      let kingdom = null;
+    function resolveWorldContext() {
+      const world = getCurrentWorldSafe();
+      const worldName = world?.name?.trim() || (localStorage.getItem('lastWorldName') || '').trim() || 'New World';
+      kingdomsKey = worldName ? `kingdoms:${worldName}` : 'kingdoms:__no_world__';
+      document.getElementById('worldNameDisplay').textContent = `World: ${worldName}`;
+      return worldName;
+    }
 
-      if (kingdomId) {
-        kingdom = kingdoms.find(k => String(k.id) === String(kingdomId));
+    function loadKingdoms() {
+      try {
+        const arr = JSON.parse(localStorage.getItem(kingdomsKey) || '[]');
+        if (Array.isArray(arr)) return arr;
+      } catch {}
+      return [];
+    }
+
+    function saveKingdoms(kingdoms) {
+      localStorage.setItem(kingdomsKey, JSON.stringify(kingdoms));
+    }
+
+    function findInitialKingdom(kingdoms) {
+      const idFromUrl = getQueryParam('id');
+      if (idFromUrl) {
+        const found = kingdoms.find(k => String(k.id) === String(idFromUrl));
+        if (found) return found;
       }
 
-      if (!kingdom) {
-        const selectedKingdom = localStorage.getItem('selectedKingdom');
-        kingdom = selectedKingdom ? JSON.parse(selectedKingdom) : null;
-      }
+      try {
+        const selected = JSON.parse(localStorage.getItem('selectedKingdom') || 'null');
+        if (selected) {
+          const found = kingdoms.find(k => String(k.id) === String(selected.id));
+          return found || selected;
+        }
+      } catch {}
+
+      return null;
+    }
+
+    function applyKingdomToForm(kingdom) {
+      document.getElementById('kingdom-name').value = kingdom?.name || '';
+      document.getElementById('kingdom-type').value = kingdom?.type || '';
+      document.getElementById('kingdom-description').value = kingdom?.description || '';
+      document.title = `${kingdom?.name || 'Kingdom'} | Kingdom Details`;
+    }
+
+    function collectForm() {
+      return {
+        name: document.getElementById('kingdom-name').value.trim(),
+        type: document.getElementById('kingdom-type').value.trim(),
+        description: document.getElementById('kingdom-description').value.trim()
+      };
+    }
+
+    function initPage() {
+      resolveWorldContext();
+      const kingdoms = loadKingdoms();
+      const kingdom = findInitialKingdom(kingdoms);
 
       if (!kingdom) {
-        document.getElementById('kingdom-name').textContent = 'Kingdom Not Found';
-        document.getElementById('kingdom-type').textContent = 'Type: -';
-        document.getElementById('kingdom-description').textContent = 'This kingdom could not be found. Try returning to the kingdoms page.';
+        currentKingdomId = null;
+        applyKingdomToForm({ name: '', type: '', description: '' });
+        alert('No kingdom found. Create one from the Kingdoms page first.');
         return;
       }
 
-      document.title = `${kingdom.name} | Kingdom Details`;
-      document.getElementById('kingdom-name').textContent = kingdom.name;
-      document.getElementById('kingdom-type').textContent = `Type: ${kingdom.type || 'Unknown'}`;
-      document.getElementById('kingdom-description').textContent = kingdom.description || 'No description provided';
+      currentKingdomId = kingdom.id;
+      localStorage.setItem('selectedKingdom', JSON.stringify(kingdom));
+      applyKingdomToForm(kingdom);
     }
 
-    window.addEventListener('load', loadKingdomDetails);
+    document.getElementById('saveBtn').addEventListener('click', () => {
+      const form = collectForm();
+      if (!form.name) {
+        alert('Please enter a kingdom name.');
+        return;
+      }
+
+      const kingdoms = loadKingdoms();
+      const idx = kingdoms.findIndex(k => String(k.id) === String(currentKingdomId));
+
+      if (idx === -1) {
+        // if missing (edge case), recreate
+        const newItem = {
+          id: currentKingdomId || Date.now(),
+          name: form.name,
+          type: form.type || 'Unknown',
+          description: form.description || 'No description provided'
+        };
+        kingdoms.push(newItem);
+        currentKingdomId = newItem.id;
+        localStorage.setItem('selectedKingdom', JSON.stringify(newItem));
+        saveKingdoms(kingdoms);
+        applyKingdomToForm(newItem);
+        alert('Saved!');
+        return;
+      }
+
+      kingdoms[idx] = {
+        ...kingdoms[idx],
+        name: form.name,
+        type: form.type || 'Unknown',
+        description: form.description || 'No description provided'
+      };
+
+      saveKingdoms(kingdoms);
+      localStorage.setItem('selectedKingdom', JSON.stringify(kingdoms[idx]));
+      applyKingdomToForm(kingdoms[idx]);
+      alert('Saved!');
+    });
+
+    document.getElementById('deleteBtn').addEventListener('click', () => {
+      if (!currentKingdomId) return;
+      if (!confirm('Delete this kingdom?')) return;
+
+      const kingdoms = loadKingdoms().filter(k => String(k.id) !== String(currentKingdomId));
+      saveKingdoms(kingdoms);
+      localStorage.removeItem('selectedKingdom');
+      window.location.href = 'Kingdoms.html';
+    });
+
+    window.addEventListener('load', initPage);
   </script>
 </body>
 </html>
