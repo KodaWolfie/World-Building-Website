@@ -66,7 +66,6 @@
       margin-top:.6rem;
     }
 
-    /* Accordion */
     .accordion{
       margin-top:12px;
       border:1px solid var(--border);
@@ -158,49 +157,32 @@
     </section>
   </main>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="./supabase-config.js?v=20"></script>
   <script>
-    // Replace these placeholders with your real 18 questions later
     const QUESTIONS = [
-  "Core Concept?",
-  "Where does it come from?",
-  "What are the laws of magic?",
-  "Who in society can use it?",
-  "Can animals or plants or anything else other than society use it?",
-  "Can it be lost?",
-  "How is it learned?",
-  "Can it be controlled or harnessed?",
-  "What does it feel like?",
-  "What exactly does it do?",
-  "How is it used?",
-  "What are its limitations?",
-  "What are its flaws or cost?",
-  "How does it relate to the plot, theme, characters, etc?",
-  "How do societies react to it?",
-  "Is there a cultural impact?",
-  "Why haven’t people with powers taken over the world—or have they?",
-  "Other?"
-];
+      "Core Concept?",
+      "Where does it come from?",
+      "What are the laws of magic?",
+      "Who in society can use it?",
+      "Can animals or plants or anything else other than society use it?",
+      "Can it be lost?",
+      "How is it learned?",
+      "Can it be controlled or harnessed?",
+      "What does it feel like?",
+      "What exactly does it do?",
+      "How is it used?",
+      "What are its limitations?",
+      "What are its flaws or cost?",
+      "How does it relate to the plot, theme, characters, etc?",
+      "How do societies react to it?",
+      "Is there a cultural impact?",
+      "Why haven’t people with powers taken over the world—or have they?",
+      "Other?"
+    ];
 
-    function getCurrentWorldSafe() {
-      try { return JSON.parse(localStorage.getItem('currentWorld') || 'null'); }
-      catch { return null; }
-    }
-
-    const world = getCurrentWorldSafe();
-    const worldName = world?.name || "New World";
-    document.getElementById("worldNameDisplay").textContent = `World: ${worldName}`;
-
-    const KEY = `magicSystem:${worldName}`;
     const accordion = document.getElementById("questionAccordion");
-
-    function loadData() {
-      try { return JSON.parse(localStorage.getItem(KEY) || "{}"); }
-      catch { return {}; }
-    }
-
-    function saveData(data) {
-      localStorage.setItem(KEY, JSON.stringify(data));
-    }
+    let currentWorld = null;
 
     function renderQuestions(saved = {}) {
       accordion.innerHTML = "";
@@ -218,17 +200,76 @@
     }
 
     function collectData() {
-      const out = { freeWrite: document.getElementById("freeWrite").value || "" };
+      const out = { free_write: document.getElementById("freeWrite").value || "", answers: {} };
       QUESTIONS.forEach((_, i) => {
         const id = `q_${i + 1}`;
-        out[id] = document.getElementById(id)?.value || "";
+        out.answers[id] = document.getElementById(id)?.value || "";
       });
       return out;
     }
 
     function applyData(data) {
-      document.getElementById("freeWrite").value = data.freeWrite || "";
-      renderQuestions(data);
+      document.getElementById("freeWrite").value = data?.free_write || "";
+      renderQuestions(data?.answers || {});
+    }
+
+    async function loadFromSupabase() {
+      currentWorld = getCurrentWorld();
+      const worldName = currentWorld?.name || "New World";
+      document.getElementById("worldNameDisplay").textContent = `World: ${worldName}`;
+
+      if (!currentWorld || !currentWorld.id) {
+        alert('Please select a world first.');
+        window.location.href = 'YourWorlds.html';
+        return false;
+      }
+
+      const user = await getCurrentUser();
+      if (!user) {
+        alert('Please log in first.');
+        return false;
+      }
+
+      const { data, error } = await sb
+        .from('magic_systems')
+        .select('free_write, answers')
+        .eq('user_id', user.id)
+        .eq('world_id', currentWorld.id)
+        .maybeSingle();
+
+      if (error) {
+        alert('Error loading magic system: ' + error.message);
+        applyData({ free_write: '', answers: {} });
+        return false;
+      }
+
+      applyData(data || { free_write: '', answers: {} });
+      return true;
+    }
+
+    async function saveToSupabase(showAlert = false) {
+      if (!currentWorld || !currentWorld.id) return;
+
+      const user = await getCurrentUser();
+      if (!user) return;
+
+      const payload = collectData();
+
+      const { error } = await sb
+        .from('magic_systems')
+        .upsert([{
+          user_id: user.id,
+          world_id: currentWorld.id,
+          free_write: payload.free_write,
+          answers: payload.answers
+        }], { onConflict: 'world_id' });
+
+      if (error) {
+        alert('Error saving magic system: ' + error.message);
+        return;
+      }
+
+      if (showAlert) alert("Saved!");
     }
 
     document.getElementById("expandAllBtn").addEventListener("click", () => {
@@ -239,24 +280,23 @@
       document.querySelectorAll("#questionAccordion details").forEach(d => d.open = false);
     });
 
-    document.getElementById("saveBtn").addEventListener("click", () => {
-      saveData(collectData());
-      alert("Saved!");
+    document.getElementById("saveBtn").addEventListener("click", async () => {
+      await saveToSupabase(true);
     });
 
-    document.getElementById("clearBtn").addEventListener("click", () => {
+    document.getElementById("clearBtn").addEventListener("click", async () => {
       if (!confirm("Clear free write + all 18 answers for this world?")) return;
-      localStorage.removeItem(KEY);
-      applyData({});
+      applyData({ free_write: '', answers: {} });
+      await saveToSupabase(false);
     });
 
-    document.addEventListener("input", (e) => {
+    document.addEventListener("input", async (e) => {
       if (e.target.matches("#freeWrite, #questionAccordion textarea")) {
-        saveData(collectData());
+        await saveToSupabase(false);
       }
     });
 
-    applyData(loadData());
+    window.addEventListener('load', loadFromSupabase);
   </script>
 </body>
 </html>
