@@ -157,7 +157,7 @@
     <div id="status" class="status"></div>
   </main>
 
-  <script src="supabase-config.js"></script>
+  <script src="supabase-config.js?v=20"></script>
   <script>
     function showStatus(message, type = 'success') {
       const el = document.getElementById('status');
@@ -254,7 +254,13 @@
         card.className = 'card world-card';
 
         card.addEventListener('click', () => {
-          setCurrentWorld(world.world_name || '', world.genre || '', world.theme || '');
+          // IMPORTANT: include world.id for all downstream Supabase pages
+          setCurrentWorld(
+            world.id,
+            world.world_name || '',
+            world.genre || '',
+            world.theme || ''
+          );
           window.location.href = 'WorldBuildingIdeas.html';
         });
 
