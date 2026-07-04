@@ -60,39 +60,13 @@
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="./supabase-config.js?v=12"></script>
+  <script src="./supabase-config.js?v=20"></script>
   <script>
     let currentKingdomId = null;
-    let kingdomsKey = 'kingdoms:__no_world__';
     let isCreateMode = false;
+    let currentWorld = null;
 
     const qp = (k) => new URLSearchParams(window.location.search).get(k);
-
-    function getCurrentWorldSafe() {
-      try {
-        return (typeof getCurrentWorld === 'function')
-          ? getCurrentWorld()
-          : JSON.parse(localStorage.getItem('currentWorld') || 'null');
-      } catch { return null; }
-    }
-
-    function resolveWorldContext() {
-      const world = getCurrentWorldSafe();
-      const worldName = world?.name?.trim() || (localStorage.getItem('lastWorldName') || '').trim() || 'New World';
-      kingdomsKey = worldName ? `kingdoms:${worldName}` : 'kingdoms:__no_world__';
-      document.getElementById('worldNameDisplay').textContent = `World: ${worldName}`;
-    }
-
-    function loadKingdoms() {
-      try {
-        const arr = JSON.parse(localStorage.getItem(kingdomsKey) || '[]');
-        return Array.isArray(arr) ? arr : [];
-      } catch { return []; }
-    }
-
-    function saveKingdoms(items) {
-      localStorage.setItem(kingdomsKey, JSON.stringify(items));
-    }
 
     function applyForm(k) {
       document.getElementById('kingdom-name').value = k?.name || '';
@@ -109,12 +83,18 @@
       };
     }
 
-    function init() {
-      resolveWorldContext();
+    async function init() {
+      currentWorld = getCurrentWorld();
+      document.getElementById('worldNameDisplay').textContent = `World: ${currentWorld?.name || '—'}`;
+
+      if (!currentWorld || !currentWorld.id) {
+        alert('Please select a world first.');
+        window.location.href = 'YourWorlds.html';
+        return;
+      }
 
       const id = qp('id');
       const newFlag = qp('new');
-      const kingdoms = loadKingdoms();
 
       if (newFlag === '1') {
         isCreateMode = true;
@@ -126,20 +106,13 @@
       }
 
       if (id) {
-        const found = kingdoms.find(k => String(k.id) === String(id));
-        if (found) {
-          currentKingdomId = found.id;
-          localStorage.setItem('selectedKingdom', JSON.stringify(found));
-          applyForm(found);
+        const kingdom = await getKingdomById(Number(id));
+        if (kingdom) {
+          currentKingdomId = kingdom.id;
+          localStorage.setItem('selectedKingdom', JSON.stringify(kingdom)); // UI convenience only
+          applyForm(kingdom);
           return;
         }
-      }
-
-      const selected = JSON.parse(localStorage.getItem('selectedKingdom') || 'null');
-      if (selected) {
-        currentKingdomId = selected.id;
-        applyForm(selected);
-        return;
       }
 
       isCreateMode = true;
@@ -149,45 +122,44 @@
       applyForm({ name:'', type:'', description:'' });
     }
 
-    function saveCurrent() {
+    async function saveCurrent() {
       const form = collectForm();
       if (!form.name) { alert('Please enter a kingdom name.'); return null; }
 
-      const kingdoms = loadKingdoms();
       let saved = null;
 
       if (isCreateMode || !currentKingdomId) {
-        saved = { id: Date.now(), name: form.name, type: form.type || 'Unknown', description: form.description || 'No description provided' };
-        kingdoms.push(saved);
+        saved = await createKingdom(currentWorld.id, form.name, form.type || 'Unknown', form.description || 'No description provided');
+        if (!saved) return null;
         currentKingdomId = saved.id;
         isCreateMode = false;
       } else {
-        const i = kingdoms.findIndex(k => String(k.id) === String(currentKingdomId));
-        if (i === -1) {
-          saved = { id: currentKingdomId, name: form.name, type: form.type || 'Unknown', description: form.description || 'No description provided' };
-          kingdoms.push(saved);
-        } else {
-          kingdoms[i] = { ...kingdoms[i], name: form.name, type: form.type || 'Unknown', description: form.description || 'No description provided' };
-          saved = kingdoms[i];
-        }
+        const ok = await updateKingdom(currentKingdomId, {
+          name: form.name,
+          type: form.type || 'Unknown',
+          description: form.description || 'No description provided'
+        });
+        if (!ok) return null;
+        saved = await getKingdomById(currentKingdomId);
       }
 
-      saveKingdoms(kingdoms);
-      localStorage.setItem('selectedKingdom', JSON.stringify(saved));
+      localStorage.setItem('selectedKingdom', JSON.stringify(saved)); // UI convenience only
       return saved;
     }
 
-    document.getElementById('saveBtn').addEventListener('click', () => {
-      const saved = saveCurrent();
+    document.getElementById('saveBtn').addEventListener('click', async () => {
+      const saved = await saveCurrent();
       if (!saved) return;
       window.location.href = `CountryTemplate.html?id=${saved.id}`;
     });
 
-    document.getElementById('deleteBtn').addEventListener('click', () => {
+    document.getElementById('deleteBtn').addEventListener('click', async () => {
       if (isCreateMode || !currentKingdomId) return;
       if (!confirm('Delete this kingdom?')) return;
-      const filtered = loadKingdoms().filter(k => String(k.id) !== String(currentKingdomId));
-      saveKingdoms(filtered);
+
+      const ok = await deleteKingdom(currentKingdomId);
+      if (!ok) return;
+
       localStorage.removeItem('selectedKingdom');
       window.location.href = 'Kingdoms.html';
     });
