@@ -91,32 +91,14 @@
     </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="./supabase-config.js?v=20"></script>
   <script>
     let settings = [];
+    let currentWorld = null;
 
     function getQueryParam(name){
       return new URLSearchParams(window.location.search).get(name);
-    }
-
-    function getCurrentWorldSafe() {
-      try { return JSON.parse(localStorage.getItem('currentWorld') || 'null'); }
-      catch { return null; }
-    }
-
-    function resolveWorldName() {
-      const fromCurrentWorld = getCurrentWorldSafe()?.name?.trim();
-      const fromUrl = getQueryParam("world")?.trim();
-      const fromCache = localStorage.getItem("lastWorldName")?.trim();
-      const resolved = fromCurrentWorld || fromUrl || fromCache || "";
-      if (resolved) localStorage.setItem("lastWorldName", resolved);
-      return resolved;
-    }
-
-    const worldName = resolveWorldName();
-    document.getElementById("worldNameDisplay").textContent = `World: ${worldName || "—"}`;
-
-    function worldSettingsKey() {
-      return worldName ? `settingsList:${worldName}` : `settingsList:__no_world_selected__`;
     }
 
     function slugify(text) {
@@ -126,28 +108,75 @@
         .replace(/-+/g, '-');
     }
 
-    function loadSettings() {
-      const stored = localStorage.getItem(worldSettingsKey());
-      settings = stored ? JSON.parse(stored) : [];
-      displaySettings();
+    async function resolveWorld() {
+      currentWorld = getCurrentWorld();
+
+      if (!currentWorld || !currentWorld.id) {
+        const fromUrl = getQueryParam("world")?.trim();
+        document.getElementById("worldNameDisplay").textContent = `World: ${fromUrl || "—"}`;
+        alert('Please select a world first.');
+        window.location.href = 'YourWorlds.html';
+        return false;
+      }
+
+      document.getElementById("worldNameDisplay").textContent = `World: ${currentWorld.name || "—"}`;
+      localStorage.setItem("lastWorldName", currentWorld.name || '');
+      return true;
     }
 
-    function saveSettingsList() {
-      localStorage.setItem(worldSettingsKey(), JSON.stringify(settings));
+    async function loadSettings() {
+      const user = await getCurrentUser();
+      if (!user) {
+        alert('Please log in first.');
+        settings = [];
+        displaySettings();
+        return;
+      }
+
+      const { data, error } = await sb
+        .from('settings')
+        .select('id, name, type, description, created_at')
+        .eq('user_id', user.id)
+        .eq('world_id', currentWorld.id)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        alert('Error loading settings: ' + error.message);
+        settings = [];
+      } else {
+        settings = data || [];
+      }
+
+      displaySettings();
     }
 
     function openSettingPage(settingId) {
       const selected = settings.find(s => String(s.id) === String(settingId));
       if (!selected) return;
-      localStorage.setItem('selectedSetting', JSON.stringify(selected));
-      const w = encodeURIComponent(worldName || "");
+      localStorage.setItem('selectedSetting', JSON.stringify(selected)); // UI convenience only
+      const w = encodeURIComponent(currentWorld?.name || "");
       window.location.href = `setting.html?id=${selected.id}&name=${encodeURIComponent(slugify(selected.name))}&world=${w}`;
     }
 
-    function deleteSetting(settingId) {
+    async function deleteSetting(settingId) {
       if (!confirm("Delete this setting?")) return;
+
+      const user = await getCurrentUser();
+      if (!user) return;
+
+      const { error } = await sb
+        .from('settings')
+        .delete()
+        .eq('id', settingId)
+        .eq('user_id', user.id)
+        .eq('world_id', currentWorld.id);
+
+      if (error) {
+        alert('Error deleting setting: ' + error.message);
+        return;
+      }
+
       settings = settings.filter(s => String(s.id) !== String(settingId));
-      saveSettingsList();
       displaySettings();
     }
 
@@ -211,7 +240,7 @@
       document.getElementById('settingModal').setAttribute('aria-hidden', 'true');
     }
 
-    function saveSetting() {
+    async function saveSetting() {
       const name = document.getElementById('setting-name').value.trim();
       const type = document.getElementById('setting-type').value.trim();
       const description = document.getElementById('setting-description').value.trim();
@@ -221,14 +250,30 @@
         return;
       }
 
-      settings.push({
-        id: Date.now(),
-        name,
-        type,
-        description
-      });
+      const user = await getCurrentUser();
+      if (!user) {
+        alert('Please log in first.');
+        return;
+      }
 
-      saveSettingsList();
+      const { data, error } = await sb
+        .from('settings')
+        .insert([{
+          user_id: user.id,
+          world_id: currentWorld.id,
+          name,
+          type,
+          description
+        }])
+        .select('id, name, type, description, created_at')
+        .single();
+
+      if (error) {
+        alert('Error creating setting: ' + error.message);
+        return;
+      }
+
+      settings.unshift(data);
       closeSettingModal();
       displaySettings();
     }
@@ -238,7 +283,11 @@
       if (event.target === modal) closeSettingModal();
     };
 
-    window.addEventListener('load', loadSettings);
+    window.addEventListener('load', async () => {
+      const ok = await resolveWorld();
+      if (!ok) return;
+      await loadSettings();
+    });
   </script>
 </body>
 </html>
