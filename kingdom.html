@@ -9,67 +9,20 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&family=Old+Standard+TT:wght@400;700&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="theme.css?v=13">
+  <link rel="stylesheet" href="theme.css?v=14">
 
   <style>
-    .page-title{
-      margin:0;
-      color:var(--text);
-      font-family:"UnifrakturCook", serif;
-      font-size:clamp(1.8rem,3vw,2.4rem);
-      line-height:1.1;
+    .page-title{margin:0;color:var(--text);font-family:"UnifrakturCook", serif;font-size:clamp(1.8rem,3vw,2.4rem);line-height:1.1;}
+    .world-name{color:var(--muted);margin:.25rem 0 0;font-weight:700;font-size:.95rem;}
+    .form-grid{display:grid;gap:12px;margin-top:12px;}
+    .field label{display:block;margin-bottom:.45rem;color:var(--text);font-weight:700;font-size:.95rem;}
+    .field input,.field textarea{
+      width:100%;border:1px solid var(--border);border-radius:10px;padding:.75rem;font:inherit;
+      background:rgba(10,26,110,.85);color:var(--text);box-sizing:border-box;
     }
-
-    .world-name{
-      color:var(--muted);
-      margin:.25rem 0 0;
-      font-weight:700;
-      font-size:.95rem;
-    }
-
-    .form-grid{
-      display:grid;
-      gap:12px;
-      margin-top:12px;
-    }
-
-    .field label{
-      display:block;
-      margin-bottom:.45rem;
-      color:var(--text);
-      font-weight:700;
-      font-size:.95rem;
-    }
-
-    .field input,
-    .field textarea{
-      width:100%;
-      border:1px solid var(--border);
-      border-radius:10px;
-      padding:.75rem;
-      font:inherit;
-      background:rgba(10,26,110,.85);
-      color:var(--text);
-      box-sizing:border-box;
-    }
-
-    .field textarea{
-      min-height:150px;
-      resize:vertical;
-      line-height:1.5;
-    }
-
-    .field input::placeholder,
-    .field textarea::placeholder{
-      color:rgba(255,230,109,.75);
-    }
-
-    .actions{
-      display:flex;
-      gap:.65rem;
-      flex-wrap:wrap;
-      margin-top:14px;
-    }
+    .field textarea{min-height:150px;resize:vertical;line-height:1.5;}
+    .field input::placeholder,.field textarea::placeholder{color:rgba(255,230,109,.75);}
+    .actions{display:flex;gap:.65rem;flex-wrap:wrap;margin-top:14px;}
   </style>
 </head>
 <body>
@@ -79,7 +32,7 @@
     </div>
 
     <section class="glass" style="padding:16px;">
-      <h1 class="page-title">Kingdom Details</h1>
+      <h1 class="page-title" id="pageTitle">Kingdom Details</h1>
       <p id="worldNameDisplay" class="world-name">World: —</p>
 
       <div class="form-grid">
@@ -108,10 +61,11 @@
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="./supabase-config.js?v=11"></script>
+  <script src="./supabase-config.js?v=12"></script>
   <script>
     let currentKingdomId = null;
     let kingdomsKey = 'kingdoms:__no_world__';
+    let isCreateMode = false;
 
     function getQueryParam(name) {
       return new URLSearchParams(window.location.search).get(name);
@@ -132,7 +86,6 @@
       const worldName = world?.name?.trim() || (localStorage.getItem('lastWorldName') || '').trim() || 'New World';
       kingdomsKey = worldName ? `kingdoms:${worldName}` : 'kingdoms:__no_world__';
       document.getElementById('worldNameDisplay').textContent = `World: ${worldName}`;
-      return worldName;
     }
 
     function loadKingdoms() {
@@ -145,24 +98,6 @@
 
     function saveKingdoms(kingdoms) {
       localStorage.setItem(kingdomsKey, JSON.stringify(kingdoms));
-    }
-
-    function findInitialKingdom(kingdoms) {
-      const idFromUrl = getQueryParam('id');
-      if (idFromUrl) {
-        const found = kingdoms.find(k => String(k.id) === String(idFromUrl));
-        if (found) return found;
-      }
-
-      try {
-        const selected = JSON.parse(localStorage.getItem('selectedKingdom') || 'null');
-        if (selected) {
-          const found = kingdoms.find(k => String(k.id) === String(selected.id));
-          return found || selected;
-        }
-      } catch {}
-
-      return null;
     }
 
     function applyKingdomToForm(kingdom) {
@@ -180,21 +115,55 @@
       };
     }
 
+    function findById(kingdoms, id) {
+      return kingdoms.find(k => String(k.id) === String(id)) || null;
+    }
+
     function initPage() {
       resolveWorldContext();
-      const kingdoms = loadKingdoms();
-      const kingdom = findInitialKingdom(kingdoms);
 
-      if (!kingdom) {
+      const idFromUrl = getQueryParam('id');
+      const newFlag = getQueryParam('new'); // "1" means force create mode
+      const kingdoms = loadKingdoms();
+
+      if (newFlag === '1') {
+        isCreateMode = true;
         currentKingdomId = null;
+        document.getElementById('pageTitle').textContent = 'Create Kingdom';
+        document.getElementById('saveBtn').textContent = 'Create Kingdom';
+        document.getElementById('deleteBtn').style.display = 'none';
         applyKingdomToForm({ name: '', type: '', description: '' });
-        alert('No kingdom found. Create one from the Kingdoms page first.');
         return;
       }
 
-      currentKingdomId = kingdom.id;
-      localStorage.setItem('selectedKingdom', JSON.stringify(kingdom));
-      applyKingdomToForm(kingdom);
+      if (idFromUrl) {
+        const found = findById(kingdoms, idFromUrl);
+        if (found) {
+          currentKingdomId = found.id;
+          localStorage.setItem('selectedKingdom', JSON.stringify(found));
+          applyKingdomToForm(found);
+          return;
+        }
+      }
+
+      // fallback to selected only in edit context
+      try {
+        const selected = JSON.parse(localStorage.getItem('selectedKingdom') || 'null');
+        if (selected) {
+          const found = findById(kingdoms, selected.id) || selected;
+          currentKingdomId = found.id;
+          applyKingdomToForm(found);
+          return;
+        }
+      } catch {}
+
+      // default: create mode if nothing matched
+      isCreateMode = true;
+      currentKingdomId = null;
+      document.getElementById('pageTitle').textContent = 'Create Kingdom';
+      document.getElementById('saveBtn').textContent = 'Create Kingdom';
+      document.getElementById('deleteBtn').style.display = 'none';
+      applyKingdomToForm({ name: '', type: '', description: '' });
     }
 
     function saveCurrentKingdom() {
@@ -205,27 +174,37 @@
       }
 
       const kingdoms = loadKingdoms();
-      const idx = kingdoms.findIndex(k => String(k.id) === String(currentKingdomId));
-
       let savedItem = null;
 
-      if (idx === -1) {
+      if (isCreateMode || !currentKingdomId) {
         savedItem = {
-          id: currentKingdomId || Date.now(),
+          id: Date.now(),
           name: form.name,
           type: form.type || 'Unknown',
           description: form.description || 'No description provided'
         };
         kingdoms.push(savedItem);
         currentKingdomId = savedItem.id;
+        isCreateMode = false;
       } else {
-        kingdoms[idx] = {
-          ...kingdoms[idx],
-          name: form.name,
-          type: form.type || 'Unknown',
-          description: form.description || 'No description provided'
-        };
-        savedItem = kingdoms[idx];
+        const idx = kingdoms.findIndex(k => String(k.id) === String(currentKingdomId));
+        if (idx === -1) {
+          savedItem = {
+            id: currentKingdomId,
+            name: form.name,
+            type: form.type || 'Unknown',
+            description: form.description || 'No description provided'
+          };
+          kingdoms.push(savedItem);
+        } else {
+          kingdoms[idx] = {
+            ...kingdoms[idx],
+            name: form.name,
+            type: form.type || 'Unknown',
+            description: form.description || 'No description provided'
+          };
+          savedItem = kingdoms[idx];
+        }
       }
 
       saveKingdoms(kingdoms);
@@ -237,13 +216,11 @@
     document.getElementById('saveBtn').addEventListener('click', () => {
       const saved = saveCurrentKingdom();
       if (!saved) return;
-
-      // Save + go to CountryTemplate for this kingdom
       window.location.href = `CountryTemplate.html?id=${saved.id}`;
     });
 
     document.getElementById('deleteBtn').addEventListener('click', () => {
-      if (!currentKingdomId) return;
+      if (isCreateMode || !currentKingdomId) return;
       if (!confirm('Delete this kingdom?')) return;
 
       const kingdoms = loadKingdoms().filter(k => String(k.id) !== String(currentKingdomId));
