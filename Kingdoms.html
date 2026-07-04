@@ -56,37 +56,41 @@
     <section id="kingdoms-list"></section>
   </main>
 
-  <script src="./supabase-config.js?v=12"></script>
+  <script src="./supabase-config.js?v=20"></script>
   <script>
     let kingdoms = [];
-    let kingdomsStorageKey = 'kingdoms:__no_world__';
+    let currentWorld = null;
 
     function slugify(text){
       return text.toString().toLowerCase().trim()
         .replace(/[^a-z0-9\s-]/g,'').replace(/\s+/g,'-').replace(/-+/g,'-');
     }
 
-    function resolveWorldAndKey() {
-      const world = (typeof getCurrentWorld === 'function') ? getCurrentWorld() : null;
-      const worldName = world?.name?.trim() || (localStorage.getItem('lastWorldName') || '').trim() || '';
-      kingdomsStorageKey = worldName ? `kingdoms:${worldName}` : 'kingdoms:__no_world__';
-      document.getElementById('world-name').textContent = worldName || 'Your World';
-      document.getElementById('genre-display').textContent = world?.genre || '-';
-      document.getElementById('theme-display').textContent = world?.theme || '-';
+    function resolveWorldHeader() {
+      currentWorld = (typeof getCurrentWorld === 'function') ? getCurrentWorld() : null;
+
+      if (!currentWorld || !currentWorld.id) {
+        alert('Please select a world first.');
+        window.location.href = 'YourWorlds.html';
+        return false;
+      }
+
+      document.getElementById('world-name').textContent = currentWorld.name || 'Your World';
+      document.getElementById('genre-display').textContent = currentWorld.genre || '-';
+      document.getElementById('theme-display').textContent = currentWorld.theme || '-';
+      return true;
     }
 
-    function loadKingdoms() {
-      try {
-        const raw = JSON.parse(localStorage.getItem(kingdomsStorageKey) || '[]');
-        kingdoms = Array.isArray(raw) ? raw : [];
-      } catch { kingdoms = []; }
+    async function loadKingdoms() {
+      if (!currentWorld?.id) return;
+      kingdoms = await getKingdomsByWorldId(currentWorld.id);
       displayKingdoms();
     }
 
     function openKingdomPage(id) {
       const selected = kingdoms.find(k => String(k.id) === String(id));
       if (!selected) return;
-      localStorage.setItem('selectedKingdom', JSON.stringify(selected));
+      localStorage.setItem('selectedKingdom', JSON.stringify(selected)); // UI convenience only
       localStorage.setItem('selectedCountryName', selected.name || '');
       window.location.href = `kingdom.html?id=${selected.id}&name=${encodeURIComponent(slugify(selected.name || 'kingdom'))}`;
     }
@@ -125,9 +129,10 @@
       });
     }
 
-    window.addEventListener('load', () => {
-      resolveWorldAndKey();
-      loadKingdoms();
+    window.addEventListener('load', async () => {
+      const ok = resolveWorldHeader();
+      if (!ok) return;
+      await loadKingdoms();
     });
   </script>
 </body>
