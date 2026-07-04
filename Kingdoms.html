@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Kingdoms/Countries/Sovereignties</title>
+  <title>Sovereignties</title>
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -17,7 +17,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
-    /* Page-only layout helpers (kept minimal so theme.css controls appearance) */
     .page-title {
       margin: 0;
       color: var(--text);
@@ -100,7 +99,6 @@
       font-size: .95rem;
     }
 
-    /* Modal */
     .modal {
       display: none;
       position: fixed;
@@ -171,7 +169,7 @@
 <body>
   <main class="container" role="main">
     <div style="margin-bottom:12px;">
-      <a class="link-back" href="WorldBuildingIdeas.html">← Return to World Ideas</a>
+      <a class="link-back" href="WorldBuildingIdeas.html">← Return to Novel Index</a>
     </div>
 
     <section class="glass" style="padding:18px; margin-bottom:16px;">
@@ -189,12 +187,12 @@
     </section>
 
     <section class="section-row">
-      <h1 class="page-title" style="font-size:clamp(1.4rem,2.6vw,2rem);">Kingdoms / Countries / Sovereignties</h1>
+      <h1 class="page-title" style="font-size:clamp(1.4rem,2.6vw,2rem);">Sovereignties</h1>
       <button class="btn btn-primary" title="Create a new kingdom" onclick="openKingdomModal()">+ New</button>
     </section>
 
     <section class="glass empty-state" id="no-kingdoms-section">
-      <h2>No Kingdoms Yet</h2>
+      <h2>No Sovereignties Yet</h2>
       <p>Get started by creating your first kingdom.</p>
       <button class="btn btn-primary" onclick="openKingdomModal()">Create Kingdom</button>
     </section>
@@ -229,9 +227,11 @@
     </div>
   </div>
 
-  <script src="supabase-config.js"></script>
+  <script src="./supabase-config.js?v=11"></script>
   <script>
     let kingdoms = [];
+    let currentWorldName = '';
+    let kingdomsStorageKey = 'kingdoms:__no_world__';
 
     function slugify(text) {
       return text
@@ -248,26 +248,33 @@
       if (!selectedKingdom) return;
 
       localStorage.setItem('selectedKingdom', JSON.stringify(selectedKingdom));
-      localStorage.setItem('selectedCountryName', selectedKingdom.name); // compatibility for CountryTemplate
+      localStorage.setItem('selectedCountryName', selectedKingdom.name);
       window.location.href = `CountryTemplate.html?id=${selectedKingdom.id}&name=${encodeURIComponent(slugify(selectedKingdom.name))}`;
     }
 
-    function loadWorld() {
+    function resolveWorldAndKey() {
       const world = (typeof getCurrentWorld === 'function') ? getCurrentWorld() : null;
+      currentWorldName = world?.name?.trim() || '';
+      kingdomsStorageKey = currentWorldName ? `kingdoms:${currentWorldName}` : 'kingdoms:__no_world__';
 
-      if (world) {
-        document.getElementById('world-name').textContent = world.name || 'Your World';
-        document.getElementById('genre-display').textContent = world.genre || '-';
-        document.getElementById('theme-display').textContent = world.theme || '-';
-      }
+      document.getElementById('world-name').textContent = currentWorldName || 'Your World';
+      document.getElementById('genre-display').textContent = world?.genre || '-';
+      document.getElementById('theme-display').textContent = world?.theme || '-';
+    }
 
+    function loadWorld() {
+      resolveWorldAndKey();
       loadKingdoms();
     }
 
     function loadKingdoms() {
-      const storedKingdoms = localStorage.getItem('kingdoms');
+      const storedKingdoms = localStorage.getItem(kingdomsStorageKey);
       kingdoms = storedKingdoms ? JSON.parse(storedKingdoms) : [];
       displayKingdoms();
+    }
+
+    function persistKingdoms() {
+      localStorage.setItem(kingdomsStorageKey, JSON.stringify(kingdoms));
     }
 
     function displayKingdoms() {
@@ -339,7 +346,7 @@
       };
 
       kingdoms.push(newKingdom);
-      localStorage.setItem('kingdoms', JSON.stringify(kingdoms));
+      persistKingdoms();
 
       closeKingdomModal();
       displayKingdoms();
