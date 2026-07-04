@@ -136,38 +136,10 @@
     </section>
   </main>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="./supabase-config.js?v=20"></script>
   <script>
-    function getQueryParam(name){
-      return new URLSearchParams(window.location.search).get(name);
-    }
-
-    function getCurrentWorldSafe() {
-      try { return JSON.parse(localStorage.getItem('currentWorld') || 'null'); }
-      catch { return null; }
-    }
-
-    function resolveWorldName() {
-      const fromCurrent = getCurrentWorldSafe()?.name?.trim();
-      const fromUrl = getQueryParam("world")?.trim();
-      const fromCache = localStorage.getItem("lastWorldName")?.trim();
-      const resolved = fromCurrent || fromUrl || fromCache || "";
-      if (resolved) localStorage.setItem("lastWorldName", resolved);
-      return resolved;
-    }
-
-    const worldName = resolveWorldName();
-    document.getElementById("worldNameDisplay").textContent = `World: ${worldName || "—"}`;
-
-    const KEY = worldName ? `beginningEnding:${worldName}` : `beginningEnding:__no_world_selected__`;
-
-    function loadData() {
-      try { return JSON.parse(localStorage.getItem(KEY) || "{}"); }
-      catch { return {}; }
-    }
-
-    function saveData(data) {
-      localStorage.setItem(KEY, JSON.stringify(data));
-    }
+    let currentWorld = null;
 
     function collectData() {
       return {
@@ -177,28 +149,85 @@
     }
 
     function applyData(data) {
-      document.getElementById("beginningText").value = data.beginning || "";
-      document.getElementById("endingText").value = data.ending || "";
+      document.getElementById("beginningText").value = data?.beginning || "";
+      document.getElementById("endingText").value = data?.ending || "";
     }
 
-    document.getElementById("saveBtn").addEventListener("click", () => {
-      saveData(collectData());
-      alert("Saved!");
+    async function loadFromSupabase() {
+      currentWorld = getCurrentWorld();
+      document.getElementById("worldNameDisplay").textContent = `World: ${currentWorld?.name || "—"}`;
+
+      if (!currentWorld || !currentWorld.id) {
+        alert('Please select a world first.');
+        window.location.href = 'YourWorlds.html';
+        return false;
+      }
+
+      const user = await getCurrentUser();
+      if (!user) {
+        alert('Please log in first.');
+        return false;
+      }
+
+      const { data, error } = await sb
+        .from('beginning_endings')
+        .select('beginning, ending')
+        .eq('user_id', user.id)
+        .eq('world_id', currentWorld.id)
+        .maybeSingle();
+
+      if (error) {
+        alert('Error loading beginning/ending: ' + error.message);
+        applyData({});
+        return false;
+      }
+
+      applyData(data || {});
+      return true;
+    }
+
+    async function saveToSupabase(showAlert = false) {
+      if (!currentWorld || !currentWorld.id) return;
+
+      const user = await getCurrentUser();
+      if (!user) return;
+
+      const data = collectData();
+
+      const { error } = await sb
+        .from('beginning_endings')
+        .upsert([{
+          user_id: user.id,
+          world_id: currentWorld.id,
+          beginning: data.beginning,
+          ending: data.ending
+        }], { onConflict: 'world_id' });
+
+      if (error) {
+        alert('Error saving beginning/ending: ' + error.message);
+        return;
+      }
+
+      if (showAlert) alert("Saved!");
+    }
+
+    document.getElementById("saveBtn").addEventListener("click", async () => {
+      await saveToSupabase(true);
     });
 
-    document.getElementById("clearBtn").addEventListener("click", () => {
+    document.getElementById("clearBtn").addEventListener("click", async () => {
       if (!confirm("Clear beginning and ending for this world?")) return;
-      localStorage.removeItem(KEY);
       applyData({});
+      await saveToSupabase(false);
     });
 
-    document.addEventListener("input", (e) => {
+    document.addEventListener("input", async (e) => {
       if (e.target.matches("#beginningText, #endingText")) {
-        saveData(collectData());
+        await saveToSupabase(false);
       }
     });
 
-    applyData(loadData());
+    window.addEventListener('load', loadFromSupabase);
   </script>
 </body>
 </html>
