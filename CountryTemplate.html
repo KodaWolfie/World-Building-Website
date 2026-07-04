@@ -88,82 +88,32 @@
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="./supabase-config.js?v=12"></script>
+  <script src="./supabase-config.js?v=20"></script>
   <script>
-    let kingdomsKey = 'kingdoms:__no_world__';
     let currentKingdomId = null;
+    let currentWorld = null;
 
     function qp(key){
       return new URLSearchParams(window.location.search).get(key);
     }
 
-    function getCurrentWorldSafe() {
-      try {
-        return (typeof getCurrentWorld === 'function')
-          ? getCurrentWorld()
-          : JSON.parse(localStorage.getItem('currentWorld') || 'null');
-      } catch {
-        return null;
-      }
-    }
-
-    function resolveWorld() {
-      const world = getCurrentWorldSafe();
-      const worldName = world?.name?.trim() || (localStorage.getItem('lastWorldName') || '').trim() || 'New World';
-      kingdomsKey = worldName ? `kingdoms:${worldName}` : 'kingdoms:__no_world__';
-      document.getElementById('worldNameDisplay').textContent = `World: ${worldName}`;
-    }
-
-    function loadKingdoms() {
-      try {
-        const arr = JSON.parse(localStorage.getItem(kingdomsKey) || '[]');
-        return Array.isArray(arr) ? arr : [];
-      } catch {
-        return [];
-      }
-    }
-
-    function saveKingdoms(arr) {
-      localStorage.setItem(kingdomsKey, JSON.stringify(arr));
-    }
-
-    function findKingdom() {
-      const id = qp('id');
-      const kingdoms = loadKingdoms();
-
-      if (id) {
-        const found = kingdoms.find(k => String(k.id) === String(id));
-        if (found) return found;
-      }
-
-      try {
-        const selected = JSON.parse(localStorage.getItem('selectedKingdom') || 'null');
-        if (selected) {
-          const found = kingdoms.find(k => String(k.id) === String(selected.id));
-          return found || selected;
-        }
-      } catch {}
-
-      return null;
-    }
-
-    function applyForm(k) {
-      document.getElementById('country-name').value = k?.name || '';
-      document.getElementById('government-type').value = k?.type || '';
-      document.getElementById('capital-city').value = k?.capitalCity || '';
-      document.getElementById('population').value = k?.population || '';
-      document.getElementById('culture').value = k?.culture || '';
-      document.getElementById('economy').value = k?.economy || '';
-      document.getElementById('military').value = k?.military || '';
-      document.getElementById('notes').value = k?.notes || '';
-      document.title = `${k?.name || 'Country'} | Country Template`;
+    function applyForm(kingdom, profile) {
+      document.getElementById('country-name').value = kingdom?.name || '';
+      document.getElementById('government-type').value = kingdom?.type || '';
+      document.getElementById('capital-city').value = profile?.capital_city || '';
+      document.getElementById('population').value = profile?.population || '';
+      document.getElementById('culture').value = profile?.culture || '';
+      document.getElementById('economy').value = profile?.economy || '';
+      document.getElementById('military').value = profile?.military || '';
+      document.getElementById('notes').value = profile?.notes || '';
+      document.title = `${kingdom?.name || 'Country'} | Country Template`;
     }
 
     function collectForm() {
       return {
         name: document.getElementById('country-name').value.trim(),
         type: document.getElementById('government-type').value.trim(),
-        capitalCity: document.getElementById('capital-city').value.trim(),
+        capital_city: document.getElementById('capital-city').value.trim(),
         population: document.getElementById('population').value.trim(),
         culture: document.getElementById('culture').value.trim(),
         economy: document.getElementById('economy').value.trim(),
@@ -172,22 +122,43 @@
       };
     }
 
-    function initPage() {
-      resolveWorld();
+    async function initPage() {
+      currentWorld = getCurrentWorld();
+      const worldName = currentWorld?.name?.trim() || 'New World';
+      document.getElementById('worldNameDisplay').textContent = `World: ${worldName}`;
 
-      const kingdom = findKingdom();
-      if (!kingdom) {
+      if (!currentWorld || !currentWorld.id) {
+        alert('Please select a world first.');
+        window.location.href = 'YourWorlds.html';
+        return;
+      }
+
+      const id = qp('id');
+      if (!id) {
         alert('No kingdom found. Please create/select one first.');
         window.location.href = 'Kingdoms.html';
         return;
       }
 
-      currentKingdomId = kingdom.id;
-      localStorage.setItem('selectedKingdom', JSON.stringify(kingdom));
-      applyForm(kingdom);
+      currentKingdomId = Number(id);
+      if (!currentKingdomId) {
+        alert('Invalid kingdom id.');
+        window.location.href = 'Kingdoms.html';
+        return;
+      }
+
+      const kingdom = await getKingdomById(currentKingdomId);
+      if (!kingdom) {
+        alert('Kingdom not found.');
+        window.location.href = 'Kingdoms.html';
+        return;
+      }
+
+      const profile = await getCountryProfileByKingdomId(currentKingdomId);
+      applyForm(kingdom, profile || null);
     }
 
-    function persistToKingdomRecord(showAlert = false) {
+    async function persistToSupabase(showAlert = false) {
       if (!currentKingdomId) return;
 
       const data = collectForm();
@@ -196,52 +167,41 @@
         return;
       }
 
-      const kingdoms = loadKingdoms();
-      const idx = kingdoms.findIndex(k => String(k.id) === String(currentKingdomId));
+      const okKingdom = await updateKingdom(currentKingdomId, {
+        name: data.name,
+        type: data.type,
+        description: data.notes || 'No description provided'
+      });
+      if (!okKingdom) return;
 
-      if (idx === -1) {
-        const created = {
-          id: currentKingdomId,
-          ...data,
-          description: data.notes || 'No description provided'
-        };
-        kingdoms.push(created);
-        localStorage.setItem('selectedKingdom', JSON.stringify(created));
-      } else {
-        kingdoms[idx] = {
-          ...kingdoms[idx],
-          ...data,
-          description: data.notes || kingdoms[idx].description || 'No description provided'
-        };
-        localStorage.setItem('selectedKingdom', JSON.stringify(kingdoms[idx]));
-      }
+      const okProfile = await upsertCountryProfileByKingdomId(currentKingdomId, {
+        capital_city: data.capital_city,
+        population: data.population,
+        culture: data.culture,
+        economy: data.economy,
+        military: data.military,
+        notes: data.notes
+      });
+      if (!okProfile) return;
 
-      saveKingdoms(kingdoms);
       if (showAlert) alert('Saved!');
     }
 
-    document.getElementById('saveBtn').addEventListener('click', () => {
-      persistToKingdomRecord(true);
+    document.getElementById('saveBtn').addEventListener('click', async () => {
+      await persistToSupabase(true);
     });
 
-    document.getElementById('clearBtn').addEventListener('click', () => {
+    document.getElementById('clearBtn').addEventListener('click', async () => {
       if (!confirm('Clear this country sheet?')) return;
-      applyForm({
-        name: '',
-        type: '',
-        capitalCity: '',
-        population: '',
-        culture: '',
-        economy: '',
-        military: '',
-        notes: ''
+      applyForm({ name:'', type:'' }, {
+        capital_city:'', population:'', culture:'', economy:'', military:'', notes:''
       });
-      persistToKingdomRecord(false);
+      await persistToSupabase(false);
     });
 
-    document.addEventListener('input', (e) => {
+    document.addEventListener('input', async (e) => {
       if (e.target.matches('#country-name, #government-type, #capital-city, #population, #culture, #economy, #military, #notes')) {
-        persistToKingdomRecord(false);
+        await persistToSupabase(false);
       }
     });
 
