@@ -11,88 +11,29 @@
   <link rel="stylesheet" href="theme.css?v=14">
 
   <style>
-    .topbar{
-      display:flex; justify-content:space-between; align-items:center;
-      gap:12px; margin-bottom:12px; flex-wrap:wrap;
-    }
-    .page-title{
-      margin:0; color:var(--text); font-family:"UnifrakturCook", serif;
-      font-size:clamp(1.8rem,3vw,2.4rem); line-height:1.1;
-    }
-    .world-name{ color:var(--muted); font-size:.95rem; margin:.2rem 0 0; font-weight:700; }
-
-    .section-title{
-      margin:0 0 .35rem 0; color:var(--text);
-      font-family:"UnifrakturCook", serif; font-size:1.35rem;
-    }
-    .section-sub{ margin:0; color:var(--muted); font-size:.95rem; }
-
-    .timeline-wrap{ margin-top:12px; }
-    .timeline-controls{ display:flex; gap:.6rem; flex-wrap:wrap; margin-top:12px; }
-
-    .timeline{ position:relative; margin-top:1rem; padding-left:22px; }
-    .timeline::before{
-      content:""; position:absolute; left:8px; top:0; bottom:0; width:3px;
-      background:linear-gradient(var(--primary), transparent);
-      border-radius:99px; opacity:.8;
-    }
-
-    .event{
-      position:relative; margin-bottom:12px;
-      background:var(--surface-strong);
-      border:1px solid var(--border);
-      border-radius:12px; padding:12px; box-shadow:var(--shadow);
-    }
-    .event::before{
-      content:""; position:absolute; left:-19px; top:16px;
-      width:10px; height:10px; border-radius:50%;
-      background:var(--primary); box-shadow:0 0 0 4px rgba(255,230,109,.2);
-    }
-
-    .event-grid{
-      display:grid; gap:.6rem;
-      grid-template-columns:170px 1fr;
-    }
-
-    .event input, .event textarea{
-      width:100%; border:1px solid var(--border); border-radius:10px;
-      padding:.65rem .75rem; font:inherit;
-      background:rgba(10,26,110,.85); color:var(--text);
-    }
-    .event textarea{
-      min-height:90px; resize:vertical; grid-column:1 / -1;
-    }
-    .event input::placeholder, .event textarea::placeholder{
-      color:rgba(255,230,109,.75);
-    }
-
-    .event-actions{
-      display:flex; gap:.5rem; justify-content:flex-end; flex-wrap:wrap; margin-top:.5rem;
-    }
-
-    .prompts{ margin-top:1.2rem; display:grid; gap:.9rem; }
-    .prompt-card{
-      background:linear-gradient(180deg, rgba(12,34,130,.72), rgba(8,24,100,.65));
-      border:1px solid var(--border);
-      border-radius:14px; padding:.95rem;
-    }
-    .prompt-card h3{
-      margin:0 0 .45rem 0; color:var(--text); font-size:1.02rem; font-weight:700;
-    }
-    .prompt-card textarea{
-      width:100%; min-height:140px; resize:vertical;
-      border:1px solid var(--border); border-radius:10px;
-      padding:.7rem; font:inherit; line-height:1.45;
-      background:rgba(6,18,80,.88); color:var(--text);
-    }
-    .prompt-card textarea::placeholder{ color:rgba(255,230,109,.75); }
-
-    .footer-actions{ display:flex; gap:.6rem; flex-wrap:wrap; margin-top:1rem; }
-
-    @media(max-width:720px){
-      .event-grid{ grid-template-columns:1fr; }
-      .event textarea{ grid-column:auto; }
-    }
+    .topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap;}
+    .page-title{margin:0;color:var(--text);font-family:"UnifrakturCook", serif;font-size:clamp(1.8rem,3vw,2.4rem);line-height:1.1;}
+    .world-name{color:var(--muted);font-size:.95rem;margin:.2rem 0 0;font-weight:700;}
+    .section-title{margin:0 0 .35rem 0;color:var(--text);font-family:"UnifrakturCook", serif;font-size:1.35rem;}
+    .section-sub{margin:0;color:var(--muted);font-size:.95rem;}
+    .timeline-wrap{margin-top:12px;}
+    .timeline-controls{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:12px;}
+    .timeline{position:relative;margin-top:1rem;padding-left:22px;}
+    .timeline::before{content:"";position:absolute;left:8px;top:0;bottom:0;width:3px;background:linear-gradient(var(--primary), transparent);border-radius:99px;opacity:.8;}
+    .event{position:relative;margin-bottom:12px;background:var(--surface-strong);border:1px solid var(--border);border-radius:12px;padding:12px;box-shadow:var(--shadow);}
+    .event::before{content:"";position:absolute;left:-19px;top:16px;width:10px;height:10px;border-radius:50%;background:var(--primary);box-shadow:0 0 0 4px rgba(255,230,109,.2);}
+    .event-grid{display:grid;gap:.6rem;grid-template-columns:170px 1fr;}
+    .event input,.event textarea{width:100%;border:1px solid var(--border);border-radius:10px;padding:.65rem .75rem;font:inherit;background:rgba(10,26,110,.85);color:var(--text);}
+    .event textarea{min-height:90px;resize:vertical;grid-column:1 / -1;}
+    .event input::placeholder,.event textarea::placeholder{color:rgba(255,230,109,.75);}
+    .event-actions{display:flex;gap:.5rem;justify-content:flex-end;flex-wrap:wrap;margin-top:.5rem;}
+    .prompts{margin-top:1.2rem;display:grid;gap:.9rem;}
+    .prompt-card{background:linear-gradient(180deg, rgba(12,34,130,.72), rgba(8,24,100,.65));border:1px solid var(--border);border-radius:14px;padding:.95rem;}
+    .prompt-card h3{margin:0 0 .45rem 0;color:var(--text);font-size:1.02rem;font-weight:700;}
+    .prompt-card textarea{width:100%;min-height:140px;resize:vertical;border:1px solid var(--border);border-radius:10px;padding:.7rem;font:inherit;line-height:1.45;background:rgba(6,18,80,.88);color:var(--text);}
+    .prompt-card textarea::placeholder{color:rgba(255,230,109,.75);}
+    .footer-actions{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:1rem;}
+    @media(max-width:720px){.event-grid{grid-template-columns:1fr;}.event textarea{grid-column:auto;}}
   </style>
 </head>
 <body>
@@ -100,14 +41,14 @@
     <div class="topbar">
       <div>
         <h1 class="page-title">Global History / Lore</h1>
-        <p class="world-name" id="worldNameDisplay">World: New World</p>
+        <p class="world-name" id="worldNameDisplay">World: —</p>
       </div>
-      <a class="link-back" href="WorldBuildingIdeas.html">← Back to World Ideas</a>
+      <a class="link-back" href="WorldBuildingIdeas.html">← Back to Novel Index</a>
     </div>
 
     <section class="glass" style="padding:14px;">
       <h2 class="section-title">World Timeline</h2>
-      <p class="section-sub">Add major events in order: ancient eras, wars, revolutions, prophecies, and more.</p>
+      <p class="section-sub">Add major events in order: ancient eras, wars, revolutions, prophecies, plot points, anything.</p>
 
       <div class="timeline-controls">
         <button class="btn btn-primary" id="addEventBtn">+ Add Timeline Event</button>
@@ -120,7 +61,7 @@
 
     <section class="glass" style="padding:14px; margin-top:14px;">
       <h2 class="section-title">Lore Builder</h2>
-      <p class="section-sub">Use these focused prompts to fill in your world’s history and myth. If it doesn't affect the story, it probably doesn't need to be in your novel bible.</p>
+      <p class="section-sub">Use these focused prompts to fill in your world’s history. If it doesn't affect the story, it probably doesn't need to be in your novel bible.</p>
 
       <div id="prompts" class="prompts"></div>
 
@@ -130,6 +71,10 @@
       </div>
     </section>
   </main>
+
+  <!-- aligned with your new setup -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="./supabase-config.js?v=11"></script>
 
   <script>
     const PROMPTS = [
@@ -150,19 +95,45 @@
       catch { return null; }
     }
 
-    const world = getCurrentWorldSafe();
-    const worldName = world?.name || "New World";
-    document.getElementById("worldNameDisplay").textContent = `World: ${worldName}`;
+    async function resolveWorld() {
+      const local = getCurrentWorldSafe();
+      if (local?.name) return local;
 
-    const KEY = `globalLoreV2:${worldName}`;
+      const cachedName = (localStorage.getItem('lastWorldName') || '').trim();
+      if (cachedName) return { name: cachedName, genre: '', theme: '' };
 
-    function loadData() {
-      try { return JSON.parse(localStorage.getItem(KEY) || "{}"); }
+      // fallback: latest world from Supabase
+      if (typeof getUserWorlds === 'function') {
+        const worlds = await getUserWorlds();
+        if (worlds && worlds.length > 0) {
+          const latest = worlds[0];
+          const world = {
+            name: latest.world_name || 'New World',
+            genre: latest.genre || '',
+            theme: latest.theme || ''
+          };
+          if (typeof setCurrentWorld === 'function') {
+            setCurrentWorld(world.name, world.genre, world.theme);
+          }
+          localStorage.setItem('lastWorldName', world.name);
+          return world;
+        }
+      }
+
+      return { name: 'New World', genre: '', theme: '' };
+    }
+
+    function keyForWorld(worldName) {
+      return `globalLoreV2:${worldName}`;
+    }
+
+    function loadData(key) {
+      try { return JSON.parse(localStorage.getItem(key) || "{}"); }
       catch { return {}; }
     }
 
-    function saveData(data) {
-      localStorage.setItem(KEY, JSON.stringify(data));
+    function saveData(key, data) {
+      localStorage.setItem(key, JSON.stringify(data));
     }
 
     function defaultData() {
@@ -176,13 +147,14 @@
       };
     }
 
-    let state = ensureDataShape({ ...defaultData(), ...loadData() });
+    let state = defaultData();
+    let KEY = '';
 
     function moveEvent(fromIndex, toIndex) {
       if (toIndex < 0 || toIndex >= state.timeline.length) return;
       const [item] = state.timeline.splice(fromIndex, 1);
       state.timeline.splice(toIndex, 0, item);
-      saveData(state);
+      saveData(KEY, state);
       renderTimeline();
     }
 
@@ -246,7 +218,7 @@
 
     document.getElementById('addEventBtn').addEventListener('click', () => {
       state.timeline.push({ date: '', title: '', details: '' });
-      saveData(state);
+      saveData(KEY, state);
       renderTimeline();
     });
 
@@ -255,7 +227,7 @@
       const field = e.target.dataset.field;
       if (Number.isNaN(index) || !field) return;
       state.timeline[index][field] = e.target.value;
-      saveData(state);
+      saveData(KEY, state);
     });
 
     document.getElementById('timeline').addEventListener('click', (e) => {
@@ -266,44 +238,49 @@
       if (Number.isNaN(index)) return;
 
       const action = btn.dataset.action;
-
       if (action === 'delete') {
         state.timeline.splice(index, 1);
-        saveData(state);
+        saveData(KEY, state);
         renderTimeline();
-        return;
-      }
-      if (action === 'up') {
+      } else if (action === 'up') {
         moveEvent(index, index - 1);
-        return;
-      }
-      if (action === 'down') {
+      } else if (action === 'down') {
         moveEvent(index, index + 1);
-        return;
       }
     });
 
     document.getElementById('prompts').addEventListener('input', () => {
       state.prompts = collectPromptData();
-      saveData(state);
+      saveData(KEY, state);
     });
 
     document.getElementById('saveAllBtn').addEventListener('click', () => {
       state.prompts = collectPromptData();
-      saveData(state);
+      saveData(KEY, state);
       alert('Saved!');
     });
 
     document.getElementById('clearAllBtn').addEventListener('click', () => {
       if (!confirm('Clear timeline and all lore answers for this world?')) return;
       state = defaultData();
-      saveData(state);
+      saveData(KEY, state);
       renderTimeline();
       renderPrompts();
     });
 
-    renderTimeline();
-    renderPrompts();
+    async function init() {
+      const world = await resolveWorld();
+      const worldName = world?.name || 'New World';
+      document.getElementById('worldNameDisplay').textContent = `World: ${worldName}`;
+
+      KEY = keyForWorld(worldName);
+      state = ensureDataShape({ ...defaultData(), ...loadData(KEY) });
+
+      renderTimeline();
+      renderPrompts();
+    }
+
+    window.addEventListener('load', init);
   </script>
 </body>
 </html>
