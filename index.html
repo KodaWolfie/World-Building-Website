@@ -15,7 +15,7 @@
 
   <!-- Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="./supabase-config.js?v=11"></script>
+  <script src="./supabase-config.js?v=20"></script>
 
   <style>
     .center{ text-align:center; }
@@ -150,10 +150,12 @@
         }
 
         const worlds = await getUserWorlds();
-        if (worlds.length > 0) {
+        const count = Array.isArray(worlds) ? worlds.length : 0;
+
+        if (count > 0) {
           button.textContent = 'Your Worlds';
           link.href = 'YourWorlds.html';
-          description.textContent = `You have ${worlds.length} world(s). Explore and create more!`;
+          description.textContent = `You have ${count} world(s). Explore and create more!`;
         } else {
           button.textContent = 'Create World';
           link.href = 'CreateWorld.html';
@@ -218,7 +220,6 @@
       }
     });
 
-    // Keep UI in sync when auth state changes
     sb.auth.onAuthStateChange(async () => {
       await refreshAuthStatus();
       await updateButtonText();
