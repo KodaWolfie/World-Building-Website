@@ -61,6 +61,8 @@
     </section>
   </main>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="./supabase-config.js?v=20"></script>
   <script>
     const QUESTIONS = [
       "1) What is this setting called, and why?",
@@ -77,59 +79,10 @@
       "12) How does this setting connect to the main plot, theme, characters, ect?"
     ];
 
+    let currentSetting = null;
+
     function getQueryParam(name) {
       return new URLSearchParams(window.location.search).get(name);
-    }
-
-    function getCurrentWorldSafe() {
-      try { return JSON.parse(localStorage.getItem('currentWorld') || 'null'); }
-      catch { return null; }
-    }
-
-    function resolveWorldName() {
-      const fromCurrent = getCurrentWorldSafe()?.name?.trim();
-      const fromUrl = getQueryParam("world")?.trim();
-      const fromCache = localStorage.getItem("lastWorldName")?.trim();
-      const resolved = fromCurrent || fromUrl || fromCache || "";
-      if (resolved) localStorage.setItem("lastWorldName", resolved);
-      return resolved;
-    }
-
-    const worldName = resolveWorldName();
-
-    function settingsListKey() {
-      return worldName ? `settingsList:${worldName}` : `settingsList:__no_world_selected__`;
-    }
-
-    function loadSetting() {
-      const settingId = getQueryParam('id');
-      const stored = localStorage.getItem(settingsListKey());
-      const list = stored ? JSON.parse(stored) : [];
-
-      let setting = null;
-      if (settingId) setting = list.find(s => String(s.id) === String(settingId));
-      if (!setting) {
-        const selected = localStorage.getItem('selectedSetting');
-        setting = selected ? JSON.parse(selected) : null;
-      }
-
-      if (!setting) {
-        document.getElementById('setting-name').textContent = 'Setting Not Found';
-        document.getElementById('setting-type').textContent = 'Type: —';
-        document.getElementById('setting-description').textContent = 'This setting could not be found.';
-        return null;
-      }
-
-      document.title = `${setting.name} | Setting Details`;
-      document.getElementById('setting-name').textContent = setting.name;
-      document.getElementById('setting-type').textContent = `Type: ${setting.type || '—'}`;
-      document.getElementById('setting-description').textContent = setting.description || 'No description provided';
-      return setting;
-    }
-
-    function makeStorageKey(setting) {
-      const worldPart = worldName || "__no_world_selected__";
-      return `settingProfile:${worldPart}:${setting.id}:${setting.name}`;
     }
 
     function renderQuestions(saved = {}) {
@@ -148,50 +101,104 @@
     }
 
     function collectData() {
-      const out = { freeWrite: document.getElementById("freeWrite").value || "" };
+      const out = { free_write: document.getElementById("freeWrite").value || "", answers: {} };
       QUESTIONS.forEach((_, i) => {
         const id = `q_${i + 1}`;
-        out[id] = document.getElementById(id)?.value || "";
+        out.answers[id] = document.getElementById(id)?.value || "";
       });
       return out;
     }
 
     function applyData(saved = {}) {
-      document.getElementById("freeWrite").value = saved.freeWrite || "";
-      renderQuestions(saved); // always renders questions
+      document.getElementById("freeWrite").value = saved.free_write || "";
+      renderQuestions(saved.answers || {});
     }
 
-    function loadSavedProfile(key) {
-      try { return JSON.parse(localStorage.getItem(key) || "{}"); }
-      catch { return {}; }
+    async function loadSetting() {
+      const settingId = Number(getQueryParam('id'));
+      if (!settingId) return null;
+
+      const user = await getCurrentUser();
+      if (!user) return null;
+
+      const { data, error } = await sb
+        .from('settings')
+        .select('id, name, type, description')
+        .eq('user_id', user.id)
+        .eq('id', settingId)
+        .single();
+
+      if (error) return null;
+      return data;
     }
 
-    function saveProfile(key) {
-      localStorage.setItem(key, JSON.stringify(collectData()));
-      alert("Saved!");
+    async function loadProfile() {
+      const user = await getCurrentUser();
+      if (!user || !currentSetting?.id) return {};
+
+      const { data, error } = await sb
+        .from('setting_profiles')
+        .select('free_write, answers')
+        .eq('user_id', user.id)
+        .eq('setting_id', currentSetting.id)
+        .maybeSingle();
+
+      if (error) return {};
+      return data || {};
     }
 
-    window.addEventListener("load", () => {
-      const setting = loadSetting();
+    async function saveProfile(showAlert = true) {
+      const user = await getCurrentUser();
+      if (!user || !currentSetting?.id) return;
 
-      // always render questions even if setting fails
-      renderQuestions({});
+      const payload = collectData();
 
-      if (!setting) return;
+      const { error } = await sb
+        .from('setting_profiles')
+        .upsert([{
+          user_id: user.id,
+          setting_id: currentSetting.id,
+          free_write: payload.free_write,
+          answers: payload.answers
+        }], { onConflict: 'setting_id' });
 
-      const storageKey = makeStorageKey(setting);
-      applyData(loadSavedProfile(storageKey));
+      if (error) {
+        alert('Error saving setting profile: ' + error.message);
+        return;
+      }
 
-      document.getElementById("saveBtn").addEventListener("click", () => saveProfile(storageKey));
-      document.getElementById("clearBtn").addEventListener("click", () => {
-        if (!confirm("Clear free write + all 10 answers for this setting?")) return;
-        localStorage.removeItem(storageKey);
-        applyData({});
+      if (showAlert) alert("Saved!");
+    }
+
+    window.addEventListener("load", async () => {
+      renderQuestions({}); // always visible
+
+      currentSetting = await loadSetting();
+      if (!currentSetting) {
+        document.getElementById('setting-name').textContent = 'Setting Not Found';
+        document.getElementById('setting-type').textContent = 'Type: —';
+        document.getElementById('setting-description').textContent = 'This setting could not be found.';
+        return;
+      }
+
+      document.title = `${currentSetting.name} | Setting Details`;
+      document.getElementById('setting-name').textContent = currentSetting.name;
+      document.getElementById('setting-type').textContent = `Type: ${currentSetting.type || '—'}`;
+      document.getElementById('setting-description').textContent = currentSetting.description || 'No description provided';
+
+      const saved = await loadProfile();
+      applyData(saved);
+
+      document.getElementById("saveBtn").addEventListener("click", () => saveProfile(true));
+      document.getElementById("clearBtn").addEventListener("click", async () => {
+        if (!confirm("Clear free write + all answers for this setting?")) return;
+        applyData({ free_write: '', answers: {} });
+        await saveProfile(false);
       });
 
       document.addEventListener("input", (e) => {
         if (e.target.matches("#freeWrite, #questionsGrid textarea")) {
-          localStorage.setItem(storageKey, JSON.stringify(collectData()));
+          saveProfile(false);
         }
       });
     });
