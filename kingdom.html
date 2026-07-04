@@ -9,7 +9,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&family=Old+Standard+TT:wght@400;700&display=swap" rel="stylesheet">
 
-  <!-- Use shared blue theme -->
   <link rel="stylesheet" href="theme.css?v=13">
 
   <style>
@@ -103,7 +102,7 @@
       <div class="actions">
         <button class="btn btn-primary" id="saveBtn">Save Changes</button>
         <button class="btn btn-muted" id="deleteBtn">Delete Kingdom</button>
-        <button class="btn btn-muted" onclick="window.location.href='WorldBuildingIdeas.html'">World Building Ideas</button>
+        <button class="btn btn-muted" onclick="window.location.href='WorldBuildingIdeas.html'">World Novel Index</button>
       </div>
     </section>
   </main>
@@ -198,44 +197,49 @@
       applyKingdomToForm(kingdom);
     }
 
-    document.getElementById('saveBtn').addEventListener('click', () => {
+    function saveCurrentKingdom() {
       const form = collectForm();
       if (!form.name) {
         alert('Please enter a kingdom name.');
-        return;
+        return null;
       }
 
       const kingdoms = loadKingdoms();
       const idx = kingdoms.findIndex(k => String(k.id) === String(currentKingdomId));
 
+      let savedItem = null;
+
       if (idx === -1) {
-        // if missing (edge case), recreate
-        const newItem = {
+        savedItem = {
           id: currentKingdomId || Date.now(),
           name: form.name,
           type: form.type || 'Unknown',
           description: form.description || 'No description provided'
         };
-        kingdoms.push(newItem);
-        currentKingdomId = newItem.id;
-        localStorage.setItem('selectedKingdom', JSON.stringify(newItem));
-        saveKingdoms(kingdoms);
-        applyKingdomToForm(newItem);
-        alert('Saved!');
-        return;
+        kingdoms.push(savedItem);
+        currentKingdomId = savedItem.id;
+      } else {
+        kingdoms[idx] = {
+          ...kingdoms[idx],
+          name: form.name,
+          type: form.type || 'Unknown',
+          description: form.description || 'No description provided'
+        };
+        savedItem = kingdoms[idx];
       }
 
-      kingdoms[idx] = {
-        ...kingdoms[idx],
-        name: form.name,
-        type: form.type || 'Unknown',
-        description: form.description || 'No description provided'
-      };
-
       saveKingdoms(kingdoms);
-      localStorage.setItem('selectedKingdom', JSON.stringify(kingdoms[idx]));
-      applyKingdomToForm(kingdoms[idx]);
-      alert('Saved!');
+      localStorage.setItem('selectedKingdom', JSON.stringify(savedItem));
+      applyKingdomToForm(savedItem);
+      return savedItem;
+    }
+
+    document.getElementById('saveBtn').addEventListener('click', () => {
+      const saved = saveCurrentKingdom();
+      if (!saved) return;
+
+      // Save + go to CountryTemplate for this kingdom
+      window.location.href = `CountryTemplate.html?id=${saved.id}`;
     });
 
     document.getElementById('deleteBtn').addEventListener('click', () => {
