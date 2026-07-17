@@ -150,7 +150,7 @@
     document.getElementById('saveBtn').addEventListener('click', async () => {
       const saved = await saveCurrent();
       if (!saved) return;
-      window.location.href = `CountryTemplate.html?id=${saved.id}`;
+      window.location.href = `./CountryTemplate.html?id=${saved.id}`;
     });
 
     document.getElementById('deleteBtn').addEventListener('click', async () => {
