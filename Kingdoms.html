@@ -44,13 +44,13 @@
 
     <section class="section-row">
       <h1 class="page-title" style="font-size:clamp(1.4rem,2.6vw,2rem);">Kingdoms</h1>
-      <button class="btn btn-primary" onclick="window.location.href='Kingdom.html?new=1'">+ New</button>
+      <button class="btn btn-primary" onclick="window.location.href='kingdom.html?new=1'">+ New</button>
     </section>
 
     <section class="glass empty-state" id="no-kingdoms-section">
       <h2>No Kingdoms Yet</h2>
       <p>Get started by creating your first kingdom.</p>
-      <button class="btn btn-primary" onclick="window.location.href='Kingdom.html?new=1'">Create Kingdom</button>
+      <button class="btn btn-primary" onclick="window.location.href='kingdom.html?new=1'">Create Kingdom</button>
     </section>
 
     <section id="kingdoms-list"></section>
@@ -92,7 +92,7 @@
       if (!selected) return;
       localStorage.setItem('selectedKingdom', JSON.stringify(selected)); // UI convenience only
       localStorage.setItem('selectedCountryName', selected.name || '');
-      window.location.href = `Kingdom.html?id=${selected.id}&name=${encodeURIComponent(slugify(selected.name || 'kingdom'))}`;
+      window.location.href = `kingdom.html?id=${selected.id}&name=${encodeURIComponent(slugify(selected.name || 'kingdom'))}`;
     }
 
     function displayKingdoms() {
@@ -113,7 +113,7 @@
       kingdoms.forEach(k => {
         const link = document.createElement('a');
         link.className = 'kingdom-link';
-        link.href = `Kingdom.html?id=${k.id}&name=${encodeURIComponent(slugify(k.name || 'kingdom'))}`;
+        link.href = `kingdom.html?id=${k.id}&name=${encodeURIComponent(slugify(k.name || 'kingdom'))}`;
         link.addEventListener('click', (e) => { e.preventDefault(); openKingdomPage(k.id); });
 
         const card = document.createElement('div');
