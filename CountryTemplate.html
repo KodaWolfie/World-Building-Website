@@ -13,6 +13,7 @@
   <style>
     .page-title{margin:0;color:var(--text);font-family:"UnifrakturCook", serif;font-size:clamp(1.8rem,3vw,2.4rem);line-height:1.1;}
     .world-name{color:var(--muted);margin:.25rem 0 0;font-weight:700;font-size:.95rem;}
+
     .layout{display:grid;gap:14px;grid-template-columns:1fr 1fr;margin-top:12px;}
     .field{display:flex;flex-direction:column;gap:.45rem;}
     .field label{color:var(--text);font-weight:700;font-size:.95rem;}
@@ -24,6 +25,46 @@
     .field input::placeholder,.field textarea::placeholder{color:rgba(255,230,109,.75);}
     .field.full{grid-column:1 / -1;}
     .actions{display:flex;gap:.65rem;flex-wrap:wrap;margin-top:14px;}
+
+    .accordion-wrap{margin-top:18px;display:grid;gap:10px;}
+    .acc{
+      border:1px solid var(--border);
+      border-radius:12px;
+      background:rgba(10,26,110,.55);
+      overflow:hidden;
+    }
+    .acc summary{
+      cursor:pointer;
+      list-style:none;
+      padding:12px 14px;
+      font-weight:700;
+      color:var(--text);
+      user-select:none;
+    }
+    .acc summary::-webkit-details-marker{display:none;}
+    .acc summary::after{
+      content:"+";
+      float:right;
+      color:var(--muted);
+      font-weight:700;
+    }
+    .acc[open] summary::after{content:"−";}
+    .acc-body{padding:0 14px 14px 14px;}
+    .acc-body textarea{
+      width:100%;
+      min-height:150px;
+      border:1px solid var(--border);
+      border-radius:10px;
+      padding:.75rem;
+      font:inherit;
+      background:rgba(10,26,110,.85);
+      color:var(--text);
+      box-sizing:border-box;
+      resize:vertical;
+      line-height:1.5;
+    }
+    .acc-body textarea::placeholder{color:rgba(255,230,109,.75);}
+
     @media(max-width:900px){.layout{grid-template-columns:1fr;}.field.full{grid-column:auto;}}
   </style>
 </head>
@@ -57,26 +98,10 @@
           <label for="population">Population</label>
           <input id="population" type="text" placeholder="Approximate population" />
         </div>
+      </div>
 
-        <div class="field full">
-          <label for="culture">Culture & Society</label>
-          <textarea id="culture" placeholder="Customs, values, religion, social classes..."></textarea>
-        </div>
-
-        <div class="field full">
-          <label for="economy">Economy & Trade</label>
-          <textarea id="economy" placeholder="Resources, exports, imports, wealth distribution..."></textarea>
-        </div>
-
-        <div class="field full">
-          <label for="military">Military & Defense</label>
-          <textarea id="military" placeholder="Army structure, strengths, weaknesses, strategy..."></textarea>
-        </div>
-
-        <div class="field full">
-          <label for="notes">Extra Notes</label>
-          <textarea id="notes" placeholder="Anything else important..."></textarea>
-        </div>
+      <div class="accordion-wrap" id="qa-accordion">
+        <!-- Questions inserted by JS -->
       </div>
 
       <div class="actions">
@@ -93,8 +118,56 @@
     let currentKingdomId = null;
     let currentWorld = null;
 
+    // 21 accordion questions
+    const QUESTION_KEYS = [
+      ["geography_ecosystems", "Geography + Ecosystem(s)"],
+      ["natural_resources_climate", "Natural Resources and Climate"],
+      ["flora_fauna", "Flora and Fauna"],
+      ["race_species_daily_life", "Race/Species (of society) + Daily life"],
+      ["food_cuisine", "Food and Cuisine"],
+      ["fashion_attire", "Fashion and Attire"],
+      ["cultures_religions", "Culture(s) and Religion(s)"],
+      ["language_writing_communications", "Language and Writing System and Communications"],
+      ["art_literature_entertainment", "Art, Literature, and Entertainment"],
+      ["education_knowledge", "Education and Knowledge"],
+      ["calendar_time_seasons", "Calendar, Times, and Seasons"],
+      ["transport_technology_innovations", "Transportation, Technology, and Innovations"],
+      ["economics_trade", "Economics and Trade"],
+      ["foreign_relations_politics", "Foreign Relations and Politics"],
+      ["symbols_iconography", "Symbols and Iconography"],
+      ["government_power", "Government and Power"],
+      ["military_detail", "Military"],
+      ["social_hierarchy_class", "Social Hierarchy and Class Structure"],
+      ["laws_crimes_punishment", "Laws, Crimes, and Punishment"],
+      ["history_war", "History and War"],
+      ["relation_to_magic_system", "Relation to Magic System"]
+    ];
+
     function qp(key){
       return new URLSearchParams(window.location.search).get(key);
+    }
+
+    function buildAccordion() {
+      const host = document.getElementById('qa-accordion');
+      host.innerHTML = '';
+      QUESTION_KEYS.forEach(([key, label], idx) => {
+        const details = document.createElement('details');
+        details.className = 'acc';
+        if (idx < 2) details.open = true;
+
+        details.innerHTML = `
+          <summary>${label}</summary>
+          <div class="acc-body">
+            <textarea id="qa-${key}" placeholder="Write your notes for: ${label}"></textarea>
+          </div>
+        `;
+        host.appendChild(details);
+      });
+    }
+
+    function safeParseJSON(value) {
+      if (!value || typeof value !== 'string') return {};
+      try { return JSON.parse(value); } catch { return {}; }
     }
 
     function applyForm(kingdom, profile) {
@@ -102,27 +175,47 @@
       document.getElementById('government-type').value = kingdom?.type || '';
       document.getElementById('capital-city').value = profile?.capital_city || '';
       document.getElementById('population').value = profile?.population || '';
-      document.getElementById('culture').value = profile?.culture || '';
-      document.getElementById('economy').value = profile?.economy || '';
-      document.getElementById('military').value = profile?.military || '';
-      document.getElementById('notes').value = profile?.notes || '';
+
+      // Load accordion answers from profile.notes JSON (non-destructive)
+      const notesObj = safeParseJSON(profile?.notes);
+      QUESTION_KEYS.forEach(([key]) => {
+        const el = document.getElementById(`qa-${key}`);
+        if (el) el.value = notesObj[key] || '';
+      });
+
       document.title = `${kingdom?.name || 'Country'} | Country Template`;
     }
 
+    function collectAccordionAnswers() {
+      const out = {};
+      QUESTION_KEYS.forEach(([key]) => {
+        const el = document.getElementById(`qa-${key}`);
+        out[key] = (el?.value || '').trim();
+      });
+      return out;
+    }
+
     function collectForm() {
+      const qa = collectAccordionAnswers();
       return {
         name: document.getElementById('country-name').value.trim(),
         type: document.getElementById('government-type').value.trim(),
         capital_city: document.getElementById('capital-city').value.trim(),
         population: document.getElementById('population').value.trim(),
-        culture: document.getElementById('culture').value.trim(),
-        economy: document.getElementById('economy').value.trim(),
-        military: document.getElementById('military').value.trim(),
-        notes: document.getElementById('notes').value.trim()
+
+        // Keep legacy columns compatible:
+        culture: qa.cultures_religions || '',
+        economy: qa.economics_trade || '',
+        military: qa.military_detail || '',
+
+        // Store full question set in notes JSON:
+        notes: JSON.stringify(qa)
       };
     }
 
     async function initPage() {
+      buildAccordion();
+
       currentWorld = getCurrentWorld();
       const worldName = currentWorld?.name?.trim() || 'New World';
       document.getElementById('worldNameDisplay').textContent = `World: ${worldName}`;
@@ -169,8 +262,8 @@
 
       const okKingdom = await updateKingdom(currentKingdomId, {
         name: data.name,
-        type: data.type,
-        description: data.notes || 'No description provided'
+        type: data.type || 'Unknown',
+        description: 'Country profile saved in template'
       });
       if (!okKingdom) return;
 
@@ -193,16 +286,25 @@
 
     document.getElementById('clearBtn').addEventListener('click', async () => {
       if (!confirm('Clear this country sheet?')) return;
-      applyForm({ name:'', type:'' }, {
-        capital_city:'', population:'', culture:'', economy:'', military:'', notes:''
+
+      document.getElementById('country-name').value = '';
+      document.getElementById('government-type').value = '';
+      document.getElementById('capital-city').value = '';
+      document.getElementById('population').value = '';
+      QUESTION_KEYS.forEach(([key]) => {
+        const el = document.getElementById(`qa-${key}`);
+        if (el) el.value = '';
       });
+
       await persistToSupabase(false);
     });
 
-    document.addEventListener('input', async (e) => {
-      if (e.target.matches('#country-name, #government-type, #capital-city, #population, #culture, #economy, #military, #notes')) {
-        await persistToSupabase(false);
-      }
+    // Lightweight autosave
+    let saveTimer = null;
+    document.addEventListener('input', (e) => {
+      if (!e.target.matches('input, textarea')) return;
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(() => { persistToSupabase(false); }, 500);
     });
 
     window.addEventListener('load', initPage);
