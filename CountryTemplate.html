@@ -23,7 +23,6 @@
     }
     .field textarea{min-height:120px;resize:vertical;line-height:1.5;}
     .field input::placeholder,.field textarea::placeholder{color:rgba(255,230,109,.75);}
-    .field.full{grid-column:1 / -1;}
     .actions{display:flex;gap:.65rem;flex-wrap:wrap;margin-top:14px;}
 
     .accordion-wrap{margin-top:18px;display:grid;gap:10px;}
@@ -64,8 +63,7 @@
       line-height:1.5;
     }
     .acc-body textarea::placeholder{color:rgba(255,230,109,.75);}
-
-    @media(max-width:900px){.layout{grid-template-columns:1fr;}.field.full{grid-column:auto;}}
+    @media(max-width:900px){.layout{grid-template-columns:1fr;}}
   </style>
 </head>
 <body>
@@ -100,9 +98,7 @@
         </div>
       </div>
 
-      <div class="accordion-wrap" id="qa-accordion">
-        <!-- Questions inserted by JS -->
-      </div>
+      <div class="accordion-wrap" id="qa-accordion"></div>
 
       <div class="actions">
         <button class="btn btn-primary" id="saveBtn">Save Country</button>
@@ -118,7 +114,6 @@
     let currentKingdomId = null;
     let currentWorld = null;
 
-    // 21 accordion questions
     const QUESTION_KEYS = [
       ["geography_ecosystems", "Geography + Ecosystem(s)"],
       ["natural_resources_climate", "Natural Resources and Climate"],
@@ -143,9 +138,7 @@
       ["relation_to_magic_system", "Relation to Magic System"]
     ];
 
-    function qp(key){
-      return new URLSearchParams(window.location.search).get(key);
-    }
+    function qp(key){ return new URLSearchParams(window.location.search).get(key); }
 
     function buildAccordion() {
       const host = document.getElementById('qa-accordion');
@@ -154,7 +147,6 @@
         const details = document.createElement('details');
         details.className = 'acc';
         if (idx < 2) details.open = true;
-
         details.innerHTML = `
           <summary>${label}</summary>
           <div class="acc-body">
@@ -165,51 +157,74 @@
       });
     }
 
-    function safeParseJSON(value) {
-      if (!value || typeof value !== 'string') return {};
-      try { return JSON.parse(value); } catch { return {}; }
-    }
-
     function applyForm(kingdom, profile) {
       document.getElementById('country-name').value = kingdom?.name || '';
       document.getElementById('government-type').value = kingdom?.type || '';
       document.getElementById('capital-city').value = profile?.capital_city || '';
       document.getElementById('population').value = profile?.population || '';
 
-      // Load accordion answers from profile.notes JSON (non-destructive)
-      const notesObj = safeParseJSON(profile?.notes);
-      QUESTION_KEYS.forEach(([key]) => {
+      const map = {
+        geography_ecosystems: profile?.geography_ecosystems,
+        natural_resources_climate: profile?.natural_resources_climate,
+        flora_fauna: profile?.flora_fauna,
+        race_species_daily_life: profile?.race_species_daily_life,
+        food_cuisine: profile?.food_cuisine,
+        fashion_attire: profile?.fashion_attire,
+        cultures_religions: profile?.cultures_religions,
+        language_writing_communications: profile?.language_writing_communications,
+        art_literature_entertainment: profile?.art_literature_entertainment,
+        education_knowledge: profile?.education_knowledge,
+        calendar_time_seasons: profile?.calendar_time_seasons,
+        transport_technology_innovations: profile?.transport_technology_innovations,
+        economics_trade: profile?.economics_trade,
+        foreign_relations_politics: profile?.foreign_relations_politics,
+        symbols_iconography: profile?.symbols_iconography,
+        government_power: profile?.government_power,
+        military_detail: profile?.military_detail,
+        social_hierarchy_class: profile?.social_hierarchy_class,
+        laws_crimes_punishment: profile?.laws_crimes_punishment,
+        history_war: profile?.history_war,
+        relation_to_magic_system: profile?.relation_to_magic_system
+      };
+
+      Object.entries(map).forEach(([key, val]) => {
         const el = document.getElementById(`qa-${key}`);
-        if (el) el.value = notesObj[key] || '';
+        if (el) el.value = val || '';
       });
 
       document.title = `${kingdom?.name || 'Country'} | Country Template`;
     }
 
-    function collectAccordionAnswers() {
-      const out = {};
-      QUESTION_KEYS.forEach(([key]) => {
-        const el = document.getElementById(`qa-${key}`);
-        out[key] = (el?.value || '').trim();
-      });
-      return out;
-    }
-
     function collectForm() {
-      const qa = collectAccordionAnswers();
+      const get = (id) => (document.getElementById(id)?.value || '').trim();
+
       return {
-        name: document.getElementById('country-name').value.trim(),
-        type: document.getElementById('government-type').value.trim(),
-        capital_city: document.getElementById('capital-city').value.trim(),
-        population: document.getElementById('population').value.trim(),
+        name: get('country-name'),
+        type: get('government-type'),
+        capital_city: get('capital-city'),
+        population: get('population'),
 
-        // Keep legacy columns compatible:
-        culture: qa.cultures_religions || '',
-        economy: qa.economics_trade || '',
-        military: qa.military_detail || '',
-
-        // Store full question set in notes JSON:
-        notes: JSON.stringify(qa)
+        geography_ecosystems: get('qa-geography_ecosystems'),
+        natural_resources_climate: get('qa-natural_resources_climate'),
+        flora_fauna: get('qa-flora_fauna'),
+        race_species_daily_life: get('qa-race_species_daily_life'),
+        food_cuisine: get('qa-food_cuisine'),
+        fashion_attire: get('qa-fashion_attire'),
+        cultures_religions: get('qa-cultures_religions'),
+        language_writing_communications: get('qa-language_writing_communications'),
+        art_literature_entertainment: get('qa-art_literature_entertainment'),
+        education_knowledge: get('qa-education_knowledge'),
+        calendar_time_seasons: get('qa-calendar_time_seasons'),
+        transport_technology_innovations: get('qa-transport_technology_innovations'),
+        economics_trade: get('qa-economics_trade'),
+        foreign_relations_politics: get('qa-foreign_relations_politics'),
+        symbols_iconography: get('qa-symbols_iconography'),
+        government_power: get('qa-government_power'),
+        military_detail: get('qa-military_detail'),
+        social_hierarchy_class: get('qa-social_hierarchy_class'),
+        laws_crimes_punishment: get('qa-laws_crimes_punishment'),
+        history_war: get('qa-history_war'),
+        relation_to_magic_system: get('qa-relation_to_magic_system')
       };
     }
 
@@ -270,10 +285,33 @@
       const okProfile = await upsertCountryProfileByKingdomId(currentKingdomId, {
         capital_city: data.capital_city,
         population: data.population,
-        culture: data.culture,
-        economy: data.economy,
-        military: data.military,
-        notes: data.notes
+
+        geography_ecosystems: data.geography_ecosystems,
+        natural_resources_climate: data.natural_resources_climate,
+        flora_fauna: data.flora_fauna,
+        race_species_daily_life: data.race_species_daily_life,
+        food_cuisine: data.food_cuisine,
+        fashion_attire: data.fashion_attire,
+        cultures_religions: data.cultures_religions,
+        language_writing_communications: data.language_writing_communications,
+        art_literature_entertainment: data.art_literature_entertainment,
+        education_knowledge: data.education_knowledge,
+        calendar_time_seasons: data.calendar_time_seasons,
+        transport_technology_innovations: data.transport_technology_innovations,
+        economics_trade: data.economics_trade,
+        foreign_relations_politics: data.foreign_relations_politics,
+        symbols_iconography: data.symbols_iconography,
+        government_power: data.government_power,
+        military_detail: data.military_detail,
+        social_hierarchy_class: data.social_hierarchy_class,
+        laws_crimes_punishment: data.laws_crimes_punishment,
+        history_war: data.history_war,
+        relation_to_magic_system: data.relation_to_magic_system,
+
+        // back-compat with older fields
+        culture: data.cultures_religions,
+        economy: data.economics_trade,
+        military: data.military_detail
       });
       if (!okProfile) return;
 
@@ -299,7 +337,6 @@
       await persistToSupabase(false);
     });
 
-    // Lightweight autosave
     let saveTimer = null;
     document.addEventListener('input', (e) => {
       if (!e.target.matches('input, textarea')) return;
