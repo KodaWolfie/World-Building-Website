@@ -105,7 +105,7 @@
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="./supabase-config.js?v=21"></script>
+  <script src="./supabase-config.js?v=22"></script>
   <script>
     let currentWorld = null;
     let saveTimer = null;
@@ -176,30 +176,9 @@
         return;
       }
 
-      (async () => {
-  console.log('SB URL:', sb?.supabaseUrl);
-  const { data: s, error: sErr } = await sb.auth.getSession();
-  console.log('Session error:', sErr);
-  console.log('Session user:', s?.session?.user?.id);
-
-  const test = await sb.from('central_conflicts').select('id').limit(1);
-  console.log('Select test:', test);
-
-  const uid = s?.session?.user?.id;
-  if (!uid) return console.log('No user session.');
-  const up = await sb.from('central_conflicts').upsert([{
-    user_id: uid,
-    world_id: 9999991,
-    central: 'debug',
-    external: 'debug',
-    internal: 'debug'
-  }], { onConflict: 'user_id,world_id' }).select();
-  console.log('Upsert test:', up);
-})();
-
       const payload = collectData();
 
-      const { data, error } = await sb
+      const { error } = await sb
         .from('central_conflicts')
         .upsert([{
           user_id: user.id,
@@ -207,12 +186,10 @@
           central: payload.central,
           external: payload.external,
           internal: payload.internal
-        }], { onConflict: 'user_id,world_id' })
-        .select();
-
-      console.log('saveData result:', { data, error });
+        }], { onConflict: 'user_id,world_id' });
 
       if (error) {
+        console.error('Save error:', error);
         alert(`Error saving conflict data: ${error.message} (code ${error.code || 'n/a'})`);
         return;
       }
