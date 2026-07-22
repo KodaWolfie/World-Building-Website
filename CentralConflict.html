@@ -23,13 +23,8 @@
       color:var(--muted); font-size:.95rem; margin:.2rem 0 0; font-weight:700;
     }
 
-    .intro{
-      margin:0; color:var(--muted); font-size:.98rem;
-    }
-
-    .conflict-stack{
-      display:grid; gap:14px; margin-top:14px;
-    }
+    .intro{ margin:0; color:var(--muted); font-size:.98rem; }
+    .conflict-stack{ display:grid; gap:14px; margin-top:14px; }
 
     .conflict-card{
       border:1px solid var(--border);
@@ -47,11 +42,7 @@
       line-height:1.1;
     }
 
-    .conflict-help{
-      margin:0 0 .7rem 0;
-      color:var(--muted);
-      font-size:.95rem;
-    }
+    .conflict-help{ margin:0 0 .7rem 0; color:var(--muted); font-size:.95rem; }
 
     .conflict-card textarea{
       width:100%;
@@ -64,14 +55,11 @@
       line-height:1.5;
       background:rgba(6,18,80,.88);
       color:var(--text);
+      box-sizing:border-box;
     }
-    .conflict-card textarea::placeholder{
-      color:rgba(255,230,109,.75);
-    }
+    .conflict-card textarea::placeholder{ color:rgba(255,230,109,.75); }
 
-    .actions{
-      display:flex; gap:.65rem; flex-wrap:wrap; margin-top:14px;
-    }
+    .actions{ display:flex; gap:.65rem; flex-wrap:wrap; margin-top:14px; }
   </style>
 </head>
 <body>
@@ -117,9 +105,10 @@
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="./supabase-config.js?v=20"></script>
+  <script src="./supabase-config.js?v=21"></script>
   <script>
     let currentWorld = null;
+    let saveTimer = null;
 
     function collectData() {
       return {
@@ -135,6 +124,15 @@
       document.getElementById('internalConflict').value = data?.internal || '';
     }
 
+    async function getSessionUser() {
+      const { data, error } = await sb.auth.getSession();
+      if (error) {
+        console.error('Session error:', error);
+        return null;
+      }
+      return data?.session?.user || null;
+    }
+
     async function loadData() {
       currentWorld = getCurrentWorld();
       const worldName = currentWorld?.name || "New World";
@@ -146,7 +144,7 @@
         return;
       }
 
-      const user = await getCurrentUser();
+      const user = await getSessionUser();
       if (!user) {
         alert('Please log in first.');
         return;
@@ -156,14 +154,15 @@
         .from('central_conflicts')
         .select('central, external, internal')
         .eq('user_id', user.id)
-        .eq('world_id', currentWorld.id)
+        .eq('world_id', Number(currentWorld.id))
         .maybeSingle();
 
       if (error) {
-  console.error('save error full', error);
-  alert(`Error saving: ${error.message}\nCode: ${error.code || 'n/a'}\nDetails: ${error.details || 'n/a'}`);
-  return;
-}
+        console.error('Load error:', error);
+        alert(`Error loading conflict data: ${error.message} (code ${error.code || 'n/a'})`);
+        applyData({});
+        return;
+      }
 
       applyData(data || {});
     }
@@ -171,23 +170,29 @@
     async function saveData(showAlert = false) {
       if (!currentWorld || !currentWorld.id) return;
 
-      const user = await getCurrentUser();
-      if (!user) return;
+      const user = await getSessionUser();
+      if (!user) {
+        alert('You are not logged in on this page.');
+        return;
+      }
 
       const payload = collectData();
 
-     const { error } = await sb
-  .from('central_conflicts')
-  .upsert([{
-    user_id: user.id,
-    world_id: currentWorld.id,
-    central: payload.central,
-    external: payload.external,
-    internal: payload.internal
-  }], { onConflict: 'user_id,world_id' });
+      const { data, error } = await sb
+        .from('central_conflicts')
+        .upsert([{
+          user_id: user.id,
+          world_id: Number(currentWorld.id),
+          central: payload.central,
+          external: payload.external,
+          internal: payload.internal
+        }], { onConflict: 'user_id,world_id' })
+        .select();
+
+      console.log('saveData result:', { data, error });
 
       if (error) {
-        alert('Error saving conflict data: ' + error.message);
+        alert(`Error saving conflict data: ${error.message} (code ${error.code || 'n/a'})`);
         return;
       }
 
@@ -201,13 +206,13 @@
     document.getElementById('clearBtn').addEventListener('click', async () => {
       if (!confirm('Clear all conflict sections for this world?')) return;
       applyData({});
-      await saveData(false); // writes empty strings to same row
+      await saveData(false);
     });
 
-    document.addEventListener('input', async (e) => {
-      if (e.target.matches('#centralConflict, #externalConflict, #internalConflict')) {
-        await saveData(false);
-      }
+    document.addEventListener('input', (e) => {
+      if (!e.target.matches('#centralConflict, #externalConflict, #internalConflict')) return;
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(() => { saveData(false); }, 450);
     });
 
     window.addEventListener('load', loadData);
