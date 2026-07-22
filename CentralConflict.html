@@ -176,7 +176,7 @@
 
       const payload = collectData();
 
-      const { error } = await sb
+     const { error } = await sb
   .from('central_conflicts')
   .upsert([{
     user_id: user.id,
