@@ -176,6 +176,27 @@
         return;
       }
 
+      (async () => {
+  console.log('SB URL:', sb?.supabaseUrl);
+  const { data: s, error: sErr } = await sb.auth.getSession();
+  console.log('Session error:', sErr);
+  console.log('Session user:', s?.session?.user?.id);
+
+  const test = await sb.from('central_conflicts').select('id').limit(1);
+  console.log('Select test:', test);
+
+  const uid = s?.session?.user?.id;
+  if (!uid) return console.log('No user session.');
+  const up = await sb.from('central_conflicts').upsert([{
+    user_id: uid,
+    world_id: 9999991,
+    central: 'debug',
+    external: 'debug',
+    internal: 'debug'
+  }], { onConflict: 'user_id,world_id' }).select();
+  console.log('Upsert test:', up);
+})();
+
       const payload = collectData();
 
       const { data, error } = await sb
