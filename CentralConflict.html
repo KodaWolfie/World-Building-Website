@@ -160,10 +160,10 @@
         .maybeSingle();
 
       if (error) {
-        alert('Error loading conflict data: ' + error.message);
-        applyData({});
-        return;
-      }
+  console.error('save error full', error);
+  alert(`Error saving: ${error.message}\nCode: ${error.code || 'n/a'}\nDetails: ${error.details || 'n/a'}`);
+  return;
+}
 
       applyData(data || {});
     }
