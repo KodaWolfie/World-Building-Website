@@ -177,14 +177,14 @@
       const payload = collectData();
 
       const { error } = await sb
-        .from('central_conflicts')
-        .upsert([{
-          user_id: user.id,
-          world_id: currentWorld.id,
-          central: payload.central,
-          external: payload.external,
-          internal: payload.internal
-        }], { onConflict: 'world_id' });
+  .from('central_conflicts')
+  .upsert([{
+    user_id: user.id,
+    world_id: currentWorld.id,
+    central: payload.central,
+    external: payload.external,
+    internal: payload.internal
+  }], { onConflict: 'user_id,world_id' });
 
       if (error) {
         alert('Error saving conflict data: ' + error.message);
