@@ -8,7 +8,6 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&family=Old+Standard+TT:wght@400;700&display=swap" rel="stylesheet">
-
   <link rel="stylesheet" href="theme.css?v=13">
 
   <style>
@@ -19,8 +18,8 @@
     .section-subtext{margin:0;color:var(--muted);font-size:.95rem;}
     .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px;margin-top:12px;}
     .field label{display:block;font-size:.83rem;color:var(--muted);margin-bottom:4px;font-weight:700;text-transform:uppercase;letter-spacing:.35px;}
-    .field input{width:100%;border:1px solid var(--border);border-radius:10px;padding:10px;font:inherit;background:rgba(10,26,110,0.85);color:var(--text);}
-    .field input::placeholder{color:rgba(255,230,109,.75);}
+    .field input,.field textarea{width:100%;border:1px solid var(--border);border-radius:10px;padding:10px;font:inherit;background:rgba(10,26,110,0.85);color:var(--text);box-sizing:border-box;}
+    .field input::placeholder,.field textarea::placeholder{color:rgba(255,230,109,.75);}
     .accordion{border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-top:10px;background:var(--surface);}
     details{border-bottom:1px solid var(--border);background:rgba(10,26,110,0.35);}
     details:last-child{ border-bottom:none; }
@@ -32,6 +31,7 @@
     textarea{width:100%;min-height:160px;resize:vertical;border:1px solid var(--border);border-radius:10px;padding:10px;font:inherit;line-height:1.45;margin-top:8px;background:rgba(10,26,110,0.85);color:var(--text);}
     textarea::placeholder{color:rgba(255,230,109,.75);}
     .actions{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;}
+    .danger{border-color:#8b1e1e;background:rgba(120,20,20,.25);}
     @media(max-width:720px){.actions .btn{ flex:1; min-width:140px; }}
   </style>
 </head>
@@ -41,6 +41,33 @@
       <h1 id="antagonist-name" class="page-title">Antagonist</h1>
       <a class="link-back" href="Antagonist.html">← Back to Antagonist(s)</a>
     </div>
+
+    <!-- EDITABLE BASIC INFO -->
+    <section class="card" style="margin-bottom:14px;">
+      <h2 class="section-title">Basic Antagonist Info</h2>
+      <p class="section-subtext">Edit the antagonist's core identity.</p>
+
+      <div class="grid">
+        <div class="field">
+          <label for="base_name">Name</label>
+          <input id="base_name" type="text" placeholder="Antagonist name">
+        </div>
+        <div class="field">
+          <label for="base_role">Role</label>
+          <input id="base_role" type="text" placeholder="e.g., Tyrant King, Rival, System">
+        </div>
+      </div>
+
+      <div class="field" style="margin-top:10px;">
+        <label for="base_description">Description</label>
+        <textarea id="base_description" style="min-height:120px;margin-top:0;" placeholder="Describe this antagonist..."></textarea>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-primary" id="saveBasicBtn">Save Basic Info</button>
+        <button class="btn btn-muted danger" id="deleteAntagonistBtn">Delete Antagonist</button>
+      </div>
+    </section>
 
     <section class="card" style="margin-bottom:14px;">
       <p id="antagonist-role" class="muted">Role: Unknown</p>
@@ -78,7 +105,7 @@
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="./supabase-config.js?v=20"></script>
+  <script src="./supabase-config.js?v=22"></script>
   <script>
     const DEEP_TITLES = [
       "1) What do they look like? (including quirks)",
@@ -112,9 +139,19 @@
 
     const QUICK_IDS = ["q_age","q_pronouns","q_occupation","q_race","q_homeland","q_affiliation","q_meaning"];
     let currentAntagonist = null;
+    let saveTimer = null;
 
     function getQueryParam(name) {
       return new URLSearchParams(window.location.search).get(name);
+    }
+
+    async function getSessionUser() {
+      const { data, error } = await sb.auth.getSession();
+      if (error) {
+        console.error("Session error:", error);
+        return null;
+      }
+      return data?.session?.user || null;
     }
 
     function renderDeepSections(savedDeep = {}) {
@@ -154,56 +191,149 @@
       renderDeepSections(saved?.deep || {});
     }
 
+    function applyBasicFields(ant) {
+      document.getElementById("base_name").value = ant?.name || "";
+      document.getElementById("base_role").value = ant?.role || "";
+      document.getElementById("base_description").value = ant?.description || "";
+
+      document.getElementById("antagonist-name").textContent = ant?.name || "Antagonist";
+      document.getElementById("antagonist-role").textContent = `Role: ${ant?.role || "Unknown"}`;
+      document.getElementById("antagonist-description").textContent = ant?.description || "No description provided";
+      document.title = `${ant?.name || "Antagonist"} | Antagonist Details`;
+    }
+
     async function loadAntagonist() {
-      const antagonistId = Number(getQueryParam('id'));
+      const antagonistId = Number(getQueryParam("id"));
       if (!antagonistId) return null;
 
-      const user = await getCurrentUser();
+      const user = await getSessionUser();
       if (!user) return null;
 
       const { data, error } = await sb
-        .from('antagonists')
-        .select('id, name, role, description')
-        .eq('user_id', user.id)
-        .eq('id', antagonistId)
+        .from("antagonists")
+        .select("id, name, role, description")
+        .eq("user_id", user.id)
+        .eq("id", antagonistId)
         .single();
 
-      if (error) return null;
+      if (error) {
+        console.error("Load antagonist error:", error);
+        return null;
+      }
       return data;
     }
 
     async function loadProfile() {
-      const user = await getCurrentUser();
+      const user = await getSessionUser();
       if (!user || !currentAntagonist?.id) return {};
 
       const { data, error } = await sb
-        .from('antagonist_profiles')
-        .select('quick, deep')
-        .eq('user_id', user.id)
-        .eq('antagonist_id', currentAntagonist.id)
+        .from("antagonist_profiles")
+        .select("quick, deep")
+        .eq("user_id", user.id)
+        .eq("antagonist_id", currentAntagonist.id)
         .maybeSingle();
 
-      if (error) return {};
+      if (error) {
+        console.error("Load profile error:", error);
+        return {};
+      }
       return data || {};
     }
 
+    async function saveBasicInfo() {
+      const user = await getSessionUser();
+      if (!user || !currentAntagonist?.id) {
+        alert("Missing user or antagonist.");
+        return;
+      }
+
+      const name = document.getElementById("base_name").value.trim();
+      const role = document.getElementById("base_role").value.trim();
+      const description = document.getElementById("base_description").value.trim();
+
+      if (!name) {
+        alert("Name cannot be empty.");
+        return;
+      }
+
+      const { data, error } = await sb
+        .from("antagonists")
+        .update({ name, role, description })
+        .eq("id", currentAntagonist.id)
+        .eq("user_id", user.id)
+        .select("id, name, role, description")
+        .single();
+
+      if (error) {
+        console.error("Save basic info error:", error);
+        alert(`Error saving antagonist: ${error.message} (code ${error.code || "n/a"})`);
+        return;
+      }
+
+      currentAntagonist = data;
+      applyBasicFields(currentAntagonist);
+      alert("Basic info saved!");
+    }
+
+    async function deleteAntagonist() {
+      const user = await getSessionUser();
+      if (!user || !currentAntagonist?.id) {
+        alert("Missing user or antagonist.");
+        return;
+      }
+
+      const sure = confirm(`Delete "${currentAntagonist.name}"?\n\nThis cannot be undone.`);
+      if (!sure) return;
+
+      // Delete child profile first (safe even if no row exists)
+      const { error: profileErr } = await sb
+        .from("antagonist_profiles")
+        .delete()
+        .eq("user_id", user.id)
+        .eq("antagonist_id", currentAntagonist.id);
+
+      if (profileErr) {
+        console.error("Delete profile error:", profileErr);
+        alert(`Could not delete profile: ${profileErr.message}`);
+        return;
+      }
+
+      // Delete antagonist
+      const { error } = await sb
+        .from("antagonists")
+        .delete()
+        .eq("id", currentAntagonist.id)
+        .eq("user_id", user.id);
+
+      if (error) {
+        console.error("Delete antagonist error:", error);
+        alert(`Error deleting antagonist: ${error.message} (code ${error.code || "n/a"})`);
+        return;
+      }
+
+      alert("Antagonist deleted.");
+      window.location.href = "Antagonist.html";
+    }
+
     async function saveProfile(showAlert = true) {
-      const user = await getCurrentUser();
+      const user = await getSessionUser();
       if (!user || !currentAntagonist?.id) return;
 
       const payload = collectAllData();
 
       const { error } = await sb
-        .from('antagonist_profiles')
+        .from("antagonist_profiles")
         .upsert([{
           user_id: user.id,
           antagonist_id: currentAntagonist.id,
           quick: payload.quick,
           deep: payload.deep
-        }], { onConflict: 'antagonist_id' });
+        }], { onConflict: "user_id,antagonist_id" });
 
       if (error) {
-        alert('Error saving antagonist profile: ' + error.message);
+        console.error("Save profile error:", error);
+        alert(`Error saving antagonist profile: ${error.message} (code ${error.code || "n/a"})`);
         return;
       }
 
@@ -213,21 +343,21 @@
     window.addEventListener("load", async () => {
       currentAntagonist = await loadAntagonist();
       if (!currentAntagonist) {
-        document.getElementById('antagonist-name').textContent = 'Antagonist Not Found';
-        document.getElementById('antagonist-role').textContent = 'Role: -';
-        document.getElementById('antagonist-description').textContent =
-          'This antagonist could not be found. Return to Antagonists page.';
+        document.getElementById("antagonist-name").textContent = "Antagonist Not Found";
+        document.getElementById("antagonist-role").textContent = "Role: -";
+        document.getElementById("antagonist-description").textContent =
+          "This antagonist could not be found. Return to Antagonists page.";
         renderDeepSections({});
         return;
       }
 
-      document.title = `${currentAntagonist.name} | Antagonist Details`;
-      document.getElementById('antagonist-name').textContent = currentAntagonist.name;
-      document.getElementById('antagonist-role').textContent = `Role: ${currentAntagonist.role || 'Unknown'}`;
-      document.getElementById('antagonist-description').textContent = currentAntagonist.description || 'No description provided';
+      applyBasicFields(currentAntagonist);
 
       const saved = await loadProfile();
       applyAllData(saved);
+
+      document.getElementById("saveBasicBtn").addEventListener("click", saveBasicInfo);
+      document.getElementById("deleteAntagonistBtn").addEventListener("click", deleteAntagonist);
 
       document.getElementById("saveBtn").addEventListener("click", () => saveProfile(true));
       document.getElementById("expandAllBtn").addEventListener("click", () => {
@@ -243,7 +373,10 @@
       });
 
       document.addEventListener("input", (e) => {
-        if (e.target.matches("input, textarea")) saveProfile(false);
+        if (!e.target.matches("input, textarea")) return;
+        if (e.target.id === "base_name" || e.target.id === "base_role" || e.target.id === "base_description") return; // basic fields save manually
+        clearTimeout(saveTimer);
+        saveTimer = setTimeout(() => saveProfile(false), 450);
       });
     });
   </script>
